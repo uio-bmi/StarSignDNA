@@ -1,5 +1,6 @@
 import numpy as np
 
+#function to compute the local gradient
 def compute_local_gradients(E, M, S, O):
     n_samples, n_signatures, n_mutations = (E.shape[0], S.shape[0], M.shape[1])
     local_gradients = np.empty_like(E)
@@ -134,12 +135,11 @@ def Frobinous_reconstuct(M, S, E, O):
     M_hat = fibo1
     fibo = LA.norm(M - M_hat, ord = 2)
     return fibo, M_hat
-
 #function to run the optimisation algorithm
-def running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps=10000):
+def running_simulation_new(E, M, S, O, topt, tedge, lambd):
     old_loss = np.inf
     pmf_s = []
-    for step in range(n_steps):
+    for step in range(10000):
         print("Step is:", step)
         E_hat = E
         if(np.any(E < 0)):
