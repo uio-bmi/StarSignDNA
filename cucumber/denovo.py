@@ -19,9 +19,9 @@ def denovo(M, n_signatures, lambd):
     d_mse_s = []
     mse_old = np.inf
     pmf_old = np.inf
-    for _ in range(100):
-        E = main_fixed_denovo.running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps=200)# lambd)
-        S = main_fixed_denovo.running_simulation_new(S.T, M.T, E.T, O.T, topt, tedge, 0, n_steps=400).T
+    for _ in range(n_steps):
+        E = main_fixed_denovo.running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps=50)# lambd)
+        S = main_fixed_denovo.running_simulation_new(S.T, M.T, E.T, O.T, topt, tedge, 0, n_steps=50).T
         mse_e = main_fixed_denovo.Frobinous(M,S,E,O)
         d_mse_s.append(mse_e)
         loss = -poisson.logpmf(M,(E@S)*O)

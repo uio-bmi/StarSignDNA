@@ -139,7 +139,7 @@ def Frobinous_reconstuct(M, S, E, O):
 def running_simulation_new(E, M, S, O, topt, tedge, lambd):
     old_loss = np.inf
     pmf_s = []
-    for step in range(10000):
+    for step in range(n_steps):
         print("Step is:", step)
         E_hat = E
         if(np.any(E < 0)):
