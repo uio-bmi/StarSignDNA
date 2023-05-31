@@ -136,7 +136,7 @@ def Frobinous_reconstuct(M, S, E, O):
     fibo = LA.norm(M - M_hat, ord = 2)
     return fibo, M_hat
 #function to run the optimisation algorithm
-def running_simulation_new(E, M, S, O, topt, tedge, lambd):
+def running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps):
     old_loss = np.inf
     pmf_s = []
     for step in range(n_steps):

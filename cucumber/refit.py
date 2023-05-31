@@ -2,7 +2,7 @@ import numpy as np
 from scipy.stats import poisson, entropy
 from .main_fixed_denovo import Frobinous, running_simulation_new, Frobinous_reconstuct
 from scipy import stats
-def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray, lambd: float = 0.8, n_iterations: int=1000) -> np.ndarray:
+def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray, lambd: float = 0.8, n_iterations: int=10) -> np.ndarray:
     '''
     Refit the signatures to the data
     '''
