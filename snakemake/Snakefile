@@ -1,22 +1,20 @@
 # Mutation Signature
-# from scripts.split_fasta_regions import split_fasta
+#script to run cross-validation to select the optimal pairwise number of signature (k) and the regularisation parameters (lambda)
 # from snakemake.utils import R
 import pandas as pd
 import numpy as np
 
-
 wildcard_constraints:
-    dataset="brca",
+    dataset="data",
     fold="\d+"
 
-
 localrules: all
-ks = list(range(2, 18))
-lambdas = [0, 0.01,0.05, 0.1, 0.2]
+ks = list(range(2, 4))
+lambdas = [0, 0.01]
 
 rule all:
     input:
-        [f"results/{dataset}/all.csv" for dataset in ["brca"]]
+        [f"results/{dataset}/all.csv" for dataset in ["data"]]
 
 rule total_file:
     input:
@@ -37,16 +35,16 @@ rule cv:
         "results/{dataset}/{fold}/{k}/{Lambda}/e.csv",
         "results/{dataset}/{fold}/{k}/{Lambda}/s.csv",
     script:
-        "scripts/ten_fold.py"
+        "script/ten_fold.py"
 
 rule test_train_split:
     input:
-        "results/{dataset}/m.csv"
+        "results/{dataset}/skin20.txt"
     output:
         trains = ["results/{dataset}/{fold}/train_m.csv" for fold in range(5)],
         tests = ["results/{dataset}/{fold}/test_m.csv" for fold in range(5)]
     script:
-        "scripts/train_test_split.py"
+        "script/train_test_split.py"
 
 rule evaluate:
     input:
@@ -56,8 +54,7 @@ rule evaluate:
         "results/{dataset}/{fold}/{k}/{Lambda}/e_new.csv",
         "results/{dataset}/{fold}/{k}/{Lambda}/logpmf.txt"
     script:
-        "scripts/evaluate.py"
-
+        "script/evaluate.py"
 
 rule ten_fold:
     input:
