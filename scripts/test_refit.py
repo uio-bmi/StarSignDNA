@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from cucumber import denovo
 from cucumber.refit import refit
 
 n_samples = 2
@@ -23,6 +24,8 @@ def O():
     return np.ones((n_samples, n_mutations))
 
 
-def test_refit_acceptance(M, S, O):
-    E, loss = refit(M, S, O)
+def test_refit_acceptance(M):
+    E, S = denovo(M, n_signatures, lambd=0.8)
     assert E.shape == (n_samples, n_signatures)
+    assert M.shape == (n_samples, n_mutations)
+

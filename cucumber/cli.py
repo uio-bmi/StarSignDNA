@@ -80,7 +80,6 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposu
     E, S = _denovo(M, O, n_signatures, lambd, em_steps=max_em_iterations, gd_steps=max_gd_iterations)
     np.savetxt(output_file_exposure, np.array(E))
     np.savetxt(output_file_signature, np.array(S))
-    pass
 
 
 def main():

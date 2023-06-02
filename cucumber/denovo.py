@@ -3,7 +3,7 @@ from scipy.stats import poisson
 from .main_fixed_denovo import Frobinous, running_simulation_new, convergence
 
 
-def denovo(M: np.ndarray, n_signatures: int, lambd: float, em_steps: int=10, gd_steps: int =50):
+def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray=None,  em_steps: int=10, gd_steps: int =50):
     """
 
     Parameters
@@ -17,7 +17,8 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, em_steps: int=10, gd_
          Number of steps in the gradient descent for E and S
     """
     n_samples, n_mutations = M.shape
-    # O = np.ones((n_samples, n_mutations), dtype=int)
+    if O is None:
+        O = np.ones((n_samples, n_mutations), dtype=int)
     E = np.full((n_samples, n_signatures), 0.00001)
     S = np.random.rand(n_signatures * n_mutations).reshape(n_signatures, n_mutations)
     topt = np.float64("Inf")
