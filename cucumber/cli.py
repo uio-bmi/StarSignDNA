@@ -50,7 +50,7 @@ def refit(matrix_file: str, signature_file: str, output_file: str, opportunity_f
 
 
 def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposure: str, output_file_signature: str,
-           opportunity_file: str = None, max_em_iterations: int = 10, max_gd_iterations: int = 50):
+           opportunity_file: str = None, max_em_iterations: int = 2, max_gd_iterations: int = 5):
     '''
     Parameters
     ----------
@@ -74,10 +74,10 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposu
         O = np.broadcast_to(O, M.shape)
     else:
         O = np.ones((n_samples, n_mutations), dtype=float)
-        print(O)
+        #print(O)
     O = O / np.amax(O).sum(axis=-1, keepdims=True)
     assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
-    E, S = _denovo(M, O, n_signatures, lambd, em_steps=max_em_iterations, gd_steps=max_gd_iterations)
+    E, S = _denovo(M, n_signatures, lambd, O, em_steps=max_em_iterations, gd_steps=max_gd_iterations)
     np.savetxt(output_file_exposure, np.array(E))
     np.savetxt(output_file_signature, np.array(S))
 

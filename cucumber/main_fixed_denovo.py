@@ -54,9 +54,8 @@ def min_topt_tedge(topt, tedge):
 
 #function to update gradient Ascent algorithm
 def update_exposure_gradient(E, global_gradients, topt_tedge):
-    col_means = np.mean(E, axis=0)
-    neg_indices = np.where(E < 0)
-    E[neg_indices] = col_means[neg_indices[1]]
+    if(np.any(E < 0)):
+        E = np.maximum(E, 0)
     return E + topt_tedge * global_gradients
 
 #function to compute Newton_Raphson
@@ -84,9 +83,8 @@ def newton_raphson1(E, global_gradients, hessians):
 
 #function to update newton optimization
 def update_exposure_NR(E, global_gradients, topt, tedge, new_E):
-    col_means = np.mean(E, axis=0)
-    neg_indices = np.where(E < 0)
-    E[neg_indices] = col_means[neg_indices[1]]
+    if(np.any(E < 0)):
+        E = np.maximum(E, 0)
     assert topt <= tedge
     return np.where(np.sign(new_E) == np.sign(E),
                     new_E,

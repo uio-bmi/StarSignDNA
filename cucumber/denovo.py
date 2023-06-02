@@ -1,13 +1,16 @@
 import numpy as np
 from scipy.stats import poisson
 from .main_fixed_denovo import Frobinous, running_simulation_new, convergence
+from scipy import stats
 
 
-def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray=None,  em_steps: int=10, gd_steps: int =50):
+def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None, em_steps: int = 3,
+           gd_steps: int = 5) -> np.ndarray:
     """
 
     Parameters
     ----------
+    O
     M
     n_signatures
     lambd
@@ -16,11 +19,16 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray=None,  
     gd_steps:
          Number of steps in the gradient descent for E and S
     """
+    print(lambd)
+    M = np.asanyarray(M)
     n_samples, n_mutations = M.shape
     if O is None:
         O = np.ones((n_samples, n_mutations), dtype=int)
-    E = np.full((n_samples, n_signatures), 0.00001)
-    S = np.random.rand(n_signatures * n_mutations).reshape(n_signatures, n_mutations)
+    M, O = (np.asarray(a) for a in (M, O))
+    tmp = np.abs(np.random.laplace(loc=0, scale=1, size=n_samples * n_signatures).reshape(n_samples, n_signatures))
+    E = np.full_like(tmp, 0.00001)
+    S_tmp = np.random.rand(n_signatures, n_mutations).reshape(n_signatures, n_mutations)
+    S = np.random.rand(S_tmp.size).reshape(S_tmp.shape)
     topt = np.float64("Inf")
     tedge = np.float64("Inf")
     if np.any(E < 0):
@@ -31,6 +39,8 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray=None,  
     d_mse_s = []
     mse_old = np.inf
     pmf_old = np.inf
+    conv_iter_1 = 0
+    conv_check = 0
     for _ in range(em_steps):
         E = running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps=gd_steps)  # lambd)
         S = running_simulation_new(S.T, M.T, E.T, O.T, topt, tedge, 0, n_steps=gd_steps).T

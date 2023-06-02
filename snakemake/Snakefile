@@ -39,7 +39,7 @@ rule cv:
 
 rule test_train_split:
     input:
-        "results/{dataset}/skin20.txt"
+        "results/{dataset}/hartwig_skin_20.txt"
     output:
         trains = ["results/{dataset}/{fold}/train_m.csv" for fold in range(5)],
         tests = ["results/{dataset}/{fold}/test_m.csv" for fold in range(5)]
