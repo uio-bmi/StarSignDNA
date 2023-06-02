@@ -49,8 +49,8 @@ def refit(matrix_file: str, signature_file: str, output_file: str, opportunity_f
     np.savetxt(output_file, np.array(E))
 
 
-def denovo(matrix_file: str, n_signatures: int, lambd: float,  output_file_exposure: str, output_file_signature: str,
-           opportunity_file: str = None):
+def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposure: str, output_file_signature: str,
+           opportunity_file: str = None, max_em_iterations: int = 10, max_gd_iterations: int = 50):
     '''
     Parameters
     ----------
@@ -60,6 +60,8 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,  output_file_expos
     output_file_exposure: str
     output_file_signature: str
     opportunity_file: str
+    max_em_iterations
+    max_gd_iterations
     '''
 
     M = pd.read_csv(matrix_file, delimiter='\t').to_numpy().astype(float)
@@ -75,8 +77,7 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,  output_file_expos
         print(O)
     O = O / np.amax(O).sum(axis=-1, keepdims=True)
     assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
-
-    E, S = _denovo(M, O, n_signatures, lambd)
+    E, S = _denovo(M, O, n_signatures, lambd, em_steps=max_em_iterations, gd_steps=max_gd_iterations)
     np.savetxt(output_file_exposure, np.array(E))
     np.savetxt(output_file_signature, np.array(S))
     pass
