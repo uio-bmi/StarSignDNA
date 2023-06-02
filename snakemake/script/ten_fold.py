@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import pandas as pd
 import numpy as np
-from .denovo import denovo as _denovo
+from .denovo import main
 snakemake = snakemake
 
 k = int(snakemake.wildcards.k)

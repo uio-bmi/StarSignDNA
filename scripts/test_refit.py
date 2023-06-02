@@ -24,5 +24,5 @@ def O():
 
 
 def test_refit_acceptance(M, S, O):
-    E, loss = refit(M, S, O, 0.5)
+    E, loss = refit(M, S, O)
     assert E.shape == (n_samples, n_signatures)
