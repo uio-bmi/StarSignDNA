@@ -14,7 +14,7 @@ def compute_local_gradients(E, M, S, O):
 
 #function to calculate the hessian matrix
 def compute_hessians(E, M, S):
-    denominatior = (E@S)**2
+    denominatior = (E@S)**2 + 0.000001
     numerator = M[:, None, None, :]*S[None, :, None, :]*S[None, None, :, :]
     res = numerator/denominatior[:, None, None, :]
     return -res.sum(axis=-1)
@@ -64,6 +64,7 @@ def newton_raphson1(E, global_gradients, hessians):
     v1 = []
     H = hessians
     active_mask = (E != 0)
+    #print(E)
     assert np.all(E >= 0)
     active_hessians = []
     for E_row, gradient_row, hessian in zip(E, global_gradients, H):
@@ -138,7 +139,7 @@ def running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps):
     old_loss = np.inf
     pmf_s = []
     for step in range(n_steps):
-        print("Step is:", step)
+        print("gradient step is:", step)
         E_hat = E
         if(np.any(E < 0)):
             E = np.maximum(E, 0)

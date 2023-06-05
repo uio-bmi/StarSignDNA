@@ -2,6 +2,11 @@
 import numpy as np
 import pandas as pd
 from enum import Enum
+import time
+from numpy import linalg as LA
+from scipy import stats
+import scipy.spatial as sp
+from scipy.optimize import linear_sum_assignment
 
 
 # todo
@@ -13,7 +18,8 @@ class DataType(str, Enum):
 
 import typer
 from .refit import refit as _refit
-from .denovo import denovo as _denovo
+from .denovo import denovo as _denovo,cos_sim_matrix
+
 
 
 def refit(matrix_file: str, signature_file: str, output_file: str, opportunity_file: str = None,
@@ -29,7 +35,9 @@ def refit(matrix_file: str, signature_file: str, output_file: str, opportunity_f
     '''
 
     M = pd.read_csv(matrix_file, delimiter='\t').to_numpy().astype(float)
-    S = pd.read_csv(signature_file, delimiter=',').to_numpy().astype(float)
+    S = pd.read_csv(signature_file, delimiter=',')
+    index_signature=S.index.values.tolist()
+    S= S.to_numpy().astype(float)
     n_samples = len(M)
     n_signatures = len(S)
     n_mutations = M.shape[1]
@@ -46,11 +54,14 @@ def refit(matrix_file: str, signature_file: str, output_file: str, opportunity_f
         lambd = 0.025
 
     E, loss = _refit(M, S, O, lambd=lambd)
-    np.savetxt(output_file, np.array(E))
+    E = pd.DataFrame(data=E, columns=index_signature)
+    print(E)
+    E.to_csv(output_file,index=False,header=True,sep='\t')
 
 
-def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposure: str, output_file_signature: str,
-           opportunity_file: str = None, max_em_iterations: int = 2, max_gd_iterations: int = 5):
+def denovo(matrix_file: str, n_signatures: int, lambd: float,  output_file_exposure: str, output_file_signature: str,
+           opportunity_file: str = None, cosmic_file: str= None, max_em_iterations: int = 100,
+           max_gd_iterations: int = 50):
     '''
     Parameters
     ----------
@@ -63,7 +74,7 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposu
     max_em_iterations
     max_gd_iterations
     '''
-
+    start_time = time.time()
     M = pd.read_csv(matrix_file, delimiter='\t').to_numpy().astype(float)
     n_samples = len(M)
     n_signatures = n_signatures
@@ -74,12 +85,18 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposu
         O = np.broadcast_to(O, M.shape)
     else:
         O = np.ones((n_samples, n_mutations), dtype=float)
-        #print(O)
+        # print(O)
     O = O / np.amax(O).sum(axis=-1, keepdims=True)
     assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
     E, S = _denovo(M, n_signatures, lambd, O, em_steps=max_em_iterations, gd_steps=max_gd_iterations)
+    if cosmic_file is not None:
+        cosmic = pd.read_csv(cosmic_file, delimiter=',')
+        cos_similarity= cos_sim_matrix(S,cosmic)[0]
+        cos_similarity.to_csv("output/cos_sim_skin_pcawg.txt", sep = "\t")
+        print(cos_similarity)
     np.savetxt(output_file_exposure, np.array(E))
     np.savetxt(output_file_signature, np.array(S))
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 
 def main():

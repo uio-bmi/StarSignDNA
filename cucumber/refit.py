@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 from scipy.stats import poisson, entropy
 from .main_fixed_denovo import Frobinous, running_simulation_new, Frobinous_reconstuct
 from scipy import stats
@@ -9,6 +10,7 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = 0.8, 
     # if O is None:
     #     O = np.ones((n_samples, n_mutations), dtype=int)
     # M, S, O = (np.asarray(a) for a in (M, S, O))
+    #warnings.filterwarnings('ignore')
     np.random.seed(10000)
     n_samples = len(M)
     n_signatures = len(S)
@@ -40,6 +42,8 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = 0.8, 
     rho, pval = stats.spearmanr(np.transpose(M), np.transpose(M_hat))
     print("The speraman coefficient is:", np.mean(rho), np.mean(pval))
     print("The final log poisson MSE is:", np.mean(mse_e))
+    #print(E)
+    import pandas as pd
     return E, np.mean(mse_e)
 
 
