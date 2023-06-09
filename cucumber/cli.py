@@ -19,7 +19,7 @@ class DataType(str, Enum):
 import typer
 from .refit import refit as _refit
 from .denovo import denovo as _denovo,cos_sim_matrix
-
+from .count_mutation_cli import main as count_mutation
 
 
 def refit(matrix_file: str, signature_file: str, output_file_exposure: str, output_file_exposure_avg: str, opportunity_file: str = None,
@@ -107,6 +107,7 @@ def main():
     app = typer.Typer()
     app.command()(refit)
     app.command()(denovo)
+    app.command()(main)
     app()
 
 
