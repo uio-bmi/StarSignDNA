@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from cucumber.cli import refit_main
+from cucumber.cli import refit, count_mutation
 from .test_refit import M, S, O
 
 
@@ -31,12 +31,18 @@ def opportunity_file(O):
 @pytest.fixture()
 def output_file():
     filename = 'test_data/output.csv'
-    os.remove(filename)
+    if os.path.exists(filename):
+        os.remove(filename)
     return filename
 
 
 def test_refit_main(matrix_file, signature_file, opportunity_file, output_file):
-    refit_main(matrix_file, signature_file, output_file, opportunity_file, 'exome')
+    refit(matrix_file, signature_file, output_file, opportunity_file, 'exome')
     assert os.path.exists(output_file)
     n_samples = len(M)
     assert np.loadtxt(output_file).shape == (n_samples, n_signatures)
+
+
+def test_vcf():
+    count_mutation("example_data/few_variants.vcf", "example_data/small_genome.fa", has_numeric_chromosomes=False)
+

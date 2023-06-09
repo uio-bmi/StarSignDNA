@@ -8,7 +8,24 @@ import logging
 logging.basicConfig(level="INFO")
 
 
-def main(vcf_filename: str, fasta_filename: str, out_filename: str = None, flank: int = 1, has_numeric_chromosomes=True, genotyped=False):
+def count_mutation(vcf_filename: str, fasta_filename: str, out_filename: str = None, has_numeric_chromosomes=True, genotyped=False):
+    """
+    Count mutation types in a VCF file.
+
+    Parameters
+    ----------
+    vcf_filename: str
+        VCF file of the variants (possibly many samples)
+    fasta_filename: str
+        Fasta file of the reference genome
+    out_filename: str
+    has_numeric_chromosomes: bool
+        True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'
+    genotyped: bool
+        True if the VCF file has genotype information for many samples
+
+    """
+    print(has_numeric_chromosomes)
     buffer_type = PhasedVCFMatrixBuffer if genotyped else None
     genome = Genome.from_file(fasta_filename)
     variants = np.concatenate(list(bnp.open(vcf_filename, buffer_type=buffer_type).read_chunks()))
@@ -20,20 +37,3 @@ def main(vcf_filename: str, fasta_filename: str, out_filename: str = None, flank
     else:
         print(counts)
     return counts
-
-def test():
-    main("example_data/few_variants.vcf", "example_data/small_genome.fa", has_numeric_chromosomes=False)
-
-
-def pipeline(vcf_filename: str, fasta_filename: str, signature_filename, has_numeric_chromosomes=True, genotyped=False):
-    counts = main(vcf_filename, fasta_filename, has_numeric_chromosomes=has_numeric_chromosomes, genotyped=genotyped)
-    signature_matrix = read_matrix(signature_filename)
-    count_matrix = signature_matrix.__class__(np.atleast_2d(counts.counts), col_names=counts.alphabet)
-    print(nmf(signature_matrix, count_matrix))
-
-
-if __name__ == "__main__":
-    import typer
-    typer.run(pipeline)
-    # run_as_commandline(main)
-
