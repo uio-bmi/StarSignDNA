@@ -44,5 +44,5 @@ def test_refit_main(matrix_file, signature_file, opportunity_file, output_file):
 
 
 def test_vcf():
-    count_mutation("example_data/few_variants.vcf", "example_data/small_genome.fa", has_numeric_chromosomes=False)
+    count_mutation("example_data/few_variants.vcf", "example_data/small_genome.fa", numeric_chromosomes=False)
 

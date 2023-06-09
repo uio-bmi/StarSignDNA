@@ -19,7 +19,7 @@ class DataType(str, Enum):
 import typer
 from .refit import refit as _refit
 from .denovo import denovo as _denovo, cos_sim_matrix
-from .count_mutation_cli import count_mutation as count_mutation
+from .count_mutation_cli import count_mutation
 from .bootstrapping import bootstrap as _bootstrap
 
 
