@@ -1,11 +1,17 @@
 import numpy as np
 import warnings
+import math
 from scipy.stats import poisson, entropy
+from numpy import count_nonzero
 from .main_fixed_denovo import Frobinous, running_simulation_new, Frobinous_reconstuct
 from scipy import stats
-def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = 0.8, n_iterations: int=10) -> np.ndarray:
+def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = 0.00304, n_iterations: int= 2000) -> np.ndarray:
     '''
     Refit the signatures to the data
+    M: Matrix of observed mutational signatures
+    S: Mutational Signatures matrix from COSMIC
+    O: Matrix of mutational opportunity
+    lambd: a penalty parameter that control the rate trade-off between goodness of fit and L-1 norm of the solution
     '''
     # if O is None:
     #     O = np.ones((n_samples, n_mutations), dtype=int)
@@ -21,30 +27,27 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = 0.8, 
 #    n_mutations = 96
     tmp = np.abs(np.random.laplace(loc=0, scale=1, size=n_samples * n_signatures).reshape(n_samples, n_signatures))
     E = np.full_like(tmp, 0.00001)
-    topt = np.float64("Inf")
+    # topt = np.float64("Inf")
+    topt= -math.inf
     tedge = np.float64("Inf")
+    print("lambda is", lambd)
+    E = running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps=n_iterations)
     if (np.any(E < 0)):
         E = np.maximum(E, 0)
-    E = running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps=n_iterations)
     mse_e = Frobinous(M, S, E, O)
     loss = -poisson.logpmf(M, (E @ S) * O)
-    print("MSE of E", mse_e)
-    print("PMF of E", np.mean(loss))
     E /= E.sum(axis=-1, keepdims=True)
     E[np.isnan(E)] = 0
     sum_expo = E.sum(axis=0, keepdims=True) / len(E)
-
+    sparsity = 1.0 - ( count_nonzero(E) / float(E.size) )
+    E_norm = np.linalg.norm(E, ord=2, axis=None, keepdims=False)
     mse_reconstruct, M_hat = Frobinous_reconstuct(M, S, E, O)
-    print("mse_reconstructed is:", mse_reconstruct)
-    entropy_reco = entropy(M, axis=1, qk=M_hat)
-    entropy_reco_mean = np.mean(entropy_reco)
-    print("The relative entropy is:", entropy_reco_mean)
-    rho, pval = stats.spearmanr(np.transpose(M), np.transpose(M_hat))
-    print("The speraman coefficient is:", np.mean(rho), np.mean(pval))
-    print("The final log poisson MSE is:", np.mean(mse_e))
-    #print(E)
-    import pandas as pd
-    return E, np.mean(mse_e)
+    #print("mse_reconstructed is:", mse_reconstruct)
+    print("Sparsity", sparsity)
+    print("The MSE is:", np.mean(mse_e))
+    print("PMF of E", np.mean(loss))
+    print("E_norm",E_norm)
+    return E, np.mean(mse_e), sum_expo
 
 
 

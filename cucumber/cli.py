@@ -22,14 +22,15 @@ from .denovo import denovo as _denovo,cos_sim_matrix
 
 
 
-def refit(matrix_file: str, signature_file: str, output_file: str, opportunity_file: str = None,
+def refit(matrix_file: str, signature_file: str, output_file_exposure: str, output_file_exposure_avg: str, opportunity_file: str = None,
           data_type: DataType = DataType.exome):
     '''
     Parameters
     ----------
     matrix_file: str
     signature_file: str
-    output_file: str
+    output_file_exposure: str
+    output_file_exposure_avg: str
     opportunity_file: str
     data_type: DataType
     '''
@@ -48,15 +49,16 @@ def refit(matrix_file: str, signature_file: str, output_file: str, opportunity_f
         O = np.ones((n_samples, n_mutations), dtype=float)
     O = O / np.amax(O).sum(axis=-1, keepdims=True)
     assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
-    if data_type == DataType.exome:
-        lambd = 0.8
-    else:
+    if data_type == DataType.genome:
         lambd = 0.025
-
-    E, loss = _refit(M, S, O, lambd=lambd)
+    else:
+        lambd = 0.00304
+    E, loss, sum_expo = _refit(M, S, O, lambd=lambd)
     E = pd.DataFrame(data=E, columns=index_signature)
-    print(E)
-    E.to_csv(output_file,index=False,header=True,sep='\t')
+    sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature)
+    #print(E)
+    E.to_csv(output_file_exposure,index=False,header=True,sep='\t')
+    sum_expo.to_csv(output_file_exposure_avg,index=False,header=True,sep='\t')
 
 
 def denovo(matrix_file: str, n_signatures: int, lambd: float,  output_file_exposure: str, output_file_signature: str,
@@ -71,6 +73,7 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,  output_file_expos
     output_file_exposure: str
     output_file_signature: str
     opportunity_file: str
+    cosmic_file: str
     max_em_iterations
     max_gd_iterations
     '''
@@ -92,6 +95,7 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,  output_file_expos
     if cosmic_file is not None:
         cosmic = pd.read_csv(cosmic_file, delimiter=',')
         cos_similarity= cos_sim_matrix(S,cosmic)[0]
+        #cos_similarity.to_csv(output_file,index=False,header=True,sep='\t')
         cos_similarity.to_csv("output/cos_sim_skin_pcawg.txt", sep = "\t")
         print(cos_similarity)
     np.savetxt(output_file_exposure, np.array(E))
