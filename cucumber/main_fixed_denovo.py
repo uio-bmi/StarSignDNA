@@ -2,6 +2,9 @@ import numpy as np
 
 
 # function to compute the local gradient
+from numpy.random.mtrand import poisson
+from scipy.stats import poisson, entropy
+
 def compute_local_gradients(E, M, S, O):
     n_samples, n_signatures, n_mutations = (E.shape[0], S.shape[0], M.shape[1])
     local_gradients = np.empty_like(E)
@@ -37,8 +40,8 @@ def compute_global_gradient(E, local_gradients, lambd):
 # function to compute the step-size
 def compute_topt(E, local_gradients, global_gradients, hessians):
     # print("local",hessians)
-    # numerator = np.linalg.norm(global_gradients, ord=2, axis=None, keepdims=False)
-    numerator = np.sum(global_gradients * local_gradients)
+    numerator = np.linalg.norm(global_gradients, ord=None, axis=None, keepdims=False)
+    # numerator = np.sum(global_gradients * local_gradients)
     # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
     denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])
@@ -104,7 +107,7 @@ def newton_raphson1(E, global_gradients, hessians):
 def update_exposure_NR(E, global_gradients, topt, tedge, new_E):
     if (np.any(E < 0)):
         E = np.maximum(E, 0)
-    assert topt <= tedge
+    # assert topt <= tedge
     return np.where(np.sign(new_E) == np.sign(E),
                     new_E,
                     E + topt * global_gradients)
@@ -161,46 +164,157 @@ def Frobinous_reconstuct(M, S, E, O):
 
 
 # function to run the optimisation algorithm
-def running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps):
+def running_simulation_new_ori(E, M, S, O, topt, tedge, lambd, n_steps):
     old_loss = np.inf
     pmf_s = []
     for step in range(n_steps):
         print("Gradient step is:", step)
-        if np.all(E==0):
+        if np.all(E == 0):
             raise Error
         E_hat = E
-        # if (np.any(E < 0)):
-        #     E = np.maximum(E, 0)
+        # if (np.any(E < 0)): #add
+        #     E = np.maximum(E, 0) # add
         local_gradients = compute_local_gradients(E, M, S, O)
         hessians = compute_hessians(E, M, S)
         global_gradients = compute_global_gradient(E, local_gradients, lambd)
-     #   topt = compute_topt(E, local_gradients, global_gradients, hessians)
+        #   topt = compute_topt(E, local_gradients, global_gradients, hessians)
         tedge = compute_t_edge(E, global_gradients)
         if topt < tedge:
+            # print("topt",topt)
             topt = compute_topt(E, local_gradients, global_gradients, hessians)
+            print("topt", topt)
             minimun_topt_tedge = min_topt_tedge(topt, tedge)
         else:
             topt = tedge
-            #minimun_topt_tedge = min_topt_tedge(topt, tedge)
+            minimun_topt_tedge = min_topt_tedge(topt, tedge)
         if topt >= tedge:
-            # if (np.any(E < 0)):
-            #     E = np.maximum(E, 0)
+            # if (np.any(E < 0)): #add
+            #     E = np.maximum(E, 0) #add
             E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
         else:
             if (np.any(E < 0)):
                 E = np.maximum(E, 0)
             newton_raphason = newton_raphson1(E, global_gradients, hessians)
             if newton_raphason is None:
-                # if (np.any(E < 0)):
-                #     E = np.maximum(E, 0)
+                # if (np.any(E < 0)): # add
+                #     E = np.maximum(E, 0) # add
                 E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
             else:
-                # if (np.any(E < 0)):
-                #     E = np.maximum(E, 0)
+                # if (np.any(E < 0)): #add
+                #     E = np.maximum(E, 0) #add
                 E = update_exposure_NR(E, global_gradients, topt, tedge, newton_raphason)
-    # if (np.any(E < 0)):
-    #     E = np.maximum(E, 0)
+    if (np.any(E < 0)):  # add
+        E = np.maximum(E, 0)  # add
 
+    return E
+
+
+def running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps):
+    old_loss = np.inf
+    pmf_s = []
+    mse_e = 0
+    loss = 0
+    # mse_hat = 0
+    conv_iter_1 = 0
+    for step in range(n_steps):
+        print("Gradient step is:", step)
+        # print(E)
+        mse_hat = mse_e
+        loss_hat = loss
+        E_hat = E
+        if (np.any(E < 0)):
+            E = np.maximum(E, 0)
+        local_gradients = compute_local_gradients(E, M, S, O)
+        hessians = compute_hessians(E, M, S)
+        global_gradients = compute_global_gradient(E, local_gradients, lambd)
+        # print(global_gradients)
+        # time.sleep(5)
+        tedge = compute_t_edge(E, global_gradients)
+        # if tedge < 0.001:
+        #     tedge = 0.001
+        # print("TTTTTTT", tedge)
+        topt = compute_topt(E, local_gradients, global_gradients, hessians)
+        # minimun_topt_tedge = min_topt_tedge(topt, tedge)
+        # print("TOP_entry:",topt)
+        # print("TEDGE_entry:",tedge)
+        if topt >= tedge:
+            # print("INSIDE, topt >= tedge")
+            # if (np.any(E < 0)):
+            #     E = np.maximum(E, 0)
+            topt = tedge
+            minimun_topt_tedge = min_topt_tedge(topt, tedge)
+            E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
+            mse_e = Frobinous(M, S, E, O)
+            loss = -poisson.logpmf(M, (E @ S) * O)
+            if (np.any(E < 0)):
+                E = np.maximum(E, 0)
+            # print("E minimum topt >= tedge: ",np.min(E))
+        else:
+            # print("NETWON_TOPT:",topt)
+            # print("NEWTON_TEDGE:",tedge)
+            if (np.any(E < 0)):
+                E = np.maximum(E, 0)
+            # topt = compute_topt(E, local_gradients, global_gradients, hessians)
+            # print("NEWTON")
+            # tedge = compute_t_edge(E, global_gradients)
+            # global_gradients = compute_global_gradient(E, local_gradients, lambd)
+            topt = compute_topt(E, local_gradients, global_gradients, hessians)
+            tedge = compute_t_edge(E, global_gradients)
+            # if tedge < 0.001:
+            #     tedge = 0.001
+            newton_raphason = newton_raphson1(E, global_gradients, hessians)
+            if newton_raphason is None:
+                if (np.any(E < 0)):
+                    E = np.maximum(E, 0)
+                # topt = tedge
+                # print("RAPHSON")
+                # if tedge < 0.001:
+                #     tedge = 0.001
+                minimun_topt_tedge = min_topt_tedge(topt, tedge)
+                E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
+                mse_e = Frobinous(M, S, E, O)
+                loss = -poisson.logpmf(M, (E @ S) * O)
+                if (np.any(E < 0)):
+                    E = np.maximum(E, 0)
+                # print("E minimum topt < tedge: ",np.min(E))
+            else:
+                # time.sleep(5)
+                # print("RAPHSON_TOPT:",topt)
+                # print("RAPHSON_TEDGE:",tedge)
+                if (np.any(E < 0)):
+                    E = np.maximum(E, 0)
+                # topt = tedge
+                # global_gradients = compute_global_gradient(E, local_gradients, lambd)
+                topt = compute_topt(E, local_gradients, global_gradients, hessians)
+                tedge = compute_t_edge(E, global_gradients)
+                # print("topt_NR:",topt)
+                # print("tedge-NR:",tedge)
+                # if tedge < 0.001:
+                #     tedge = 0.001
+                E = update_exposure_NR(E, global_gradients, topt, tedge, newton_raphason)
+                mse_e = Frobinous(M, S, E, O)
+                loss = -poisson.logpmf(M, (E @ S) * O)
+                # print("E minimum topt NR < tedge: ",np.min(E))
+        #             print("minimum NR",np.min(E))
+        # conv = convergence(mse_hat, mse_e)
+        conv = convergence(np.mean(loss_hat), np.mean(loss))
+        if conv == True:
+            print(f"TRUE {conv}")
+            if conv_iter_1 == -1:
+                conv_iter_1 = step
+                conv_check = 0
+            else:
+                conv_check = conv_check + 1
+        else:
+            print(f"FALSE {conv}")
+            conv_iter_1 = -1
+            conv_check = 0
+        if conv_check == 20:
+            print("The algorithm converge")
+            break
+    if (np.any(E < 0)):
+        E = np.maximum(E, 0)
+    # print("running E",E)
     return E
 
 
@@ -242,3 +356,113 @@ def cos_sim_matrix(matrix1, matrix2):
     cosine_index[" "] = index_names
     cosine_index_detect = cosine_index.set_index([" "])
     return cosine_index_detect, match_coresp_1[:-2], df
+
+
+def running_simulation_new_while(E, M, S, O, topt, tedge, lambd, n_steps):
+    old_loss = np.inf
+    pmf_s = []
+    mse_e = 0
+    loss = 0
+    # mse_hat = 0
+    conv_iter_1 = -1
+    conv_1 = False
+    while not conv_1:
+        # for step in range(n_steps):
+        #     print("Gradient step is:", step)
+        # print(E)
+        mse_hat = mse_e
+        loss_hat = loss
+        E_hat = E
+        if (np.any(E < 0)):
+            E = np.maximum(E, 0)
+        local_gradients = compute_local_gradients(E, M, S, O)
+        hessians = compute_hessians(E, M, S)
+        global_gradients = compute_global_gradient(E, local_gradients, lambd)
+        # print(global_gradients)
+        # time.sleep(5)
+        tedge = compute_t_edge(E, global_gradients)
+        # if tedge < 0.001:
+        #     tedge = 0.001
+        # print("TTTTTTT", tedge)
+        topt = compute_topt(E, local_gradients, global_gradients, hessians)
+        # minimun_topt_tedge = min_topt_tedge(topt, tedge)
+        # print("TOP_entry:",topt)
+        # print("TEDGE_entry:",tedge)
+        if topt >= tedge:
+            # print("INSIDE, topt >= tedge")
+            # if (np.any(E < 0)):
+            #     E = np.maximum(E, 0)
+            topt = tedge
+            minimun_topt_tedge = min_topt_tedge(topt, tedge)
+            E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
+            mse_e = Frobinous(M, S, E, O)
+            loss = -poisson.logpmf(M, (E @ S) * O)
+
+            if (np.any(E < 0)):
+                E = np.maximum(E, 0)
+            # print("E minimum topt >= tedge: ",np.min(E))
+        else:
+            # print("NETWON_TOPT:",topt)
+            # print("NEWTON_TEDGE:",tedge)
+            if (np.any(E < 0)):
+                E = np.maximum(E, 0)
+            # topt = compute_topt(E, local_gradients, global_gradients, hessians)
+            # print("NEWTON")
+            # tedge = compute_t_edge(E, global_gradients)
+            # global_gradients = compute_global_gradient(E, local_gradients, lambd)
+            topt = compute_topt(E, local_gradients, global_gradients, hessians)
+            tedge = compute_t_edge(E, global_gradients)
+            # if tedge < 0.001:
+            #     tedge = 0.001
+            newton_raphason = newton_raphson1(E, global_gradients, hessians)
+            if newton_raphason is None:
+                if (np.any(E < 0)):
+                    E = np.maximum(E, 0)
+                # topt = tedge
+                # print("RAPHSON")
+                # if tedge < 0.001:
+                #     tedge = 0.001
+                minimun_topt_tedge = min_topt_tedge(topt, tedge)
+                E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
+                mse_e = Frobinous(M, S, E, O)
+                loss = -poisson.logpmf(M, (E @ S) * O)
+                if (np.any(E < 0)):
+                    E = np.maximum(E, 0)
+                # print("E minimum topt < tedge: ",np.min(E))
+            else:
+                # time.sleep(5)
+                # print("RAPHSON_TOPT:",topt)
+                # print("RAPHSON_TEDGE:",tedge)
+                if (np.any(E < 0)):
+                    E = np.maximum(E, 0)
+                # topt = tedge
+                # global_gradients = compute_global_gradient(E, local_gradients, lambd)
+                topt = compute_topt(E, local_gradients, global_gradients, hessians)
+                tedge = compute_t_edge(E, global_gradients)
+                # print("topt_NR:",topt)
+                # print("tedge-NR:",tedge)
+                # if tedge < 0.001:
+                #     tedge = 0.001
+                E = update_exposure_NR(E, global_gradients, topt, tedge, newton_raphason)
+                mse_e = Frobinous(M, S, E, O)
+                loss = -poisson.logpmf(M, (E @ S) * O)
+                # print("E minimum topt NR < tedge: ",np.min(E))
+        #             print("minimum NR",np.min(E))
+        # print("MSE",mse_e)
+        # print("MSE_HAT",mse_hat)
+        conv = convergence(mse_hat, mse_e)
+        # conv = convergence(np.mean(loss_hat), np.mean(loss))
+        if conv == True:
+            print(f"TRUE {conv}")
+            conv_iter_1 += 1
+        else:
+            print(f"FALSE {conv}")
+            conv_iter_1 = -1
+        if conv_iter_1 == 20:
+            conv_1 = True
+            print("The algorithm converge")
+            break
+    if (np.any(E < 0)):
+        E = np.maximum(E, 0)
+    # print("running E",E)
+    return E

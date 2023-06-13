@@ -7,7 +7,7 @@ from numpy import linalg as LA
 from scipy import stats
 import scipy.spatial as sp
 from scipy.optimize import linear_sum_assignment
-
+np.random.seed(10000)
 
 # todo
 
@@ -47,23 +47,33 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str, outp
     opportunity_file: str
     data_type: DataType
     '''
-
+    start_time = time.time()
     M = read_counts(matrix_file)
+    #M /= M.sum(axis=0, keepdims=True)
+    # M_min = np.min(M)
+    # M_max = np.max(M)
+    # M = (M - M_min) / (M_max - M_min)
+    print(M.shape)
     S, index_signature = read_signature(signature_file)
+    # S = S.head(20)
+    # S = S[:20, :]
+    # M = M[:1, :]
+    print(M)
     O = read_opportunity(M, opportunity_file)
     lambd = get_lambda(data_type)
-    E, loss, sum_expo = _refit(M, S, O, lambd=lambd)
+    E, loss, sum_expo, loss = _refit(M, S, O, lambd=lambd)
     E = pd.DataFrame(data=E, columns=index_signature)
     sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature)
     E.to_csv(output_file_exposure, index=False, header=True, sep='\t')
     sum_expo.to_csv(output_file_exposure_avg, index=False, header=True, sep='\t')
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 
 def get_lambda(data_type):
     if data_type == DataType.genome:
-        lambd = 0.025
+        lambd = 15000
     else:
-        lambd = 0.00304
+        lambd = 8
     return lambd
 
 
