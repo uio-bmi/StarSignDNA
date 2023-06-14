@@ -49,16 +49,7 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str, outp
     '''
     start_time = time.time()
     M = read_counts(matrix_file)
-    #M /= M.sum(axis=0, keepdims=True)
-    # M_min = np.min(M)
-    # M_max = np.max(M)
-    # M = (M - M_min) / (M_max - M_min)
-    print(M.shape)
     S, index_signature = read_signature(signature_file)
-    # S = S.head(20)
-    # S = S[:20, :]
-    # M = M[:1, :]
-    print(M)
     O = read_opportunity(M, opportunity_file)
     lambd = get_lambda(data_type)
     E, loss, sum_expo, loss = _refit(M, S, O, lambd=lambd)
@@ -71,9 +62,9 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str, outp
 
 def get_lambda(data_type):
     if data_type == DataType.genome:
-        lambd = 15000
+        lambd = 10
     else:
-        lambd = 8
+        lambd = 10
     return lambd
 
 

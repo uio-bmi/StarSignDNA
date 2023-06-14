@@ -5,7 +5,7 @@ from scipy.stats import poisson, entropy
 from numpy import count_nonzero
 from .main_fixed_denovo import Frobinous, running_simulation_new, Frobinous_reconstuct
 from scipy import stats
-def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, n_iterations: int= 50000) -> np.ndarray:
+def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, n_iterations: int= 20000) -> np.ndarray:
     '''
     Refit the signatures to the data
     M: Matrix of observed mutational signatures
@@ -30,8 +30,9 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, 
     topt = np.float64("Inf")
     # topt= -math.inf
     tedge = np.float64("Inf")
+    # tedge = 1
     print("lambda is", lambd)
-    E= running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps=n_iterations)
+    E = running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps=n_iterations)
     if (np.any(E < 0)):
         E = np.maximum(E, 0)
     mse_e = Frobinous(M, S, E, O)
