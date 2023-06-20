@@ -4,7 +4,10 @@ import numpy as np
 import pandas as pd
 import warnings
 from scipy.stats import poisson
-from .main_fixed_denovo import Frobinous, running_simulation_new, convergence,cos_sim_matrix
+
+from .main_fixed_denovo import running_simulation_denovo, Frobinous, convergence, cos_sim_matrix, Frobinous
+# from .main_fixed_denovo_sig import Frobinous, convergence, cos_sim_matrix, \
+#     running_simulation_new, convergence1, running_simulation_new_E, running_simulation_new_S
 from numpy import linalg as LA
 from scipy import stats
 from scipy import stats
@@ -12,7 +15,7 @@ import scipy.spatial as sp
 from scipy.optimize import linear_sum_assignment
 
 
-def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,em_steps: int = 100,
+def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,em_steps: int = 10000,
            gd_steps: int = 50) -> np.ndarray:
     """
 
@@ -56,8 +59,18 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,
         if( np.any(E< 0)):
             E = np.maximum(E,0)
         print("EM step is :",i)
-        E = running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps=gd_steps)  # lambd)
-        S = running_simulation_new(S.T, M.T, E.T, O.T, topt, tedge, 0, n_steps=gd_steps).T
+        E = running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps=gd_steps)  # lambd)
+        mse_e = Frobinous(M, S, E, O)
+        loss = -poisson.logpmf(M, (E @ S) * O)
+        # print("MSE of E", mse_e)
+        # print("LOSS E", np.mean(loss))
+        # print("MEAN E", np.mean(E))
+        S = running_simulation_denovo(S.T, M.T, E.T, O.T, topt, tedge, 0, n_steps=gd_steps).T
+        mse_e = Frobinous(M, S, E, O)
+        loss = -poisson.logpmf(M, (E @ S) * O)
+        # print("MSE of S", mse_e)
+        # print("LOSS S", np.mean(loss))
+        # print("MEAN S", np.mean(S))
         if np.linalg.matrix_rank(S) < S.shape[0]:
             print(np.linalg.matrix_rank(S) < len(S))
             raise Exception("Degenerate Signature Found (rank(S)<len(S)), please provide a lower k")
@@ -65,23 +78,32 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,
         d_mse_s.append(mse_e)
         loss = -poisson.logpmf(M, (E @ S) * O)
         pmf_s.append(np.mean(loss))
-        mse_old = mse_e
-        pmf_old = np.mean(loss)
-        print("MSE of S", mse_e)
-        print("LOSS S", np.mean(loss))
-        conv = convergence(np.mean(loss), pmf_old)
+        # mse_old = mse_e
+        # pmf_old = np.mean(loss)
+        # print("MSE of S", mse_e)
+        # print("LOSS S", np.mean(loss))
+        # print("MEAN E", np.mean(E))
+        conv = convergence(np.mean(pmf_old), np.mean(loss))
+        # print("Conv", conv)
         if conv == True:
+            print(f"Cucumber converge: {conv}")
             if conv_iter_1 == -1:
                 conv_iter_1 = i
                 conv_check = 0
             else:
                 conv_check = conv_check + 1
         else:
+            print(f" Cucumber converged: {conv}")
             conv_iter_1 = -1
             conv_check = 0
-            if conv_check == 50:
-                print("The algorithm converge")
-                break
+        if conv_check == 2:
+            print("Thanks: Cucumber Algorithm converge converged")
+            break
+        mse_old = mse_e
+        pmf_old = np.mean(loss)
+    loss = -poisson.logpmf(M, (E @ S) * O)
+    print("PMF Finale", np.mean(loss))
+
     if (np.any(E < 0)):
         E = np.maximum(E, 0)
     E /= E.sum(axis=-1, keepdims=True)
@@ -90,4 +112,8 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,
         S = np.maximum(S, 0)
     S /= S.sum(axis=-1, keepdims=True)
     S[np.isnan(S)] = 0
+    # loss = -poisson.logpmf(M, (E @ S) * O)
+    mse_e = Frobinous(M, S, E, O)
+    print("MSE Finale", mse_e)
+    # print("PMF Finale", np.mean(loss))
     return np.array(E), np.array(S)

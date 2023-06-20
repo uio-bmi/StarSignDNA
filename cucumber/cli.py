@@ -93,7 +93,7 @@ def read_counts(matrix_file):
 
 
 def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposure: str, output_file_signature: str,
-           opportunity_file: str = None, cosmic_file: str = None, max_em_iterations: int = 100,
+           opportunity_file: str = None, cosmic_file: str = None, max_em_iterations: int = 10000,
            max_gd_iterations: int = 50):
     '''
     Parameters
@@ -127,7 +127,7 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposu
         cosmic = pd.read_csv(cosmic_file, delimiter=',')
         cos_similarity = cos_sim_matrix(S, cosmic)[0]
         # cos_similarity.to_csv(output_file,index=False,header=True,sep='\t')
-        cos_similarity.to_csv("output/cos_sim_skin_pcawg.txt", sep="\t")
+        cos_similarity.to_csv("output/cos_sim_brca_2_s5_l02_05_2000_te_6_2.txt", sep="\t")
         print(cos_similarity)
     np.savetxt(output_file_exposure, np.array(E))
     np.savetxt(output_file_signature, np.array(S))

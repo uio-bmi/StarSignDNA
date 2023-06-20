@@ -3,9 +3,9 @@ import warnings
 import math
 from scipy.stats import poisson, entropy
 from numpy import count_nonzero
-from .main_fixed_denovo import Frobinous, running_simulation_new, Frobinous_reconstuct
+from .main_fixed_denovo import Frobinous, Frobinous_reconstuct, running_simulation_refit
 from scipy import stats
-def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, n_iterations: int= 20000) -> np.ndarray:
+def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, n_iterations: int= 2000) -> np.ndarray:
     '''
     Refit the signatures to the data
     M: Matrix of observed mutational signatures
@@ -32,12 +32,12 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, 
     tedge = np.float64("Inf")
     # tedge = 1
     print("lambda is", lambd)
-    E = running_simulation_new(E, M, S, O, topt, tedge, lambd, n_steps=n_iterations)
+    E = running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps=n_iterations)
     if (np.any(E < 0)):
         E = np.maximum(E, 0)
     mse_e = Frobinous(M, S, E, O)
     loss = -poisson.logpmf(M, (E @ S) * O)
-    E[E<=1e-6]=0
+    # E[E<=1e-6]=0
     E /= E.sum(axis=-1, keepdims=True)
     E[np.isnan(E)] = 0
     sum_expo = E.sum(axis=0, keepdims=True) / len(E)
