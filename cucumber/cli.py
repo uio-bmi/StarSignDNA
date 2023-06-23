@@ -3,11 +3,15 @@ import numpy as np
 import pandas as pd
 from enum import Enum
 import time
+import os
+import bionumpy as bnp
 from numpy import linalg as LA
 from scipy import stats
 import scipy.spatial as sp
 from scipy.optimize import linear_sum_assignment
+
 np.random.seed(10000)
+
 
 # todo
 
@@ -34,29 +38,49 @@ def bootstrap(matrix_file: str, signature_file: str, output_file_exposure_avg: s
     np.savetxt(output_file_exposure_std, exposure_std, delimiter='\t')
 
 
-def refit(matrix_file: str, signature_file: str, output_file_exposure: str, output_file_exposure_avg: str,
+def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
           opportunity_file: str = None,
-          data_type: DataType = DataType.exome):
+          data_type: DataType = DataType.exome, n_bootstraps: int = 100, numeric_chromosomes: bool = False,
+          genotyped: bool = True,
+          output_file_exposure_avg=None):
     '''
     Parameters
     ----------
+    numeric_chromosomes
+    n_bootstraps
     matrix_file: str
     signature_file: str
     output_file_exposure: str
-    output_file_exposure_avg: str
     opportunity_file: str
     data_type: DataType
+    numeric_chromosomes: bool
+        True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'
+    genotyped: bool
+        True if the VCF file has genotype information for many samples
     '''
     start_time = time.time()
+    ref_genome = '/Users/bope/Documents/MutSig/scientafellow/packages/ref/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
+    file_name, file_extension = os.path.splitext(matrix_file)
+    if file_extension == '.vcf':
+        count_mutation(matrix_file, ref_genome, 'output/matrix.csv', numeric_chromosomes, genotyped)
+        matrix_file = 'output/matrix.csv'
     M = read_counts(matrix_file)
     S, index_signature = read_signature(signature_file)
     O = read_opportunity(M, opportunity_file)
     lambd = get_lambda(data_type)
-    E, loss, sum_expo, loss = _refit(M, S, O, lambd=lambd)
-    E = pd.DataFrame(data=E, columns=index_signature)
-    sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature)
-    E.to_csv(output_file_exposure, index=False, header=True, sep='\t')
-    sum_expo.to_csv(output_file_exposure_avg, index=False, header=True, sep='\t')
+    if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
+        E = _refit(M, S, O, lambd=lambd)[0]
+        E_std = _bootstrap(M, S, O, n_bootstraps, lambd=lambd)
+        E = [E, E_std]
+        E = pd.DataFrame(data=E, columns=index_signature, index=['Signature', 'std_dev'])
+        E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
+    else:
+        E = _refit(M, S, O, lambd=lambd)
+        sum_expo = E.sum(axis=0, keepdims=True) / len(E)
+        E = pd.DataFrame(data=E, columns=index_signature)
+        E.to_csv(output_file_exposure, index=False, header=True, sep='\t')
+        sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature)
+        sum_expo.to_csv(output_file_exposure_avg, index=False, header=True, sep='\t')
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
@@ -94,7 +118,8 @@ def read_counts(matrix_file):
 
 def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposure: str, output_file_signature: str,
            opportunity_file: str = None, cosmic_file: str = None, max_em_iterations: int = 10000,
-           max_gd_iterations: int = 50):
+           max_gd_iterations: int = 50, numeric_chromosomes: bool = False, genotyped: bool = True, file_extension=None,
+           ref_genome=None):
     '''
     Parameters
     ----------
@@ -107,8 +132,15 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposu
     cosmic_file: str
     max_em_iterations
     max_gd_iterations
+    numeric_chromosomes: bool
+        True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'
+    genotyped: bool
+        True if the VCF file has genotype information for many samples
     '''
     start_time = time.time()
+    if file_extension == '.vcf':
+        count_mutation(matrix_file, ref_genome, 'output/matrix.csv', numeric_chromosomes, genotyped)
+        matrix_file = 'output/matrix.csv'
     M = pd.read_csv(matrix_file, delimiter='\t').to_numpy().astype(float)
     n_samples = len(M)
     n_signatures = n_signatures
@@ -126,7 +158,6 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposu
     if cosmic_file is not None:
         cosmic = pd.read_csv(cosmic_file, delimiter=',')
         cos_similarity = cos_sim_matrix(S, cosmic)[0]
-        # cos_similarity.to_csv(output_file,index=False,header=True,sep='\t')
         cos_similarity.to_csv("output/cos_sim_brca_2_s5_l02_05_2000_te_6_2.txt", sep="\t")
         print(cos_similarity)
     np.savetxt(output_file_exposure, np.array(E))

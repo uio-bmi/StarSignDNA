@@ -156,7 +156,7 @@ def check(global_gradients):
 #     conv = np.all(np.abs(E_hat - E) / E < tol)
 #     return conv
 
-def convergence(E, E_hat, tol=10e-6):
+def convergence(E, E_hat, tol=10e-9):
     conv = []
     conv = np.abs((E_hat - E) / E)
     if conv < tol:
@@ -252,11 +252,13 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
     loss = 0
     # mse_hat = 0
     conv_iter_1 = 0
+    mse_old = np.inf
+    loss_hat = np.inf
     for step in range(n_steps):
         print("Gradient step is:", step)
         # print(E)
         mse_hat = mse_e
-        loss_hat = loss
+        # loss_hat = loss
         E_hat = E
         if (np.any(E < 0)):
             E = np.maximum(E, 0)
@@ -299,8 +301,12 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
                 loss = -poisson.logpmf(M, (E @ S) * O)
         if (np.any(E < 0)):
             E = np.maximum(E, 0)
-        # conv = convergence(np.mean(loss_hat), np.mean(loss))
-        conv = sparsity(E)
+        # print("PMF loss", np.mean(loss))
+        # print("PMF HAT_IN", loss_hat)
+        conv = convergence(np.mean(loss_hat), np.mean(loss))
+        loss_hat = np.mean(loss)
+        # print("PMF HAT", loss_hat)
+        # conv = sparsity(E)
         if conv == True:
             print(f"Cucumber converge: {conv}")
             if conv_iter_1 == -1:
@@ -313,8 +319,10 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
             conv_iter_1 = -1
             conv_check = 0
         if conv_check == 5:
-            print("Thanks: Cucumber Algorithm converge converged")
+            print("Thanks: Cucumber Algorithm converged")
             break
+        mse_old = mse_e
+        loss_hat = np.mean(loss)
     return E
 
 def running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps):
