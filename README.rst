@@ -28,3 +28,7 @@ Features
 
 * TODO
 * Getting started
+1. Install with pip:
+    $ pip install bionumpy
+
+
