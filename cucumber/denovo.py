@@ -62,15 +62,9 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,
         E = running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps=gd_steps)  # lambd)
         mse_e = Frobinous(M, S, E, O)
         loss = -poisson.logpmf(M, (E @ S) * O)
-        # print("MSE of E", mse_e)
-        # print("LOSS E", np.mean(loss))
-        # print("MEAN E", np.mean(E))
         S = running_simulation_denovo(S.T, M.T, E.T, O.T, topt, tedge, 0, n_steps=gd_steps).T
         mse_e = Frobinous(M, S, E, O)
         loss = -poisson.logpmf(M, (E @ S) * O)
-        # print("MSE of S", mse_e)
-        # print("LOSS S", np.mean(loss))
-        # print("MEAN S", np.mean(S))
         if np.linalg.matrix_rank(S) < S.shape[0]:
             print(np.linalg.matrix_rank(S) < len(S))
             raise Exception("Degenerate Signature Found (rank(S)<len(S)), please provide a lower k")
@@ -78,11 +72,6 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,
         d_mse_s.append(mse_e)
         loss = -poisson.logpmf(M, (E @ S) * O)
         pmf_s.append(np.mean(loss))
-        # mse_old = mse_e
-        # pmf_old = np.mean(loss)
-        # print("MSE of S", mse_e)
-        # print("LOSS S", np.mean(loss))
-        # print("MEAN E", np.mean(E))
         conv = convergence(np.mean(pmf_old), np.mean(loss))
         # print("Conv", conv)
         if conv == True:
