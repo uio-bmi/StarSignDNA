@@ -27,4 +27,4 @@ Features
 --------
 
 * TODO
-*Getting started
+* Getting started

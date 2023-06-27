@@ -18,6 +18,7 @@ np.random.seed(10000)
 
 # todo
 
+
 class DataType(str, Enum):
     exome = 'exome'
     genome = 'genome'
