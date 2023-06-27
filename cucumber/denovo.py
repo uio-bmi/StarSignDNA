@@ -15,7 +15,7 @@ import scipy.spatial as sp
 from scipy.optimize import linear_sum_assignment
 
 
-def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,em_steps: int = 10000,
+def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,em_steps: int = 2,
            gd_steps: int = 50) -> np.ndarray:
     """
 

@@ -156,7 +156,7 @@ def check(global_gradients):
 #     conv = np.all(np.abs(E_hat - E) / E < tol)
 #     return conv
 
-def convergence(E, E_hat, tol=10e-9):
+def convergence(E, E_hat, tol=10e-8):
     conv = []
     conv = np.abs((E_hat - E) / E)
     if conv < tol:
@@ -197,8 +197,8 @@ def Frobinous_reconstuct(M, S, E, O):
 #calculation of sparsity
 def sparsity(E):
     sparsity = 1.0 - (np.count_nonzero(E) / float(E.size))
-    print("The sparsity is :", sparsity)
-    if sparsity >= 0.7:
+    # print("The sparsity is :", sparsity)
+    if sparsity >= 0.8:
         return True
     else:
         return False
@@ -260,7 +260,7 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
         mse_hat = mse_e
         # loss_hat = loss
         E_hat = E
-        if (np.any(E < 0)):
+        if np.any(E < 0):
             E = np.maximum(E, 0)
         local_gradients = compute_local_gradients(E, M, S, O)
         hessians = compute_hessians(E, M, S)
@@ -274,39 +274,39 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
             mse_e = Frobinous(M, S, E, O)
             loss = -poisson.logpmf(M, (E @ S) * O)
             # min_expo_in = np.min(E)
-            if (np.any(E < 0)):
+            if np.any(E < 0):
                 E = np.maximum(E, 0)
         else:
-            if (np.any(E < 0)):
+            if np.any(E < 0):
                 E = np.maximum(E, 0)
             topt = compute_topt(E, local_gradients, global_gradients, hessians)
             tedge = compute_t_edge(E, global_gradients)
             newton_raphason = newton_raphson1(E, global_gradients, hessians)
             if newton_raphason is None:
-                if (np.any(E < 0)):
+                if np.any(E < 0):
                     E = np.maximum(E, 0)
                 minimun_topt_tedge = min_topt_tedge(topt, tedge)
                 E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
                 mse_e = Frobinous(M, S, E, O)
                 loss = -poisson.logpmf(M, (E @ S) * O)
-                if (np.any(E < 0)):
+                if np.any(E < 0):
                     E = np.maximum(E, 0)
             else:
-                if (np.any(E < 0)):
+                if np.any(E < 0):
                     E = np.maximum(E, 0)
                 topt = compute_topt(E, local_gradients, global_gradients, hessians)
                 tedge = compute_t_edge(E, global_gradients)
                 E = update_exposure_NR(E, global_gradients, topt, tedge, newton_raphason)
                 mse_e = Frobinous(M, S, E, O)
                 loss = -poisson.logpmf(M, (E @ S) * O)
-        if (np.any(E < 0)):
+        if np.any(E < 0):
             E = np.maximum(E, 0)
         # print("PMF loss", np.mean(loss))
         # print("PMF HAT_IN", loss_hat)
-        conv = convergence(np.mean(loss_hat), np.mean(loss))
+        # conv = convergence(np.mean(loss_hat), np.mean(loss))
         loss_hat = np.mean(loss)
         # print("PMF HAT", loss_hat)
-        # conv = sparsity(E)
+        conv = sparsity(E)
         if conv == True:
             print(f"Cucumber converge: {conv}")
             if conv_iter_1 == -1:
@@ -336,7 +336,7 @@ def running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps):
         loss_hat = loss
         # print("Step is:", step)
         # E_hat = E
-        if(np.any(E < 0)):
+        if np.any(E < 0):
             E = np.maximum(E, 0)
         local_gradients = compute_local_gradients(E, M, S, O)
         hessians = compute_hessians(E, M, S)
@@ -345,41 +345,25 @@ def running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps):
         tedge = compute_t_edge_denovo(E, global_gradients)
         minimun_topt_tedge = min_topt_tedge(topt, tedge)
         if topt >= tedge:
-            if(np.any(E < 0)):
+            if np.any(E < 0):
                 E = np.maximum(E, 0)
             E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
             mse_e = Frobinous(M, S, E, O)
             loss = -poisson.logpmf(M, (E @ S) * O)
         else:
-            if(np.any(E < 0)):
+            if np.any(E < 0):
                 E = np.maximum(E, 0)
             newton_raphason = newton_raphson1(E, global_gradients, hessians)
             if newton_raphason is None:
-                if(np.any(E < 0)):
+                if np.any(E < 0):
                     E = np.maximum(E, 0)
                 E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
             else:
-                if(np.any(E < 0)):
+                if np.any(E < 0):
                     E = np.maximum(E, 0)
                 E = update_exposure_NR(E, global_gradients, topt, tedge, newton_raphason)
                 mse_e = Frobinous(M, S, E, O)
                 loss = -poisson.logpmf(M, (E @ S) * O)
-        if(np.any(E < 0)):
+        if np.any(E < 0):
             E = np.maximum(E, 0)
-        # conv = sparsity(E)
-        # conv = convergence(np.mean(loss_hat), np.mean(loss))
-        # if conv == True:
-        #     print(f"Cucumber converge: {conv}")
-        #     if conv_iter_1 == -1:
-        #         conv_iter_1 = step
-        #         conv_check = 0
-        #     else:
-        #         conv_check = conv_check + 1
-        # else:
-        #     print(f" Cucumber converged: {conv}")
-        #     conv_iter_1 = -1
-        #     conv_check = 0
-        # if conv_check == 2:
-        #     print("Thanks: Cucumber Algorithm converge converged")
-        #     break
     return E

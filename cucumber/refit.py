@@ -16,7 +16,7 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, 
     # if O is None:
     #     O = np.ones((n_samples, n_mutations), dtype=int)
     # M, S, O = (np.asarray(a) for a in (M, S, O))
-    #warnings.filterwarnings('ignore')
+    warnings.filterwarnings('ignore')
     np.random.seed(10000)
     n_samples = len(M)
     n_signatures = len(S)
