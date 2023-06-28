@@ -166,7 +166,7 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
           opportunity_file: str = None,
           data_type: DataType = DataType.exome, n_bootstraps: int = 100, numeric_chromosomes: bool = False,
           genotyped: bool = True,
-          output_file_exposure_avg=None):
+          output_file_exposure_plot=None):
     '''
     Parameters
     ----------
@@ -199,7 +199,7 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
         E = pd.DataFrame(data=E, columns=index_signature, index=['Signature', 'std_dev'])
         E.drop(columns=E.columns[0], axis=1, inplace=True)
         plot = singleplot(E)
-        plot.savefig("output/single_l10_100.png", dpi=600)
+        plot.savefig(output_file_exposure_plot, dpi=600)
         E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
     else:
         E = _refit(M, S, O, lambd=lambd)
