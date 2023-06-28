@@ -32,7 +32,7 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,
          Number of steps in the gradient descent for E and S
     """
 
-    #warnings.filterwarnings('ignore')
+    warnings.filterwarnings('ignore')
     #time.sleep(10)
     M = np.asanyarray(M)
     n_samples, n_mutations = M.shape
