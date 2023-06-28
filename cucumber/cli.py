@@ -100,6 +100,67 @@ def cohort_violin(file):
     plt.xlabel("Signature exposures")
     return plt
 
+def plotprofile(data):
+    plt.style.use('default')
+    # data.drop(columns=data.columns[0], axis=1, inplace=True)
+    data = data.T
+    header = data.index
+    data_list = data.values.tolist()
+    len(data_list)
+    header1 = list(header)
+    mutation_categories = np.arange(1, 97)
+    mutation_labels = [
+        'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A',
+        'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A',
+        'C>G', 'C>G', 'C>G', 'C>G', 'C>G', 'C>G', 'C>G', 'C>G',
+        'C>G', 'C>G', 'C>G', 'C>G', 'C>G', 'C>G', 'C>G', 'C>G',
+        'C>T', 'C>T', 'C>T', 'C>T', 'C>T', 'C>T', 'C>T', 'C>T',
+        'C>T', 'C>T', 'C>T', 'C>T', 'C>T', 'C>T', 'C>T', 'C>T',
+        'T>A', 'T>A', 'T>A', 'T>A', 'T>A', 'T>A', 'T>A', 'T>A',
+        'T>A', 'T>A', 'T>A', 'T>A', 'T>A', 'T>A', 'T>A', 'T>A',
+        'T>C', 'T>C', 'T>C', 'T>C', 'T>C', 'T>C', 'T>C', 'T>C',
+        'T>C', 'T>C', 'T>C', 'T>C', 'T>C', 'T>C', 'T>C', 'T>C',
+        'T>G', 'T>G', 'T>G', 'T>G', 'T>G', 'T>G', 'T>G', 'T>G',
+        'T>G', 'T>G', 'T>G', 'T>G', 'T>G', 'T>G', 'T>G', 'T>G'
+    ]
+
+
+    color_groups = {
+        'C>A': 'red',
+        'C>G': 'blue',
+        'C>T': 'green',
+        'T>A': 'orange',
+        'T>C': 'purple',
+        'T>G': 'brown'
+    }
+
+    mutation_colors = [color_groups[label] for label in mutation_labels]
+
+    mutation_matrix = np.zeros((1, 96))
+    fig = plt.figure(figsize=(15, 8))
+
+    for id_x in range(len(data_list)):
+        plt.subplot(2, 2, id_x+1)
+        plt.subplots_adjust(left=0.1,
+                        bottom=0.1,
+                        right=0.9,
+                        top=0.9,
+                        wspace=0.4,
+                        hspace=0.4)
+        plt.bar(mutation_categories, data_list[id_x], color=mutation_colors)
+        plt.xlabel('Mutation Categories')
+        plt.ylabel('Mutations')
+        plt.title(f'{header[id_x]}')
+        plt.xticks(mutation_categories[::16], mutation_labels[::16], ha='center')
+        plt.xlim(1, 97)
+        plt.grid(b=True, color='grey', linestyle='-.', linewidth=0.5, alpha=0.2)
+        legend_handles = [plt.Rectangle((0,0),1,1, color=color) for color in color_groups.values()]
+        legend_labels = color_groups.keys()
+        plt.legend(legend_handles, legend_labels)
+    return plt
+
+
+
 
 def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
           opportunity_file: str = None,
@@ -138,7 +199,7 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
         E = pd.DataFrame(data=E, columns=index_signature, index=['Signature', 'std_dev'])
         E.drop(columns=E.columns[0], axis=1, inplace=True)
         plot = singleplot(E)
-        plot.savefig("output/single_spar2.png", dpi=600)
+        plot.savefig("output/single_l10_100.png", dpi=600)
         E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
     else:
         E = _refit(M, S, O, lambd=lambd)
@@ -164,7 +225,7 @@ def get_lambda(data_type):
     if data_type == DataType.genome:
         lambd = 10
     else:
-        lambd = 10
+        lambd = 5
     return lambd
 
 
@@ -244,6 +305,10 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float, output_file_exposu
     label = list(mutation_labels)
     S = pd.DataFrame(S, columns=Sig, index= label)
     S.to_csv("output/d_sig1.txt", sep = '\t' , index = label)
+    print(S)
+    deno_figure = plotprofile(S)
+    deno_figure.savefig("output/denovo_figure.png", dpi=600)
+
     np.savetxt(output_file_exposure, np.array(E))
     np.savetxt(output_file_signature, np.array(S))
     print("--- %s seconds ---" % (time.time() - start_time))
