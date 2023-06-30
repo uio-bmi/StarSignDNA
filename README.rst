@@ -72,7 +72,7 @@ The standard deviation is computed using a default of 100 bootstraps.
    $exposures_cohort_top_5: a plot showing the top 5 exposures
    $ exposures_cohort_dotplot: a plot showing a dotplot of the exposure matrix
 ::
-$exposures_cohort_variance: a plot showing the variance of each sample and the mean exposures
+   $exposures_cohort_variance: a plot showing the variance of each sample and the mean exposures
 .. image:: output/exposures_cohort_variance.png
    :width: 600
 Running mutational signature de novo algorithm:
