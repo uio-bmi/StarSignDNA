@@ -44,6 +44,32 @@ Commands:
   refit  Parameters ---numeric_chromosomes n_bootstraps
   
 Running mutational signature refit algorithm
+::
+$cucumber refit --help
+Usage: cucumber refit [OPTIONS] MATRIX_FILE SIGNATURE_FILE
+                      OUTPUT_FILE_EXPOSURE OUTPUT_FILE_EXPOSURE_AVG
+
+  Parameters ---------- numeric_chromosomes n_bootstraps matrix_file: str
+  signature_file: str output_file_exposure: str opportunity_file: str
+  data_type: DataType numeric_chromosomes: bool     True if chromosome names
+  in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3' genotyped: bool
+  True if the VCF file has genotype information for many samples
+
+Arguments:
+  MATRIX_FILE               [required]
+  SIGNATURE_FILE            [required]
+  OUTPUT_FILE_EXPOSURE      [required]
+  OUTPUT_FILE_EXPOSURE_AVG  [required]
+
+Options:
+  --opportunity-file TEXT
+  --data-type [exome|genome]      [default: DataType.exome]
+  --n-bootstraps INTEGER          [default: 100]
+  --numeric-chromosomes / --no-numeric-chromosomes
+                                  [default: no-numeric-chromosomes]
+  --genotyped / --no-genotyped    [default: genotyped]
+  --output-file-exposure-plot TEXT
+  --help                          Show this message and exit.
 
 Contact
 -------
