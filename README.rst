@@ -29,6 +29,11 @@ Features
 * TODO
 # Getting started
 1. Install with pip:
+```ruby
+require 'redcarpet'
+markdown = Redcarpet.new("Hello World!")
+puts markdown.to_html
+```
     $ pip install cucumber
 
 
