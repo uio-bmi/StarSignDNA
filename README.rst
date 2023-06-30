@@ -45,7 +45,7 @@ Commands:
   
 Running mutational signature refit algorithm:
 -----------------------------------------------
-
+The refitting algorithm take as input a mutational catalog and cosmic mutational signature file
 ::
   %cucumber refit --help
  
