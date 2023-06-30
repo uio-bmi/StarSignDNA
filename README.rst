@@ -101,6 +101,9 @@ Input mutational catalogue needs to be provided in the dataset folder
 Running the grid search
 ::
  % snakemake -j num_cpu 
+To chet manually the optimal $k$ and $lambda$ from the output
+::
+ % sort -k3n,3 results/data/all.csv
 Contact
 -------
 
