@@ -45,6 +45,7 @@ Commands:
   
 Running mutational signature refit algorithm:
 -----------------------------------------------
+
 ::
   %cucumber refit --help
  
