@@ -37,9 +37,11 @@ To obtain help :
    $ cucumber --help
 .. code-block:: console
 Commands:
+  .. code-block:: console
   count-mutation  Count mutation types in a VCF file.
   denovo          Parameters ---------- matrix_file: str n_signatures:...
   refit           Parameters ---------- numeric_chromosomes n_bootstraps...
+  .. code-block:: console
 Running mutational signature refit algorithm
 
 Contact
