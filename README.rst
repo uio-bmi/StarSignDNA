@@ -31,7 +31,7 @@ Getting started
 ---------------
 
 Install cucumber by running:
-   pip install cucumber
+   |pip install cucumber
 Running mutational signature refit algorithm
 
 Contact
