@@ -86,6 +86,10 @@ The de novo algorithm takes as input a mutational catalog and inferred the expos
 ::
   % Snakefile
   % snakemake -j num_cpu 
+..code-block::bash
+  localrules: all
+     ks = list(range(3, 6))
+     lambdas = [0, 0.01,0.05, 0.1, 0.2]
 
 
 Contact
