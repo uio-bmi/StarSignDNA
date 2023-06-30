@@ -17,6 +17,7 @@ Cucumber
 
 
 Mutation signature analysis package
+-----------------------------------
 
 
 * Free software: MIT license
@@ -30,6 +31,10 @@ Getting started
 ---------------
 
 Install cucumber by running:
-$pip install cucumber
+   pip install cucumber
 
 
+Contact
+-------
+
+Maintainer Name - chrisbop@uio.no
