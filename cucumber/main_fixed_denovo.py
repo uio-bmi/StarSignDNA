@@ -30,7 +30,9 @@ def compute_hessians(E, M, S):
 
 # function to compute the global gradient
 def compute_global_gradient(E, local_gradients, lambd):
-    # print(local_gradients)
+    # print("gradient",local_gradients)
+    # print("EEEE",np.sign(E) )
+    # print("LAAA", lambd)
     cond_a = local_gradients - lambd * np.sign(E)
     cond_b = local_gradients - lambd * np.sign(local_gradients)
     cond_c = 0
@@ -62,7 +64,7 @@ def compute_t_edge(E, global_gradients):
     if not np.any(mask):
         return np.inf
     assert np.all(global_gradients_conv != 0)
-    return np.min(-(E_Conv / global_gradients_conv)[mask]) + 10e-10
+    return np.min(-(E_Conv / global_gradients_conv)[mask])  + 10e-10
 
 def compute_topt_denovo(E, local_gradients, global_gradients, hessians):
     # print("local",hessians)
@@ -156,7 +158,7 @@ def check(global_gradients):
 #     conv = np.all(np.abs(E_hat - E) / E < tol)
 #     return conv
 
-def convergence(E, E_hat, tol=10e-8):
+def convergence(E, E_hat, tol=10e-9):
     conv = []
     conv = np.abs((E_hat - E) / E)
     if conv < tol:
@@ -252,6 +254,7 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
     loss = 0
     # mse_hat = 0
     conv_iter_1 = 0
+    conv_check = 0
     mse_old = np.inf
     loss_hat = np.inf
     for step in range(n_steps):
@@ -330,6 +333,8 @@ def running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps):
     pmf_s = []
     mse_e = 0
     loss = 0
+    conv_check = 0
+    conv_iter_1 = 0
     mse_hat = mse_e
     for step in range(n_steps):
         mse_hat = mse_e

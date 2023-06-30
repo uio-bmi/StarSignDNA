@@ -1,0 +1,67 @@
+# Mutation Signature
+#script to run cross-validation to select the optimal pairwise number of signature (k) and the regularisation parameters (lambda)
+# from snakemake.utils import R
+import pandas as pd
+import numpy as np
+
+wildcard_constraints:
+    dataset="data",
+    fold="\d+"
+
+localrules: all
+ks = list(range(2, 10))
+lambdas = [0, 0.01,0.05, 0.1, 0.2]
+
+rule all:
+    input:
+        [f"results/{dataset}/all.csv" for dataset in ["data"]]
+
+rule total_file:
+    input:
+        [f"results/{{dataset}}/total/{k}/{Lambda}/logpmf.txt" for k in ks for Lambda in lambdas]
+    output:
+        "results/{dataset}/all.csv"
+    run:
+        with open(output[0], "w") as outfile:
+            outfile.write("#k\tLambda\tlogpmf\n")
+            for f, (k, Lambda) in zip(input, [(k, Lambda) for k in ks for Lambda in lambdas]):
+                logpmf = open(f).read()
+                outfile.write(f"{k}\t{Lambda}\t{logpmf}\n")
+
+rule cv:
+    input:
+        "results/{dataset}/{fold}/train_m.csv"
+    output:
+        "results/{dataset}/{fold}/{k}/{Lambda}/e.csv",
+        "results/{dataset}/{fold}/{k}/{Lambda}/s.csv",
+    script:
+        "script/ten_fold.py"
+
+rule test_train_split:
+    input:
+        "results/{dataset}/m.csv"
+    output:
+        trains = ["results/{dataset}/{fold}/train_m.csv" for fold in range(5)],
+        tests = ["results/{dataset}/{fold}/test_m.csv" for fold in range(5)]
+    script:
+        "script/train_test_split.py"
+
+rule evaluate:
+    input:
+        "results/{dataset}/{fold}/test_m.csv",
+        "results/{dataset}/{fold}/{k}/{Lambda}/s.csv",
+    output:
+        "results/{dataset}/{fold}/{k}/{Lambda}/e_new.csv",
+        "results/{dataset}/{fold}/{k}/{Lambda}/logpmf.txt"
+    script:
+        "script/evaluate.py"
+
+rule ten_fold:
+    input:
+        [f"results/{{dataset}}/{fold}/{{k}}/{{Lambda}}/logpmf.txt" for fold in range(5)]
+    output:
+        "results/{dataset}/total/{k}/{Lambda}/logpmf.txt"
+    run:
+        with open(output[0], "w") as f:
+            f.write(
+                str(sum(float(open(i).read()) for i in input)/5))

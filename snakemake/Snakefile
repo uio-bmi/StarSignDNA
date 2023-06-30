@@ -1,16 +1,16 @@
 # Mutation Signature
-#script to run cross-validation to select the optimal pairwise number of signature (k) and the regularisation parameters (lambda)
-# from snakemake.utils import R
 import pandas as pd
 import numpy as np
+
 
 wildcard_constraints:
     dataset="data",
     fold="\d+"
 
+
 localrules: all
-ks = list(range(2, 4))
-lambdas = [0, 0.01]
+ks = list(range(3, 6))
+lambdas = [0, 0.01,0.05, 0.1, 0.2]
 
 rule all:
     input:
@@ -39,7 +39,7 @@ rule cv:
 
 rule test_train_split:
     input:
-        "results/{dataset}/hartwig_skin_20.txt"
+        "results/{dataset}/pcawg_skin_21.txt"
     output:
         trains = ["results/{dataset}/{fold}/train_m.csv" for fold in range(5)],
         tests = ["results/{dataset}/{fold}/test_m.csv" for fold in range(5)]
@@ -55,6 +55,7 @@ rule evaluate:
         "results/{dataset}/{fold}/{k}/{Lambda}/logpmf.txt"
     script:
         "script/evaluate.py"
+
 
 rule ten_fold:
     input:

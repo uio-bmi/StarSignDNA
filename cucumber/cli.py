@@ -7,6 +7,7 @@ import os
 from matplotlib import pyplot as plt
 import seaborn as sns
 import string
+import multiprocessing
 import bionumpy as bnp
 from numpy import linalg as LA
 from scipy import stats
@@ -138,9 +139,13 @@ def plotprofile(data):
 
     mutation_matrix = np.zeros((1, 96))
     fig = plt.figure(figsize=(15, 8))
-
+    n_rows = len(data_list)
+    fig_rows = round(n_rows/2,0)
+    # print("NNN", fig_rows)
+    fi_rows_rest = len(data_list) % 2
+    # print("RRR", fi_rows_rest)
     for id_x in range(len(data_list)):
-        plt.subplot(2, 2, id_x+1)
+        plt.subplot(fig_rows + fi_rows_rest,2,  id_x+1)
         plt.subplots_adjust(left=0.1,
                         bottom=0.1,
                         right=0.9,
@@ -162,9 +167,9 @@ def plotprofile(data):
 
 
 
-def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
+def refit(matrix_file: str, signature_file: str, output_file_exposure: str, output_file_exposure_avg:str,
           opportunity_file: str = None,
-          data_type: DataType = DataType.exome, n_bootstraps: int = 100, numeric_chromosomes: bool = False,
+          data_type: DataType = DataType.exome, n_bootstraps: int = 50, numeric_chromosomes: bool = False,
           genotyped: bool = True,
           output_file_exposure_plot=None):
     '''
@@ -199,10 +204,11 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
         E = pd.DataFrame(data=E, columns=index_signature, index=['Signature', 'std_dev'])
         E.drop(columns=E.columns[0], axis=1, inplace=True)
         plot = singleplot(E)
-        plot.savefig("output/exposures_single_dotplot.png", dpi=600)
         E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
+        plot.savefig("output/exposures_single_dotplot_skin.png", dpi=600)
+
     else:
-        E = _refit(M, S, O, lambd=lambd)
+        E, loss = _refit(M, S, O, lambd=lambd)
         sum_expo = E.sum(axis=0, keepdims=True) / len(E)
         E = pd.DataFrame(data=E, columns=index_signature)
         E.to_csv(output_file_exposure, index=False, header=True, sep='\t')
@@ -252,9 +258,11 @@ def read_signature(signature_file):
 def read_counts(matrix_file):
     return pd.read_csv(matrix_file, delimiter='\t').to_numpy().astype(float)
 
+def get_num_cpus():
+    return multiprocessing.cpu_count()
 
 def denovo(matrix_file: str, n_signatures: int, lambd: float,
-           opportunity_file: str = None, cosmic_file: str = None, max_em_iterations: int = 2,
+           opportunity_file: str = None, cosmic_file: str = None, max_em_iterations: int = 10000,
            max_gd_iterations: int = 50, numeric_chromosomes: bool = False, genotyped: bool = True, file_extension=None,
            ref_genome=None):
     '''
@@ -275,6 +283,8 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,
         True if the VCF file has genotype information for many samples
     '''
     start_time = time.time()
+    num_cpus = get_num_cpus()
+    print(f"Number of CPUs: {num_cpus}")
     if file_extension == '.vcf':
         count_mutation(matrix_file, ref_genome, 'output/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = 'output/matrix.csv'
@@ -295,7 +305,7 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,
     if cosmic_file is not None:
         cosmic = pd.read_csv(cosmic_file, delimiter=',')
         cos_similarity = cos_sim_matrix(S, cosmic)[0]
-        cos_similarity.to_csv("output/cosine_similarity_denovo.txt", sep="\t")
+        cos_similarity.to_csv("output/cosine_similarity_denovo_k4_01.txt", sep="\t")
         # print(cos_similarity)
     S = np.transpose(S)
     alphabet = list(string.ascii_uppercase)
@@ -307,10 +317,10 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,
     S.to_csv("output/denovo_signature.txt", sep = '\t' , index = label)
     # print(S)
     deno_figure = plotprofile(S)
-    deno_figure.savefig("output/denovo_figure.png", dpi=600)
+    deno_figure.savefig("output/denovo_figure_k4.png", dpi=600)
     E = pd.DataFrame(E, columns=Sig, index= None)
     # np.savetxt(output_file_exposure, np.array(E))
-    E.to_csv("output/denovo_exposures.txt", sep = '\t', index = None)
+    E.to_csv("output/denovo_exposures_k4.txt", sep = '\t', index = None)
     # np.savetxt(output_file_signature, np.array(S))
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -324,4 +334,13 @@ def main():
 
 
 if __name__ == "__main__":
+    # num_cpus = 4  # Define the number of CPUs to use
+    # processes = []
+    # for _ in range(num_cpus):
+    #     process = multiprocessing.Process(target=denovo)
+    #     processes.append(process)
+    #     process.start()
+    # for process in processes:
+    #     process.join()
     main()
+

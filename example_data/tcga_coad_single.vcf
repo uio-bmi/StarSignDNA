@@ -1,0 +1,397 @@
+##fileformat=VCFv4.2
+##reference=file:///Users/sumanak/Documents/PhD/Paper1/reference/GRCh38/vep/tmp/Homo_sapiens.GRCh38.dna.primary_assembly.fa
+##contig=<ID=1,length=248956422>
+##contig=<ID=2,length=242193529>
+##contig=<ID=3,length=198295559>
+##contig=<ID=4,length=190214555>
+##contig=<ID=5,length=181538259>
+##contig=<ID=6,length=170805979>
+##contig=<ID=7,length=159345973>
+##contig=<ID=8,length=145138636>
+##contig=<ID=9,length=138394717>
+##contig=<ID=10,length=133797422>
+##contig=<ID=11,length=135086622>
+##contig=<ID=12,length=133275309>
+##contig=<ID=13,length=114364328>
+##contig=<ID=14,length=107043718>
+##contig=<ID=15,length=101991189>
+##contig=<ID=16,length=90338345>
+##contig=<ID=17,length=83257441>
+##contig=<ID=18,length=80373285>
+##contig=<ID=19,length=58617616>
+##contig=<ID=20,length=64444167>
+##contig=<ID=21,length=46709983>
+##contig=<ID=22,length=50818468>
+##contig=<ID=GL000008.2,length=209709>
+##contig=<ID=GL000009.2,length=201709>
+##contig=<ID=GL000194.1,length=191469>
+##contig=<ID=GL000195.1,length=182896>
+##contig=<ID=GL000205.2,length=185591>
+##contig=<ID=GL000208.1,length=92689>
+##contig=<ID=GL000213.1,length=164239>
+##contig=<ID=GL000214.1,length=137718>
+##contig=<ID=GL000216.2,length=176608>
+##contig=<ID=GL000218.1,length=161147>
+##contig=<ID=GL000219.1,length=179198>
+##contig=<ID=GL000220.1,length=161802>
+##contig=<ID=GL000221.1,length=155397>
+##contig=<ID=GL000224.1,length=179693>
+##contig=<ID=GL000225.1,length=211173>
+##contig=<ID=GL000226.1,length=15008>
+##contig=<ID=KI270302.1,length=2274>
+##contig=<ID=KI270303.1,length=1942>
+##contig=<ID=KI270304.1,length=2165>
+##contig=<ID=KI270305.1,length=1472>
+##contig=<ID=KI270310.1,length=1201>
+##contig=<ID=KI270311.1,length=12399>
+##contig=<ID=KI270312.1,length=998>
+##contig=<ID=KI270315.1,length=2276>
+##contig=<ID=KI270316.1,length=1444>
+##contig=<ID=KI270317.1,length=37690>
+##contig=<ID=KI270320.1,length=4416>
+##contig=<ID=KI270322.1,length=21476>
+##contig=<ID=KI270329.1,length=1040>
+##contig=<ID=KI270330.1,length=1652>
+##contig=<ID=KI270333.1,length=2699>
+##contig=<ID=KI270334.1,length=1368>
+##contig=<ID=KI270335.1,length=1048>
+##contig=<ID=KI270336.1,length=1026>
+##contig=<ID=KI270337.1,length=1121>
+##contig=<ID=KI270338.1,length=1428>
+##contig=<ID=KI270340.1,length=1428>
+##contig=<ID=KI270362.1,length=3530>
+##contig=<ID=KI270363.1,length=1803>
+##contig=<ID=KI270364.1,length=2855>
+##contig=<ID=KI270366.1,length=8320>
+##contig=<ID=KI270371.1,length=2805>
+##contig=<ID=KI270372.1,length=1650>
+##contig=<ID=KI270373.1,length=1451>
+##contig=<ID=KI270374.1,length=2656>
+##contig=<ID=KI270375.1,length=2378>
+##contig=<ID=KI270376.1,length=1136>
+##contig=<ID=KI270378.1,length=1048>
+##contig=<ID=KI270379.1,length=1045>
+##contig=<ID=KI270381.1,length=1930>
+##contig=<ID=KI270382.1,length=4215>
+##contig=<ID=KI270383.1,length=1750>
+##contig=<ID=KI270384.1,length=1658>
+##contig=<ID=KI270385.1,length=990>
+##contig=<ID=KI270386.1,length=1788>
+##contig=<ID=KI270387.1,length=1537>
+##contig=<ID=KI270388.1,length=1216>
+##contig=<ID=KI270389.1,length=1298>
+##contig=<ID=KI270390.1,length=2387>
+##contig=<ID=KI270391.1,length=1484>
+##contig=<ID=KI270392.1,length=971>
+##contig=<ID=KI270393.1,length=1308>
+##contig=<ID=KI270394.1,length=970>
+##contig=<ID=KI270395.1,length=1143>
+##contig=<ID=KI270396.1,length=1880>
+##contig=<ID=KI270411.1,length=2646>
+##contig=<ID=KI270412.1,length=1179>
+##contig=<ID=KI270414.1,length=2489>
+##contig=<ID=KI270417.1,length=2043>
+##contig=<ID=KI270418.1,length=2145>
+##contig=<ID=KI270419.1,length=1029>
+##contig=<ID=KI270420.1,length=2321>
+##contig=<ID=KI270422.1,length=1445>
+##contig=<ID=KI270423.1,length=981>
+##contig=<ID=KI270424.1,length=2140>
+##contig=<ID=KI270425.1,length=1884>
+##contig=<ID=KI270429.1,length=1361>
+##contig=<ID=KI270435.1,length=92983>
+##contig=<ID=KI270438.1,length=112505>
+##contig=<ID=KI270442.1,length=392061>
+##contig=<ID=KI270448.1,length=7992>
+##contig=<ID=KI270465.1,length=1774>
+##contig=<ID=KI270466.1,length=1233>
+##contig=<ID=KI270467.1,length=3920>
+##contig=<ID=KI270468.1,length=4055>
+##contig=<ID=KI270507.1,length=5353>
+##contig=<ID=KI270508.1,length=1951>
+##contig=<ID=KI270509.1,length=2318>
+##contig=<ID=KI270510.1,length=2415>
+##contig=<ID=KI270511.1,length=8127>
+##contig=<ID=KI270512.1,length=22689>
+##contig=<ID=KI270515.1,length=6361>
+##contig=<ID=KI270516.1,length=1300>
+##contig=<ID=KI270517.1,length=3253>
+##contig=<ID=KI270518.1,length=2186>
+##contig=<ID=KI270519.1,length=138126>
+##contig=<ID=KI270521.1,length=7642>
+##contig=<ID=KI270522.1,length=5674>
+##contig=<ID=KI270528.1,length=2983>
+##contig=<ID=KI270529.1,length=1899>
+##contig=<ID=KI270530.1,length=2168>
+##contig=<ID=KI270538.1,length=91309>
+##contig=<ID=KI270539.1,length=993>
+##contig=<ID=KI270544.1,length=1202>
+##contig=<ID=KI270548.1,length=1599>
+##contig=<ID=KI270579.1,length=31033>
+##contig=<ID=KI270580.1,length=1553>
+##contig=<ID=KI270581.1,length=7046>
+##contig=<ID=KI270582.1,length=6504>
+##contig=<ID=KI270583.1,length=1400>
+##contig=<ID=KI270584.1,length=4513>
+##contig=<ID=KI270587.1,length=2969>
+##contig=<ID=KI270588.1,length=6158>
+##contig=<ID=KI270589.1,length=44474>
+##contig=<ID=KI270590.1,length=4685>
+##contig=<ID=KI270591.1,length=5796>
+##contig=<ID=KI270593.1,length=3041>
+##contig=<ID=KI270706.1,length=175055>
+##contig=<ID=KI270707.1,length=32032>
+##contig=<ID=KI270708.1,length=127682>
+##contig=<ID=KI270709.1,length=66860>
+##contig=<ID=KI270710.1,length=40176>
+##contig=<ID=KI270711.1,length=42210>
+##contig=<ID=KI270712.1,length=176043>
+##contig=<ID=KI270713.1,length=40745>
+##contig=<ID=KI270714.1,length=41717>
+##contig=<ID=KI270715.1,length=161471>
+##contig=<ID=KI270716.1,length=153799>
+##contig=<ID=KI270717.1,length=40062>
+##contig=<ID=KI270718.1,length=38054>
+##contig=<ID=KI270719.1,length=176845>
+##contig=<ID=KI270720.1,length=39050>
+##contig=<ID=KI270721.1,length=100316>
+##contig=<ID=KI270722.1,length=194050>
+##contig=<ID=KI270723.1,length=38115>
+##contig=<ID=KI270724.1,length=39555>
+##contig=<ID=KI270725.1,length=172810>
+##contig=<ID=KI270726.1,length=43739>
+##contig=<ID=KI270727.1,length=448248>
+##contig=<ID=KI270728.1,length=1872759>
+##contig=<ID=KI270729.1,length=280839>
+##contig=<ID=KI270730.1,length=112551>
+##contig=<ID=KI270731.1,length=150754>
+##contig=<ID=KI270732.1,length=41543>
+##contig=<ID=KI270733.1,length=179772>
+##contig=<ID=KI270734.1,length=165050>
+##contig=<ID=KI270735.1,length=42811>
+##contig=<ID=KI270736.1,length=181920>
+##contig=<ID=KI270737.1,length=103838>
+##contig=<ID=KI270738.1,length=99375>
+##contig=<ID=KI270739.1,length=73985>
+##contig=<ID=KI270740.1,length=37240>
+##contig=<ID=KI270741.1,length=157432>
+##contig=<ID=KI270742.1,length=186739>
+##contig=<ID=KI270743.1,length=210658>
+##contig=<ID=KI270744.1,length=168472>
+##contig=<ID=KI270745.1,length=41891>
+##contig=<ID=KI270746.1,length=66486>
+##contig=<ID=KI270747.1,length=198735>
+##contig=<ID=KI270748.1,length=93321>
+##contig=<ID=KI270749.1,length=158759>
+##contig=<ID=KI270750.1,length=148850>
+##contig=<ID=KI270751.1,length=150742>
+##contig=<ID=KI270752.1,length=27745>
+##contig=<ID=KI270753.1,length=62944>
+##contig=<ID=KI270754.1,length=40191>
+##contig=<ID=KI270755.1,length=36723>
+##contig=<ID=KI270756.1,length=79590>
+##contig=<ID=KI270757.1,length=71251>
+##contig=<ID=MT,length=16569>
+##contig=<ID=X,length=156040895>
+##contig=<ID=Y,length=57227415>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic Depths of REF and ALT(s) in the order listed">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
+##source_20220523.1=vcf-subset(v0.1.14-12-gcdb80b8) --exclude-ref -c TCGA-3L-AA1B-01A-11D-A36X-10 /Users/bope/Documents/MutSig/scientafellow/packages/Lab/code_examples/data-raw/GDCdata/TCGA-COAD/harmonized/Simple_Nucleotide_Variation/coad/COAD.all.somatic.GRCh38.vcf
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	TCGA-3L-AA1B-01A-11D-A36X-10
+1	1399165	.	T	A	.	.	.	GT:AD:DP	0/1:64,30:95
+1	3754188	.	C	T	.	.	.	GT:AD:DP	0/1:48,6:54
+1	6519500	.	G	A	.	.	.	GT:AD:DP	0/1:45,21:66
+1	11501246	.	C	T	.	.	.	GT:AD:DP	0/1:124,22:146
+1	13416552	.	G	T	.	.	.	GT:AD:DP	0/1:503,67:570
+1	13583821	.	G	A	.	.	.	GT:AD:DP	0/1:58,22:80
+1	31694166	.	G	A	.	.	.	GT:AD:DP	0/1:36,9:45
+1	33611166	.	C	T	.	.	.	GT:AD:DP	0/1:128,15:144
+1	33709143	.	C	T	.	.	.	GT:AD:DP	0/1:68,25:93
+1	47438644	.	C	T	.	.	.	GT:AD:DP	0/1:81,12:94
+1	71012266	.	C	A	.	.	.	GT:AD:DP	0/1:66,41:107
+1	98046382	.	G	A	.	.	.	GT:AD:DP	0/1:11,4:15
+1	109630709	.	C	T	.	.	.	GT:AD:DP	0/1:30,16:46
+1	110456486	.	G	A	.	.	.	GT:AD:DP	0/1:11,7:18
+1	114716126	.	C	T	.	.	.	GT:AD:DP	0/1:96,30:126
+1	117153280	.	C	A	.	.	.	GT:AD:DP	0/1:88,5:93
+1	152220953	.	C	A	.	.	.	GT:AD:DP	0/1:62,15:77
+1	175403422	.	C	T	.	.	.	GT:AD:DP	0/1:41,6:47
+1	198696818	.	C	A	.	.	.	GT:AD:DP	0/1:109,19:128
+1	200873347	.	C	T	.	.	.	GT:AD:DP	0/1:38,3:41
+1	214384057	.	G	A	.	.	.	GT:AD:DP	0/1:62,11:73
+1	228305366	.	C	T	.	.	.	GT:AD:DP	0/1:41,26:66
+2	3643841	.	C	T	.	.	.	GT:AD:DP	0/1:66,19:85
+2	11610709	.	G	A	.	.	.	GT:AD:DP	0/1:74,30:104
+2	27133158	.	G	T	.	.	.	GT:AD:DP	0/1:108,7:115
+2	44232389	.	G	GA	.	.	.	GT:AD:DP	0/1:282,46:328
+2	54256205	.	G	A	.	.	.	GT:AD:DP	0/1:110,18:128
+2	61295197	.	G	T	.	.	.	GT:AD:DP	0/1:287,72:359
+2	107859466	.	C	A	.	.	.	GT:AD:DP	0/1:375,110:486
+2	127993225	.	G	A	.	.	.	GT:AD:DP	0/1:42,17:58
+2	135616693	.	G	A	.	.	.	GT:AD:DP	0/1:294,101:395
+2	148468936	.	A	G	.	.	.	GT:AD:DP	0/1:157,18:175
+2	163610422	.	G	T	.	.	.	GT:AD:DP	0/1:184,32:216
+2	200981599	.	G	C	.	.	.	GT:AD:DP	0/1:165,22:188
+2	201618953	.	T	C	.	.	.	GT:AD:DP	0/1:101,50:151
+2	221564301	.	G	A	.	.	.	GT:AD:DP	0/1:256,90:347
+2	236507259	.	G	A	.	.	.	GT:AD:DP	0/1:135,19:154
+2	238130676	.	G	A	.	.	.	GT:AD:DP	0/1:36,12:48
+3	3174243	.	C	T	.	.	.	GT:AD:DP	0/1:63,7:70
+3	9064538	.	G	A	.	.	.	GT:AD:DP	0/1:133,30:163
+3	10292764	.	TA	T	.	.	.	GT:AD:DP	0/1:29,6:38
+3	35721816	.	G	T	.	.	.	GT:AD:DP	0/1:128,45:173
+3	42914899	.	T	C	.	.	.	GT:AD:DP	0/1:87,17:104
+3	51227401	.	G	A	.	.	.	GT:AD:DP	0/1:120,23:142
+3	51717773	.	G	A	.	.	.	GT:AD:DP	0/1:85,20:106
+3	67003746	.	C	A	.	.	.	GT:AD:DP	0/1:105,20:125
+3	101758359	.	C	T	.	.	.	GT:AD:DP	0/1:50,7:58
+3	112819848	.	A	G	.	.	.	GT:AD:DP	0/1:156,30:186
+3	126536338	.	C	G	.	.	.	GT:AD:DP	0/1:64,8:72
+3	129583592	.	C	T	.	.	.	GT:AD:DP	0/1:80,16:96
+3	179218303	.	G	A	.	.	.	GT:AD:DP	0/1:328,137:466
+4	2064135	.	C	T	.	.	.	GT:AD:DP	0/1:18,4:22
+4	5797074	.	C	T	.	.	.	GT:AD:DP	0/1:181,29:210
+4	8227764	.	G	A	.	.	.	GT:AD:DP	0/1:62,13:76
+4	8592826	.	G	A	.	.	.	GT:AD:DP	0/1:31,5:36
+4	89935657	.	C	G	.	.	.	GT:AD:DP	0/1:58,49:107
+4	89935721	.	C	T	.	.	.	GT:AD:DP	0/1:52,37:89
+4	89935816	.	C	G	.	.	.	GT:AD:DP	0/1:74,55:129
+4	89935864	.	C	G	.	.	.	GT:AD:DP	0/1:75,54:129
+4	122264264	.	A	G	.	.	.	GT:AD:DP	0/1:113,16:130
+4	184009211	.	C	T	.	.	.	GT:AD:DP	0/1:76,22:100
+5	10290622	.	G	A	.	.	.	GT:AD:DP	0/1:56,39:96
+5	55424764	.	T	G	.	.	.	GT:AD:DP	0/1:198,36:235
+5	58494709	.	C	G	.	.	.	GT:AD:DP	0/1:197,30:227
+5	72195023	.	C	T	.	.	.	GT:AD:DP	0/1:121,24:145
+5	75342714	.	T	C	.	.	.	GT:AD:DP	0/1:144,26:170
+5	76132158	.	G	T	.	.	.	GT:AD:DP	0/1:97,14:110
+5	95780294	.	G	A	.	.	.	GT:AD:DP	0/1:130,92:222
+5	112838220	.	C	T	.	.	.	GT:AD:DP	0/1:50,39:89
+5	112839942	.	C	T	.	.	.	GT:AD:DP	0/1:123,11:134
+5	132257689	.	C	G	.	.	.	GT:AD:DP	0/1:2,4:8
+5	140803101	.	G	A	.	.	.	GT:AD:DP	0/1:64,7:71
+5	141956075	.	C	T	.	.	.	GT:AD:DP	0/1:39,23:62
+5	149244903	.	G	A	.	.	.	GT:AD:DP	0/1:74,14:89
+5	158712202	.	C	T	.	.	.	GT:AD:DP	0/1:76,65:142
+5	168247051	.	G	A	.	.	.	GT:AD:DP	0/1:71,15:86
+6	33680028	.	C	T	.	.	.	GT:AD:DP	0/1:62,24:86
+6	73369263	.	G	A	.	.	.	GT:AD:DP	0/1:87,40:127
+6	112100812	.	C	A	.	.	.	GT:AD:DP	0/1:85,16:102
+6	161107946	.	G	A	.	.	.	GT:AD:DP	0/1:32,3:35
+6	167946894	.	C	T	.	.	.	GT:AD:DP	0/1:42,16:58
+7	2910136	.	G	A	.	.	.	GT:AD:DP	0/1:30,21:51
+7	4789944	.	C	T	.	.	.	GT:AD:DP	0/1:46,17:63
+7	4835191	.	G	A	.	.	.	GT:AD:DP	0/1:85,24:109
+7	11636852	.	C	T	.	.	.	GT:AD:DP	0/1:139,35:174
+7	12644098	.	ATGAATTTGAATCATTGTTTTATTTTTCTTCATATTCCAGGTTGATGTTGATGCAAATTCAC	A	.	.	.	GT:AD:DP	0/1:125,24:149
+7	103611735	.	G	T	.	.	.	GT:AD:DP	0/1:248,72:320
+7	111735106	.	C	T	.	.	.	GT:AD:DP	0/1:53,18:71
+7	140753346	.	G	C	.	.	.	GT:AD:DP	0/1:92,26:117
+7	145010362	.	G	T	.	.	.	GT:AD:DP	0/1:34,4:38
+7	150477674	.	C	T	.	.	.	GT:AD:DP	0/1:130,16:146
+7	152247918	.	C	G	.	.	.	GT:AD:DP	0/1:256,30:288
+8	9903304	.	C	T	.	.	.	GT:AD:DP	0/1:26,8:34
+8	11424289	.	T	C	.	.	.	GT:AD:DP	0/1:21,8:29
+8	23571778	.	G	A	.	.	.	GT:AD:DP	0/1:106,15:121
+8	66152608	.	C	T	.	.	.	GT:AD:DP	0/1:37,15:52
+8	143866602	.	G	C	.	.	.	GT:AD:DP	0/1:72,9:82
+8	144360616	.	C	T	.	.	.	GT:AD:DP	0/1:57,26:82
+9	35091526	.	G	A	.	.	.	GT:AD:DP	0/1:22,10:32
+9	81918059	.	C	A	.	.	.	GT:AD:DP	0/1:8,4:12
+9	87886144	.	C	A	.	.	.	GT:AD:DP	0/1:65,9:74
+9	111527687	.	G	T	.	.	.	GT:AD:DP	0/1:80,18:98
+9	136808214	.	G	T	.	.	.	GT:AD:DP	0/1:63,12:75
+10	6491712	.	C	A	.	.	.	GT:AD:DP	0/1:174,64:238
+10	48789952	.	C	T	.	.	.	GT:AD:DP	0/1:130,25:155
+10	122640432	.	T	C	.	.	.	GT:AD:DP	0/1:111,22:133
+10	126504761	.	C	T	.	.	.	GT:AD:DP	0/1:47,19:66
+11	2971493	.	C	T	.	.	.	GT:AD:DP	0/1:102,17:119
+11	13963134	.	G	A	.	.	.	GT:AD:DP	0/1:70,7:78
+11	67455712	.	C	T	.	.	.	GT:AD:DP	0/1:25,5:30
+11	94380381	.	C	A	.	.	.	GT:AD:DP	0/1:102,23:125
+11	103283039	.	C	T	.	.	.	GT:AD:DP	0/1:139,66:207
+12	6329489	.	G	A	.	.	.	GT:AD:DP	0/1:18,10:28
+12	11353558	.	G	T	.	.	.	GT:AD:DP	0/1:366,112:478
+12	49004790	.	T	A	.	.	.	GT:AD:DP	0/1:10,6:17
+12	53485100	.	G	A	.	.	.	GT:AD:DP	0/1:40,7:48
+12	54962514	.	G	T	.	.	.	GT:AD:DP	0/1:156,72:228
+12	110899114	.	C	T	.	.	.	GT:AD:DP	0/1:78,19:97
+13	19851763	.	C	T	.	.	.	GT:AD:DP	0/1:180,82:262
+13	25097753	.	C	T	.	.	.	GT:AD:DP	0/1:106,38:144
+13	27920267	.	G	C	.	.	.	GT:AD:DP	0/1:42,3:45
+13	38688019	.	C	T	.	.	.	GT:AD:DP	0/1:30,20:49
+13	49460214	.	G	A	.	.	.	GT:AD:DP	0/1:62,8:70
+13	101377032	.	C	A	.	.	.	GT:AD:DP	0/1:132,51:183
+13	113148944	.	C	T	.	.	.	GT:AD:DP	0/1:112,57:171
+14	23117695	.	C	T	.	.	.	GT:AD:DP	0/1:61,6:67
+14	32735673	.	A	G	.	.	.	GT:AD:DP	0/1:93,11:103
+14	65077940	.	G	A	.	.	.	GT:AD:DP	0/1:105,60:166
+14	75745526	.	C	T	.	.	.	GT:AD:DP	0/1:430,105:535
+14	80831202	.	C	A	.	.	.	GT:AD:DP	0/1:209,52:261
+14	99940121	.	G	A	.	.	.	GT:AD:DP	0/1:42,12:54
+15	24977827	.	C	T	.	.	.	GT:AD:DP	0/1:36,15:52
+15	32623550	.	C	T	.	.	.	GT:AD:DP	0/1:286,42:328
+15	34794767	.	G	A	.	.	.	GT:AD:DP	0/1:103,46:150
+15	52389302	.	C	G	.	.	.	GT:AD:DP	0/1:164,72:236
+15	69038885	.	CT	C	.	.	.	GT:AD:DP	0/1:85,33:118
+15	73740281	.	C	T	.	.	.	GT:AD:DP	0/1:41,12:53
+15	78178659	.	G	A	.	.	.	GT:AD:DP	0/1:40,16:55
+15	78800492	.	G	A	.	.	.	GT:AD:DP	0/1:61,20:82
+15	101055109	.	G	T	.	.	.	GT:AD:DP	0/1:117,17:133
+16	985119	.	C	T	.	.	.	GT:AD:DP	0/1:22,9:30
+16	10744023	.	C	T	.	.	.	GT:AD:DP	0/1:18,8:26
+16	28902868	.	C	T	.	.	.	GT:AD:DP	0/1:64,14:78
+16	48104180	.	G	A	.	.	.	GT:AD:DP	0/1:71,9:80
+16	78030797	.	C	T	.	.	.	GT:AD:DP	0/1:86,29:114
+16	89863821	.	C	T	.	.	.	GT:AD:DP	0/1:156,36:192
+17	1658263	.	C	T	.	.	.	GT:AD:DP	0/1:82,16:99
+17	5558428	.	G	A	.	.	.	GT:AD:DP	0/1:100,28:128
+17	35925633	.	C	T	.	.	.	GT:AD:DP	0/1:76,9:87
+17	38715681	.	G	T	.	.	.	GT:AD:DP	0/1:69,13:82
+17	63478176	.	C	A	.	.	.	GT:AD:DP	0/1:40,7:48
+17	65225137	.	C	T	.	.	.	GT:AD:DP	0/1:32,21:54
+17	69096726	.	C	T	.	.	.	GT:AD:DP	0/1:255,44:299
+18	77016883	.	G	A	.	.	.	GT:AD:DP	0/1:56,9:66
+18	79864142	.	G	A	.	.	.	GT:AD:DP	0/1:15,6:21
+19	4047615	.	GTA	G	.	.	.	GT:AD:DP	0/1:77,10:89
+19	6442087	.	CG	C	.	.	.	GT:AD:DP	0/1:36,3:39
+19	30548623	.	G	A	.	.	.	GT:AD:DP	0/1:50,20:70
+19	38485930	.	C	A	.	.	.	GT:AD:DP	0/1:72,21:93
+19	45777564	.	G	A	.	.	.	GT:AD:DP	0/1:42,8:50
+19	51006710	.	G	A	.	.	.	GT:AD:DP	0/1:45,16:61
+19	52211401	.	G	A	.	.	.	GT:AD:DP	0/1:47,20:68
+19	54239941	.	T	C	.	.	.	GT:AD:DP	0/1:123,35:158
+19	55518993	.	G	A	.	.	.	GT:AD:DP	0/1:39,8:47
+19	56664293	.	G	A	.	.	.	GT:AD:DP	0/1:84,32:116
+20	31373179	.	C	A	.	.	.	GT:AD:DP	0/1:34,26:60
+20	35217941	.	C	T	.	.	.	GT:AD:DP	0/1:17,9:26
+20	38727965	.	G	A	.	.	.	GT:AD:DP	0/1:74,36:110
+20	45298316	.	G	A	.	.	.	GT:AD:DP	0/1:78,9:87
+20	59192714	.	C	T	.	.	.	GT:AD:DP	0/1:31,15:46
+21	32347064	.	G	A	.	.	.	GT:AD:DP	0/1:33,3:36
+21	46286918	.	G	T	.	.	.	GT:AD:DP	0/1:139,11:150
+22	15711010	.	A	G	.	.	.	GT:AD:DP	0/1:519,22:542
+22	25039226	.	C	T	.	.	.	GT:AD:DP	0/1:39,6:45
+22	37507853	.	C	T	.	.	.	GT:AD:DP	0/1:99,21:120
+X	30242306	.	C	A	.	.	.	GT:AD:DP	0/1:178,84:264
+X	40726822	.	C	T	.	.	.	GT:AD:DP	0/1:518,229:748
+X	49077383	.	G	A	.	.	.	GT:AD:DP	0/1:31,14:45
+X	54788618	.	G	A	.	.	.	GT:AD:DP	0/1:69,12:80
+X	57909586	.	C	T	.	.	.	GT:AD:DP	0/1:134,54:188
+X	57910281	.	G	A	.	.	.	GT:AD:DP	0/1:9,12:21
+X	70426904	.	G	C	.	.	.	GT:AD:DP	0/1:252,13:264
+X	72273954	.	T	G	.	.	.	GT:AD:DP	0/1:248,82:331
+X	73214486	.	C	T	.	.	.	GT:AD:DP	0/1:188,86:274
+X	75075563	.	G	T	.	.	.	GT:AD:DP	0/1:248,94:342
+X	75522972	.	C	T	.	.	.	GT:AD:DP	0/1:319,101:420
+X	76430066	.	C	CT	.	.	.	GT:AD:DP	0/1:142,53:196
+X	77599821	.	C	G	.	.	.	GT:AD:DP	0/1:465,20:485
+X	104013303	.	C	T	.	.	.	GT:AD:DP	0/1:131,72:202
+X	108686060	.	C	T	.	.	.	GT:AD:DP	0/1:232,76:307
+X	110173301	.	C	T	.	.	.	GT:AD:DP	0/1:143,34:177
+X	112779306	.	C	A	.	.	.	GT:AD:DP	0/1:73,8:81
+X	130069472	.	C	A	.	.	.	GT:AD:DP	0/1:116,12:128
+X	151743861	.	G	A	.	.	.	GT:AD:DP	0/1:108,54:162
+X	151924163	.	G	A	.	.	.	GT:AD:DP	0/1:399,13:412
+X	152865887	.	C	T	.	.	.	GT:AD:DP	0/1:84,8:92
