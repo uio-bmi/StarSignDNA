@@ -32,7 +32,7 @@ Getting started
 
 Install cucumber by running:
 ::
-   $ pip install cucumber
+   # pip install cucumber
 To obtain help :
 ::
    $ cucumber --help
