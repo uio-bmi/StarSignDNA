@@ -35,7 +35,7 @@ Install cucumber by running:
    % pip install cucumber
 To obtain help :
 ::
-   $ cucumber --help
+   % cucumber --help
    $ Usage: cucumber [OPTIONS] COMMAND [ARGS]...
 Commands:
 ::
@@ -45,12 +45,12 @@ Commands:
   
 :: Running mutational signature refit algorithm:
 ::
-  $cucumber refit --help
+  %cucumber refit --help
  
 Running cucumber refit using mutational catalog matrix
 ::
-  $cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt output/expo.txt output/expo_avg.txt
-  $cucumber refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt output/expo.txt output/expo_avg.txt
+  %cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt output/expo.txt output/expo_avg.txt
+  %cucumber refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt output/expo.txt output/expo_avg.txt
 The skin_tcga (skin20.txt) file is provided in the folder example_data and the cosmic signature version 3 (sig_cosmic_v3_2019.txt)
 
 :: output files for a single sample
