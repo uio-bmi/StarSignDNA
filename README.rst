@@ -49,7 +49,7 @@ The refitting algorithm takes as input a mutational catalog and cosmic mutationa
 ::
   %cucumber refit --help
  
-Running cucumber refit using mutational catalog matrix
+Running cucumber refit
 ::
   %cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt output/expo.txt output/expo_avg.txt
   %cucumber refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt output/expo.txt output/expo_avg.txt
@@ -74,6 +74,9 @@ The de novo algorithm takes as input a mutational catalog and inferred the expos
 
 ::
   %cucumber denovo --help
+1. Step 1
+  Grid search: 
+
 
 Contact
 -------
