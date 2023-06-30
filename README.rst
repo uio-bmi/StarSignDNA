@@ -94,6 +94,7 @@ The de novo algorithm takes as input a mutational catalog and inferred the expos
   %ks = list(range(3, 10)): default range of the number of signatures
   %lambdas = [0, 0.01,0.05, 0.1, 0.2]: default range of lambda
 
+Input mutational catalogue needs to be provided in the dataset folder
 ::
   %rule test_train_split:
   % "results/{dataset}/pcawg_skin_21.txt"
