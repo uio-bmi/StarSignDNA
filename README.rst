@@ -36,6 +36,7 @@ Install cucumber by running:
 To obtain help :
 ::
    $ cucumber --help
+   $ Usage: cucumber [OPTIONS] COMMAND [ARGS]...
 Commands:
 ::
   count-mutation  Count mutation types in a VCF file
