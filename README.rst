@@ -73,8 +73,8 @@ Running mutational signature de novo algorithm:
 The de novo algorithm takes as input a mutational catalog and inferred the exposure matrix and mutational signature matrix. The cosmic mutational signature file is provided to compute the cosine similarity.  
 ::
   % cucumber denovo --help
-1. Step 1
-  Grid search: The grid uses cross-validation to find the optimal pairwise (k and $\lambda$)
+* Step 1: Grid Search: The grid uses cross-validation to find the optimal pairwise (k and $\lambda$)
+
 ::
   % snakemake -j num_cpu 
 
