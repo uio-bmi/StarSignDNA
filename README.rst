@@ -34,6 +34,23 @@ Install cucumber by running:
    $ pip install cucumber
 To obtain help :
    $ cucumber --help
+..code-block::bash
+cucumber --help
+Usage: cucumber [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --install-completion [bash|zsh|fish|powershell|pwsh]
+                                  Install completion for the specified shell.
+  --show-completion [bash|zsh|fish|powershell|pwsh]
+                                  Show completion for the specified shell, to
+                                  copy it or customize the installation.
+  --help                          Show this message and exit.
+
+Commands:
+  count-mutation  Count mutation types in a VCF file.
+  denovo          Parameters ---------- matrix_file: str n_signatures:...
+  refit           Parameters ---------- numeric_chromosomes n_bootstraps...
+
 Running mutational signature refit algorithm
 
 Contact
