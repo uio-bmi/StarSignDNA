@@ -108,6 +108,8 @@ Run denovo using optimal $k=4$ and $lambda=0.1$
 ::
  % cucumber denovo snakemake/results/data/pcawg_skin_21.txt 4 0.1 --cosmic-file example_data/sig_cosmic_v3_2019.txt
 
+.. image:: output/cosine_similarity_denovo_k4.png
+   :width: 600
 Contact
 -------
 
