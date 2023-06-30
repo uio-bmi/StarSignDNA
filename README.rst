@@ -43,10 +43,11 @@ Commands:
   denovo Parameters ---matrix_file: str n_signatures 
   refit  Parameters ---numeric_chromosomes n_bootstraps
   
-** Running mutational signature refit algorithm:**
+::Running mutational signature refit algorithm:
 ::
   $cucumber refit --help
-:: Running cucumber refit using mutational catalogue matrix
+:: 
+Running cucumber refit using mutational catalog matrix
   $cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt output/expo.txt output/expo_avg.txt
 
 
