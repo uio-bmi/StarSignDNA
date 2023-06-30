@@ -76,6 +76,8 @@ The de novo algorithm takes as input a mutational catalog and inferred the expos
   %cucumber denovo --help
 1. Step 1
   Grid search: 
+::
+% snakemake -j 5 
 
 
 Contact
