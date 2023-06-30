@@ -86,6 +86,9 @@ The de novo algorithm takes as input a mutational catalog and inferred the expos
 ::
   % Snakefile
   % snakemake -j num_cpu 
+
+:: Step 2: In the Sanakefile, provide the range of the number of signatures $k$ and $lambda$ for the grid search to determine the optimal k and lambda.  
+
 ..code-block::bash
   localrules: all
      ks = list(range(3, 6))
