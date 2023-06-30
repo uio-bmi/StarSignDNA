@@ -26,10 +26,9 @@ Mutation signature analysis package
 Features
 --------
 
-Installation
---------
-** ** Getting started
-1. Install with pip:
+Getting started
+---------------
+Install $cucumber by running:
     $ pip install cucumber
 
 
