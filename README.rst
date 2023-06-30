@@ -111,8 +111,8 @@ Run denovo using optimal $k=4$ and $lambda=0.1$
 :: output files 
 ::
    $exposures_matrix
-   $mutational signature matrix
-   $mutational signature profile 
+   $mutational signatures matrix
+   $mutational signatures profile 
 .. image:: output/denovo_figure_k4.png
    :width: 600
 
