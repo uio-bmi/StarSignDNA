@@ -104,12 +104,10 @@ Running the grid search
 To check manually the optimal $k$ and $lambda$ from the output
 ::
  % sort -k3n,3 results/data/all.csv
-#k	Lambda	logpmf
-3	0.1	117.27962901439321
-4	0.1	182.15288855451303
-3	0.2	262.83752780167623
-4	0.025	311.04526899359155
-4	0	388.13545600766463
+Run denovo using optimal $k=4$ and $lambda=0.1$
+::
+ % cucumber denovo snakemake/results/data/pcawg_skin_21.txt 4 0.1 --cosmic-file example_data/sig_cosmic_v3_2019.txt
+
 Contact
 -------
 
