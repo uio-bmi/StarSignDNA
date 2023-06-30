@@ -31,10 +31,10 @@ Getting started
 ---------------
 
 Install cucumber by running:
-.. code-block:: bash
+::
    $ pip install cucumber
 To obtain help :
-.. code-block:: bash
+::
    $ cucumber --help
 .. code-block:: bash
 Commands:
