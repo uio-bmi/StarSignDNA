@@ -35,7 +35,7 @@ Install cucumber by running:
 To obtain help :
 .. highlight:: sh
    $ cucumber --help
-.. highlight:: sh
+.. code-block:: console
 Commands:
   count-mutation  Count mutation types in a VCF file.
   denovo          Parameters ---------- matrix_file: str n_signatures:...
