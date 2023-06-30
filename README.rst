@@ -33,13 +33,12 @@ Getting started
 Install cucumber by running:
    $ pip install cucumber
 To obtain help :
+.. highlight:: sh
    $ cucumber --help
-..
 Commands:
-  count-mutation  Count mutation types in a VCF file.\n
+  count-mutation  Count mutation types in a VCF file.
   denovo          Parameters ---------- matrix_file: str n_signatures:...
   refit           Parameters ---------- numeric_chromosomes n_bootstraps...
-..
 Running mutational signature refit algorithm
 
 Contact
