@@ -46,6 +46,7 @@ Commands:
 ** Running mutational signature refit algorithm:**
 ::
   $cucumber refit --help
+:: Running cucumber refit using mutational catalogue matrix
   $cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt output/expo.txt output/expo_avg.txt
 
 
