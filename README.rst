@@ -43,7 +43,7 @@ Commands:
   denovo Parameters ---matrix_file: str n_signatures 
   refit  Parameters ---numeric_chromosomes n_bootstraps
   
-:: Running mutational signature refit algorithm:
+Running mutational signature refit algorithm:
 -----------------------------------------------
 ::
   %cucumber refit --help
