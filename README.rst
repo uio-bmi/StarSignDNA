@@ -45,7 +45,7 @@ Commands:
   
 Running mutational signature refit algorithm:
 -----------------------------------------------
-The refitting algorithm take as input a mutational catalog and cosmic mutational signature file
+The refitting algorithm takes as input a mutational catalog and cosmic mutational signature file
 ::
   %cucumber refit --help
  
@@ -68,8 +68,9 @@ The standard deviation is computed using a default of 100 bootstraps.
    $exposures_cohort_top_5: a plot showing the top 5 exposures
    $ exposures_cohort_dotplot: a plot showing a dotplot of the exposure matrix
 
-Running cucumber refit using mutational .vcf file
-
+Running mutational signature de novo algorithm:
+-----------------------------------------------
+The de novo algorithm takes as input a mutational catalog and inferred the exposure matrix and mutational signature matrix. The cosmic mutational signature file is provided to compute the cosine similarity.  
 
 
 Contact
