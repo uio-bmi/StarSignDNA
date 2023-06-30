@@ -44,6 +44,7 @@ Commands:
   refit  Parameters ---numeric_chromosomes n_bootstraps
   
 :: Running mutational signature refit algorithm:
+-----------------------------------------------
 ::
   %cucumber refit --help
  
