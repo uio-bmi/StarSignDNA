@@ -29,7 +29,7 @@ Features
 Getting started
 ---------------
 
-Install $cucumber by running:
-$ pip install cucumber
+Install cucumber by running:
+$pip install cucumber
 
 
