@@ -54,16 +54,16 @@ The skin_tcga (skin20.txt) file is provided in the folder example_data and the c
 
 :: output files for a single sample
 ::
-$output_file_exposure: exposure matrix with std_dev 
-$exposures_single_dotplot.png: exposure matrix plot with std_dev
+   $output_file_exposure: exposure matrix with std_dev 
+   $exposures_single_dotplot.png: exposure matrix plot with std_dev
 The standard deviation is computed using a default of 100 bootstraps. 
 
 :: output files for a cohort
 ::
-$exposures_cohort_variance: a plot showing the variance of each sample and the mean exposures
-$output_file_exposure: a cohort exposures matrix
-$exposures_cohort_top_5: a plot showing the top 5 exposures
-$ exposures_cohort_dotplot: a plot showing a dotplot of the exposure matrix
+   $exposures_cohort_variance: a plot showing the variance of each sample and the mean exposures
+   $output_file_exposure: a cohort exposures matrix
+   $exposures_cohort_top_5: a plot showing the top 5 exposures
+   $ exposures_cohort_dotplot: a plot showing a dotplot of the exposure matrix
 
 Running cucumber refit using mutational .vcf file
 
