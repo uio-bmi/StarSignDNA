@@ -33,9 +33,8 @@ Getting started
 Install cucumber by running:
    $ pip install cucumber
 To obtain help :
-.. highlight:: sh
    $ cucumber --help
-.. code-block:: console
+.. code-block:: bash
 Commands:
   .. code-block:: console
   count-mutation  Count mutation types in a VCF file.
