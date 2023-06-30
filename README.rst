@@ -46,24 +46,7 @@ Commands:
 Running mutational signature refit algorithm:
 ::
 $cucumber refit --help
-::
-Usage: cucumber refit [OPTIONS] MATRIX_FILE SIGNATURE_FILE OUTPUT_FILE_EXPOSURE OUTPUT_FILE_EXPOSURE_AVG
-::
-Arguments:
-  MATRIX_FILE               [required]
-  SIGNATURE_FILE            [required]
-  OUTPUT_FILE_EXPOSURE      [required]
-  OUTPUT_FILE_EXPOSURE_AVG  [required]
-::
-Options:
-  --opportunity-file TEXT
-  --data-type [exome|genome]      [default: DataType.exome]
-  --n-bootstraps INTEGER          [default: 100]
-  --numeric-chromosomes / --no-numeric-chromosomes
-                                  [default: no-numeric-chromosomes]
-  --genotyped / --no-genotyped    [default: genotyped]
-  --output-file-exposure-plot TEXT
-  --help                          Show this message and exit.
+
 
 Contact
 -------
