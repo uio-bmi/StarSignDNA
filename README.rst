@@ -60,9 +60,10 @@ The test data is provided in example_data folder
    $output_file_exposure: exposure matrix with std_dev 
    $exposures_single_dotplot.png: exposure matrix plot with std_dev
 The standard deviation is computed using a default of 100 bootstraps. 
+
 .. image:: output/exposures_single_dotplot_skin.png
-  :width: 400
-  :alt: Alternative text
+   :width: 600
+
 :: output files for a cohort
 ::
    $exposures_cohort_variance: a plot showing the variance of each sample and the mean exposures
