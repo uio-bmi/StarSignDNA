@@ -75,6 +75,7 @@ The de novo algorithm takes as input a mutational catalog and inferred the expos
   % cucumber denovo --help
 :: Step 1: Grid Search: The grid uses cross-validation to find the optimal pairwise (k and $\lambda$)
 ::
+  % Snakefile
   % snakemake -j num_cpu 
 
 
