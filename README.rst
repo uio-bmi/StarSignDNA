@@ -86,7 +86,7 @@ The de novo algorithm takes as input a mutational catalog and inferred the expos
 :: Step 1: Grid Search: The grid uses cross-validation to find the optimal pairwise (k and $\lambda$)
 ::
   % Snakefile
-  % snakemake -j num_cpu 
+
 
 :: Step 2: In the Sanakefile, provide the range of the number of signatures $k$ and $lambda$ for the grid search to determine the optimal k and lambda.  
 ::
@@ -98,7 +98,9 @@ Input mutational catalogue needs to be provided in the dataset folder
 ::
   %rule test_train_split:
   % "results/{dataset}/pcawg_skin_21.txt"
-
+Running the grid search
+::
+ % snakemake -j num_cpu 
 Contact
 -------
 
