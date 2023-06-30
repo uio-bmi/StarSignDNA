@@ -72,6 +72,8 @@ The standard deviation is computed using a default of 100 bootstraps.
    $exposures_cohort_top_5: a plot showing the top 5 exposures
    $ exposures_cohort_dotplot: a plot showing a dotplot of the exposure matrix
 
+.. image:: output/exposures_cohort_variance.png
+   :width: 600
 Running mutational signature de novo algorithm:
 -----------------------------------------------
 The de novo algorithm takes as input a mutational catalog and inferred the exposure matrix and mutational signature matrix. The cosmic mutational signature file is provided to compute the cosine similarity.  
