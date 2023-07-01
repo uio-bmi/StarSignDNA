@@ -22,7 +22,7 @@ Mutation signature analysis package
 
 * Free software: MIT license
 * Documentation: https://cucumber.readthedocs.io.
-* Documentation: https://cucumber.github.io/cucumber/
+* Documentation: https://cucumber.github.com/cucumber/
 
 
 Features
