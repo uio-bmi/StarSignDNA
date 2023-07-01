@@ -51,8 +51,8 @@ The refitting algorithm takes as input a mutational catalog and cosmic mutationa
  
 Running cucumber refit
 ::
-  %cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt output/expo.txt output/expo_avg.txt
-  %cucumber refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt output/expo.txt output/expo_avg.txt
+  %cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt output/expo.txt 
+  %cucumber refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt output/expo.txt 
 
 The test data is provided in example_data folder, to convert *.vcf to matrix, the user must provide the path to the reference genome. 
 
