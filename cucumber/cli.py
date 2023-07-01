@@ -167,7 +167,7 @@ def plotprofile(data):
 
 
 
-def refit(matrix_file: str, signature_file: str, output_file_exposure: str, output_file_exposure_avg:str,
+def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
           opportunity_file: str = None,
           data_type: DataType = DataType.exome, n_bootstraps: int = 50, numeric_chromosomes: bool = False,
           genotyped: bool = True,
@@ -188,6 +188,7 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str, outp
         True if the VCF file has genotype information for many samples
     '''
     start_time = time.time()
+    #reference genome
     ref_genome = '/Users/bope/Documents/MutSig/scientafellow/packages/ref/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
     file_name, file_extension = os.path.splitext(matrix_file)
     if file_extension == '.vcf':
@@ -205,7 +206,7 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str, outp
         E.drop(columns=E.columns[0], axis=1, inplace=True)
         plot = singleplot(E)
         E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
-        plot.savefig("output/exposures_single_dotplot_skin.png", dpi=600)
+        plot.savefig("output/exposures_single_dotplot.png", dpi=600)
 
     else:
         E, loss = _refit(M, S, O, lambd=lambd)
@@ -223,7 +224,8 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str, outp
         plot_top_five.savefig("output/exposures_cohort_top_5.png", dpi=600)
         plot_variance = cohort_violin(E)
         plot_variance.savefig("output/exposures_cohort_variance.png", dpi=600)
-        sum_expo.to_csv(output_file_exposure_avg, index=index_signature, header=True, sep='\t')
+        # sum_expo.to_csv(output_file_exposure_avg, index=index_signature, header=True, sep='\t')
+        sum_expo.to_csv('output/output_file_exposure_avg.txt', index=index_signature, header=True, sep='\t')
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
@@ -305,7 +307,7 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,
     if cosmic_file is not None:
         cosmic = pd.read_csv(cosmic_file, delimiter=',')
         cos_similarity = cos_sim_matrix(S, cosmic)[0]
-        cos_similarity.to_csv("output/cosine_similarity_denovo_k4_01.txt", sep="\t")
+        cos_similarity.to_csv("output/cosine_similarity_denovo.txt", sep="\t")
         # print(cos_similarity)
     S = np.transpose(S)
     alphabet = list(string.ascii_uppercase)
@@ -317,10 +319,10 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,
     S.to_csv("output/denovo_signature.txt", sep = '\t' , index = label)
     # print(S)
     deno_figure = plotprofile(S)
-    deno_figure.savefig("output/denovo_figure_k4.png", dpi=600)
+    deno_figure.savefig("output/denovo_figure.png", dpi=600)
     E = pd.DataFrame(E, columns=Sig, index= None)
     # np.savetxt(output_file_exposure, np.array(E))
-    E.to_csv("output/denovo_exposures_k4.txt", sep = '\t', index = None)
+    E.to_csv("output/denovo_exposures.txt", sep = '\t', index = None)
     # np.savetxt(output_file_signature, np.array(S))
     print("--- %s seconds ---" % (time.time() - start_time))
 

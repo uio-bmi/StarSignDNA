@@ -37,7 +37,7 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, 
         E = np.maximum(E, 0)
     mse_e = Frobinous(M, S, E, O)
     loss = -poisson.logpmf(M, (E @ S) * O)
-    loss[loss == np.float64("Inf")] = 10e+6
+    # loss[loss == np.float64("Inf")] = 10e+6
     # E[E<=1e-6]=0
     E /= E.sum(axis=-1, keepdims=True)
     E[np.isnan(E)] = 0
@@ -52,7 +52,7 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, 
     print("E_norm",E_norm)
     print("PMF",np.mean(loss))
     # print("CONV",conv)
-    return E
+    return E, np.mean(loss)
 
 
 

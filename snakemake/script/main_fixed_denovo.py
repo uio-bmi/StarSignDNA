@@ -68,8 +68,8 @@ def compute_t_edge(E, global_gradients):
 
 def compute_topt_denovo(E, local_gradients, global_gradients, hessians):
     # print("local",hessians)
-    numerator = np.linalg.norm(global_gradients, ord=None, axis=None, keepdims=False)
-    # numerator = np.sum(global_gradients * local_gradients)
+    #numerator = np.linalg.norm(global_gradients, ord=None, axis=None, keepdims=False)
+    numerator = np.sum(global_gradients * local_gradients)
     # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
     denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])

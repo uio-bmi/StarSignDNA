@@ -42,8 +42,8 @@ def compute_global_gradient(E, local_gradients, lambd):
 # function to compute the step-size
 def compute_topt(E, local_gradients, global_gradients, hessians):
     # print("local",hessians)
-    numerator = np.linalg.norm(global_gradients, ord=None, axis=None, keepdims=False)
-    # numerator = np.sum(global_gradients * local_gradients)
+    numerator = np.linalg.norm(global_gradients, ord= None, axis=None, keepdims=False)
+    #numerator = np.sum(global_gradients * local_gradients)
     # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
     denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])
@@ -68,8 +68,8 @@ def compute_t_edge(E, global_gradients):
 
 def compute_topt_denovo(E, local_gradients, global_gradients, hessians):
     # print("local",hessians)
-    numerator = np.linalg.norm(global_gradients, ord=None, axis=None, keepdims=False)
-    # numerator = np.sum(global_gradients * local_gradients)
+    # numerator = np.linalg.norm(global_gradients, ord=2, axis=None, keepdims=False)
+    numerator = np.sum(global_gradients * local_gradients)
     # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
     denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])
@@ -158,7 +158,7 @@ def check(global_gradients):
 #     conv = np.all(np.abs(E_hat - E) / E < tol)
 #     return conv
 
-def convergence(E, E_hat, tol=10e-9):
+def convergence(E, E_hat, tol=10e-6):
     conv = []
     conv = np.abs((E_hat - E) / E)
     if conv < tol:
@@ -258,7 +258,7 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
     mse_old = np.inf
     loss_hat = np.inf
     for step in range(n_steps):
-        print("Gradient step is:", step)
+        print("Gradient Step is:", step)
         # print(E)
         mse_hat = mse_e
         # loss_hat = loss
@@ -339,7 +339,7 @@ def running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps):
     for step in range(n_steps):
         mse_hat = mse_e
         loss_hat = loss
-        # print("Step is:", step)
+        # print("Gradient step is:", step)
         # E_hat = E
         if np.any(E < 0):
             E = np.maximum(E, 0)

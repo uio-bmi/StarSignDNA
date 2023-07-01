@@ -90,8 +90,9 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,
             break
         mse_old = mse_e
         pmf_old = np.mean(loss)
+        print("PMF Finale", np.mean(loss))
     loss = -poisson.logpmf(M, (E @ S) * O)
-    print("PMF Finale", np.mean(loss))
+
 
     if (np.any(E < 0)):
         E = np.maximum(E, 0)
