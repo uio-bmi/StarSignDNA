@@ -119,12 +119,12 @@ The de novo algorithm takes as input a mutational catalog and inferred the expos
 ::
   % cucumber denovo --help
 
-:: Step 1: Grid Search: The grid uses cross-validation to find the optimal pairwise (k and $\lambda$)
+Step 1: Grid Search: The grid uses cross-validation to find the optimal pairwise (k and $\lambda$)
 ::
   % Snakefile
 
 
-:: Step 2: In the Sanakefile, provide the range of the number of signatures $k$ and $lambda$ for the grid search to determine the optimal k and lambda.  
+Step 2: In the Sanakefile, provide the range of the number of signatures $k$ and $lambda$ for the grid search to determine the optimal k and lambda.  
 ::
   %localrules: all
   %ks = list(range(3, 10)): default range of the number of signatures
