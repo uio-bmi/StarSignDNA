@@ -48,8 +48,7 @@ or for the newest:
 
 .. code-block:: console
 
-    $ pip install git://github.com/knutdrand/cucumber
-
+    $ pip install git://github.com/cdbope/cucumber
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
