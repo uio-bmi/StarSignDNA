@@ -28,13 +28,6 @@ Mutation signature analysis package
 Features
 --------
 
-Getting started
----------------
-
-Installation
-============
-
-
 Stable release
 --------------
 
@@ -74,6 +67,8 @@ Once you have a copy of the source, you can install it with:
 
     $ pip install -e .
 
+Getting started
+---------------
 To obtain help :
 ::
    % cucumber --help
