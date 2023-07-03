@@ -66,7 +66,7 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/knutdrand/cucumber
+    $ git clone git://github.com/cdbope/cucumber
 
 Once you have a copy of the source, you can install it with:
 
