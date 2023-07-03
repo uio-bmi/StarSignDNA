@@ -170,8 +170,7 @@ def plotprofile(data):
 def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
           opportunity_file: str = None,
           data_type: DataType = DataType.exome, n_bootstraps: int = 50, numeric_chromosomes: bool = False,
-          genotyped: bool = True,
-          output_file_exposure_plot=None):
+          genotyped: bool = True):
     '''
     Parameters
     ----------
