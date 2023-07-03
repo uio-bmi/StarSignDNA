@@ -80,7 +80,7 @@ To obtain help :
    $ Usage: cucumber [OPTIONS] COMMAND [ARGS]...
 Commands:
 ::
-  count-mutation  Count mutation types in a VCF file
+  count-mutation ---Count mutation types in a VCF file
   denovo Parameters ---matrix_file: str n_signatures 
   refit  Parameters ---numeric_chromosomes n_bootstraps
   
