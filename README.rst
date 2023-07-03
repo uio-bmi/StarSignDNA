@@ -149,7 +149,7 @@ Run denovo using optimal $k=4$ and $lambda=0.1$
 ::
  % cucumber denovo snakemake/results/data/pcawg_skin_21.txt 4 0.1 --cosmic-file example_data/sig_cosmic_v3_2019.txt
 
-:: output files 
+output files 
 ::
    $exposures_matrix
    $mutational signatures matrix
