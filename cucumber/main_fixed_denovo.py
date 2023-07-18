@@ -158,7 +158,7 @@ def check(global_gradients):
 #     conv = np.all(np.abs(E_hat - E) / E < tol)
 #     return conv
 
-def convergence(E, E_hat, tol=10e-6):
+def convergence(E, E_hat, tol=10e-8):
     conv = []
     conv = np.abs((E_hat - E) / E)
     if conv < tol:
@@ -306,10 +306,10 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
             E = np.maximum(E, 0)
         # print("PMF loss", np.mean(loss))
         # print("PMF HAT_IN", loss_hat)
-        # conv = convergence(np.mean(loss_hat), np.mean(loss))
+        conv = convergence(np.mean(loss_hat), np.mean(loss))
         loss_hat = np.mean(loss)
         # print("PMF HAT", loss_hat)
-        conv = sparsity(E)
+        # conv = sparsity(E)
         if conv == True:
             print(f"Cucumber converge: {conv}")
             if conv_iter_1 == -1:

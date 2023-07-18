@@ -57,7 +57,8 @@ def plot(file):
 def singleplot(file):
     file = file.transpose()
     file.columns = ['Signatures', 'std_dev']
-    filtered_data = file[file['Signatures'] != 0]
+    # filtered_data = file[file['Signatures'] != 0]
+    filtered_data = file[file['Signatures'] >= 0.05]
 
     # Set up the figure and axis
     plt.style.use('default')
@@ -166,10 +167,9 @@ def plotprofile(data):
 
 
 
-
 def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
           opportunity_file: str = None,
-          data_type: DataType = DataType.exome, n_bootstraps: int = 50, numeric_chromosomes: bool = False,
+          data_type: DataType = DataType.exome, n_bootstraps: int = 25, numeric_chromosomes: bool = False,
           genotyped: bool = True):
     '''
     Parameters
@@ -205,10 +205,10 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
         E.drop(columns=E.columns[0], axis=1, inplace=True)
         plot = singleplot(E)
         E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
-        plot.savefig("output/exposures_single_dotplot.png", dpi=600)
+        plot.savefig("output/exposure_tcga_brca_2_70723.png", dpi=600)
 
     else:
-        E, loss = _refit(M, S, O, lambd=lambd)
+        E = _refit(M, S, O, lambd=lambd)
         sum_expo = E.sum(axis=0, keepdims=True) / len(E)
         E = pd.DataFrame(data=E, columns=index_signature)
         E.to_csv(output_file_exposure, index=False, header=True, sep='\t')
