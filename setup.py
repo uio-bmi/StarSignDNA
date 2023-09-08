@@ -10,7 +10,14 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['typer', ]
+requirements = ['typer',
+                'numpy',
+                'pandas',
+                'scipy',
+                'scikit-learn',
+                'bionumpy',
+                'matplotlib',
+                'seaborn']
 
 test_requirements = ['pytest>=3', "hypothesis"]
 
