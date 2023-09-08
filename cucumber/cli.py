@@ -8,11 +8,6 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 import string
 import multiprocessing
-import bionumpy as bnp
-from numpy import linalg as LA
-from scipy import stats
-import scipy.spatial as sp
-from scipy.optimize import linear_sum_assignment
 
 np.random.seed(10000)
 
@@ -80,7 +75,7 @@ def single_plot(file):
     return plt
 
 
-def cohortplot(file):
+def cohort_plot(file):
     plt.style.use('default')
     fig, ax = plt.subplots(figsize=(20, 8))
     file.plot(kind="bar", figsize=(10, 4))
@@ -104,14 +99,13 @@ def cohort_violin(file):
     return plt
 
 
-def plotprofile(data):
+def plot_profile(data):
     plt.style.use('default')
     # data.drop(columns=data.columns[0], axis=1, inplace=True)
     data = data.T
     header = data.index
     data_list = data.values.tolist()
     len(data_list)
-    header1 = list(header)
     mutation_categories = np.arange(1, 97)
     mutation_labels = [
         'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A',
@@ -168,7 +162,7 @@ def plotprofile(data):
 
 
 def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
-          opportunity_file: str = None,
+          opportunity_file: str = None, ref_genome: str = None,
           data_type: DataType = DataType.exome, n_bootstraps: int = 25, numeric_chromosomes: bool = False,
           genotyped: bool = True, output_folder: str = 'output/'):
     '''
@@ -188,9 +182,10 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
     '''
     start_time = time.time()
     # reference genome
-    ref_genome = '/Users/bope/Documents/MutSig/scientafellow/packages/ref/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
+    # ref_genome = '/Users/bope/Documents/MutSig/scientafellow/packages/ref/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
     file_name, file_extension = os.path.splitext(matrix_file)
     if file_extension == '.vcf':
+        assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
     M = read_counts(matrix_file)
@@ -215,11 +210,11 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
         sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
         # print(sum_expo)
         sum_expo = np.transpose(sum_expo)
-        plot_summary = cohortplot(sum_expo)
+        plot_summary = cohort_plot(sum_expo)
         plot_summary.savefig(f"{output_folder}/exposures_cohort_dotplot.png", dpi=600)
         sort_E = sum_expo.sort_values(by=['Signatures'], ascending=False)
         sort_E = sort_E.iloc[:5, 0:]
-        plot_top_five = cohortplot(sort_E)
+        plot_top_five = cohort_plot(sort_E)
         plot_top_five.savefig(f"{output_folder}/exposures_cohort_top_5.png", dpi=600)
         plot_variance = cohort_violin(E)
         plot_variance.savefig(f"{output_folder}/exposures_cohort_variance.png", dpi=600)
@@ -265,7 +260,8 @@ def get_num_cpus():
 
 
 def denovo(matrix_file: str, n_signatures: int, lambd: float,
-           opportunity_file: str = None, cosmic_file: str = None, max_em_iterations: int = 10000,
+           opportunity_file: str = None, cosmic_file: str = None,
+           max_em_iterations: int = 10000,
            max_gd_iterations: int = 50, numeric_chromosomes: bool = False, genotyped: bool = True, file_extension=None,
            ref_genome=None, output_folder: str = 'output/'):
     """
@@ -289,6 +285,7 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,
     num_cpus = get_num_cpus()
     print(f"Number of CPUs: {num_cpus}")
     if file_extension == '.vcf':
+        assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
     M = pd.read_csv(matrix_file, delimiter='\t').to_numpy().astype(float)
@@ -330,7 +327,7 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,
     S = pd.DataFrame(S, columns=Sig, index=label)
     S.to_csv(f"{output_folder}/denovo_signature.txt", sep='\t', index=label)
     # print(S)
-    deno_figure = plotprofile(S)
+    deno_figure = plot_profile(S)
     deno_figure.savefig(f"{output_folder}/denovo_figure.png", dpi=600)
     E = pd.DataFrame(E, columns=Sig, index=None)
     # np.savetxt(output_file_exposure, np.array(E))
