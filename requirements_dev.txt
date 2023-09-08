@@ -14,7 +14,6 @@ build
 
 numpy~=1.23.5
 scipy~=1.10.1
-cucumber~=0.0.1
 pandas~=2.0.2
 bionumpy~=0.2.21
 setuptools~=67.0.0
