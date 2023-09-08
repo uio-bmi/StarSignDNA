@@ -163,7 +163,7 @@ def plot_profile(data):
 
 def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
           opportunity_file: str = None, ref_genome: str = None,
-          data_type: DataType = DataType.exome, n_bootstraps: int = 2, numeric_chromosomes: bool = False,
+          data_type: DataType = DataType.exome, n_bootstraps: int = 25, numeric_chromosomes: bool = False,
           genotyped: bool = True, output_folder: str = 'output/'):
     '''
     Parameters
@@ -199,8 +199,9 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
         E = pd.DataFrame(data=E, columns=index_signature, index=['Signature', 'std_dev'])
         E.drop(columns=E.columns[0], axis=1, inplace=True)
         plot = single_plot(E)
-        E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
-        plot.savefig(f"{output_folder}/exposure_matrix.png", dpi=600)
+        #E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
+        E.to_csv(f"{output_folder}/exposure_signature.txt", index=True, header=True, sep='\t')
+        plot.savefig(f"{output_folder}/plot_exposure_signature.png", dpi=600)
 
     else:
         E = _refit(M, S, O, lambd=lambd)
