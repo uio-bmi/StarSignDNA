@@ -1,8 +1,10 @@
 Welcome to Cucumber's documentation!
 ======================================
 
-.. include:: installation.rst
-.. include:: usage.rst
+..
+ .. include:: installation.rst
+ .. include:: usage.rst
+
 
 .. toctree::
    :maxdepth: 2

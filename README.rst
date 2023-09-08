@@ -9,11 +9,6 @@ Cucumber
 .. image:: https://img.shields.io/travis/knutdrand/cucumber.svg
         :target: https://travis-ci.com/knutdrand/cucumber
 
-.. image:: https://readthedocs.org/projects/cucumber/badge/?version=latest
-        :target: https://cucumber.readthedocs.io/en/latest/?version=latest
-        :alt: Documentation Status
-
-
 
 
 Mutation signature analysis package
@@ -21,7 +16,6 @@ Mutation signature analysis package
 
 
 * Free software: MIT license
-* Documentation: https://cucumber.readthedocs.io.
 * Documentation: https://cucumber.github.com/cucumber/
 
 
@@ -76,27 +70,27 @@ To obtain help :
 Commands:
 ::
   count-mutation ---Count mutation types in a VCF file
-  denovo Parameters ---matrix_file: str n_signatures 
+  denovo Parameters ---matrix_file: str n_signatures
   refit  Parameters ---numeric_chromosomes n_bootstraps
-  
+
 Running mutational signature refit algorithm:
 -----------------------------------------------
 The refitting algorithm takes as input a mutational catalog and cosmic mutational signature file
 ::
   %cucumber refit --help
- 
+
 Running cucumber refit
 ::
-  %cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt output/expo.txt 
-  %cucumber refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt output/expo.txt 
+  %cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt output/expo.txt
+  %cucumber refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt output/expo.txt
 
-The test data is provided in example_data folder, to convert *.vcf to matrix, the user must provide the path to the reference genome. 
+The test data is provided in example_data folder, to convert *.vcf to matrix, the user must provide the path to the reference genome.
 
 output files for a single sample
 ::
-   $output_file_exposure: exposure matrix with std_dev 
+   $output_file_exposure: exposure matrix with std_dev
    $exposures_single_dotplot.png: exposure matrix plot with std_dev
-The standard deviation is computed using a default of 100 bootstraps. 
+The standard deviation is computed using a default of 100 bootstraps.
 
 .. image:: output/exposures_single_dotplot_skin.png
    :width: 600
@@ -115,7 +109,7 @@ output files for a cohort
    :width: 600
 Running mutational signature de novo algorithm:
 -----------------------------------------------
-The de novo algorithm takes as input a mutational catalog and inferred the exposure matrix and mutational signature matrix. The cosmic mutational signature file is provided to compute the cosine similarity.  
+The de novo algorithm takes as input a mutational catalog and inferred the exposure matrix and mutational signature matrix. The cosmic mutational signature file is provided to compute the cosine similarity.
 ::
   % cucumber denovo --help
 
@@ -124,7 +118,7 @@ Step 1: Grid Search: The grid uses cross-validation to find the optimal pairwise
   % Snakefile
 
 
-Step 2: In the Sanakefile, provide the range of the number of signatures $k$ and $lambda$ for the grid search to determine the optimal k and lambda.  
+Step 2: In the Sanakefile, provide the range of the number of signatures $k$ and $lambda$ for the grid search to determine the optimal k and lambda.
 ::
   %localrules: all
   %ks = list(range(3, 10)): default range of the number of signatures
@@ -136,7 +130,7 @@ Input mutational catalogue needs to be provided in the dataset folder
   % "results/{dataset}/pcawg_skin_21.txt"
 Running the grid search
 ::
- % snakemake -j num_cpu 
+ % snakemake -j num_cpu
 To check manually the optimal $k$ and $lambda$ from the output
 ::
  % sort -k3n,3 results/data/all.csv
@@ -144,11 +138,11 @@ Run denovo using optimal $k=4$ and $lambda=0.1$
 ::
  % cucumber denovo snakemake/results/data/pcawg_skin_21.txt 4 0.1 --cosmic-file example_data/sig_cosmic_v3_2019.txt
 
-output files 
+output files
 ::
    $exposures_matrix
    $mutational signatures matrix
-   $mutational signatures profile 
+   $mutational signatures profile
 .. image:: output/denovo_figure_k4.png
    :width: 600
 
