@@ -164,7 +164,7 @@ def plot_profile(data):
 def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
           opportunity_file: str = None, ref_genome: str = None,
           data_type: DataType = DataType.exome, n_bootstraps: int = 25, numeric_chromosomes: bool = False,
-          genotyped: bool = True, output_folder: str = 'output/'):
+          genotyped: bool = True, output_folder: str = 'output/', cancer_type: str = None):
     '''
     Parameters
     ----------
@@ -190,6 +190,16 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
         matrix_file = f'{output_folder}/matrix.csv'
     M = read_counts(matrix_file)
     S, index_signature = read_signature(signature_file)
+    if cancer_type is not None:
+        if cancer_type == 'cancer':
+            S = S[[1,2,3]]
+        elif cancer_type == 'breast':
+            S = S
+        elif cancer_type == 'skin':
+            S = S
+        else:
+            raise ValueError(f'Unknown cancer type {cancer_type}')
+
     O = read_opportunity(M, opportunity_file)
     lambd = get_lambda(data_type)
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
