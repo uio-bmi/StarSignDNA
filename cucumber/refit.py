@@ -52,6 +52,7 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, 
     print("E_norm",E_norm)
     print("PMF",np.mean(loss))
     # print("CONV",conv)
+    #print("Topt is", topt)
     return E
 
 

@@ -9,7 +9,7 @@ import seaborn as sns
 import string
 import multiprocessing
 
-np.random.seed(10000)
+np.random.seed(1000)
 
 
 # todo
@@ -161,10 +161,10 @@ def plot_profile(data):
     return plt
 
 
-def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
+def refit(matrix_file: str, signature_file: str,
           opportunity_file: str = None, ref_genome: str = None,
           data_type: DataType = DataType.exome, n_bootstraps: int = 25, numeric_chromosomes: bool = False,
-          genotyped: bool = True, output_folder: str = 'output/'):
+          genotyped: bool = True, output_folder: str = 'output/', cancer_type: str = None):
     '''
     Parameters
     ----------
@@ -189,25 +189,146 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
     M = read_counts(matrix_file)
+    M = M[0:1,0:96]
+    #    S, index_signature = read_signature(signature_file)
     S, index_signature = read_signature(signature_file)
+    if cancer_type is not None:
+        if cancer_type == 'bcla':
+            index = [0,1,3,4 ,18]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'brca':
+            index = [0,1,2,4,18,24,37,41,50]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'chol':
+            index = [0,1,4,18,24,47,48,49,67]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'gbm':
+            index = [0,4,37,47,48,49]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'lgg':
+            index = [0,4]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'cesc':
+            index = [0,1,4,18]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'coad':
+            index = [0,4,20,47,48,49,53]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'esca':
+            index = [0,2,4,18,22,23,24, 47,48,49]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'uvm':
+            index = [0,4,47,48,49,60,61]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'hnsc':
+            index = [0,1,3,4,18,47,48,49,54]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'kich':
+            index = [0,1,18,36, 47,48,49]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'kirp':
+            index = [0,1,4,18,54,58]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'kirc':
+            index = [0,4,28,29,47,48,49,50]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'lihc':
+            index = [0,2,3,4,17,21,24,28,29, 36,47,48,49]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'luad':
+            index = [0,1,3,4,18,47,48,54]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'lusc':
+            index = [0,1,3,4,18,54]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'dlbc':
+            index = [1,2,4,5,11,18,22,23,41,43,44,47,48,49,65]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'dlbc':
+            index = [0,1,2,4,5, 11,18,22,23,41,43,44,47,48,49]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'laml':
+            index = [0,4,52]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'ov':
+            index = [0,1,2,4,18,24,47,48,49]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'paad':
+            index = [0,1,2,4,18,22,23,24,47,48,49]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'prad':
+            index = [0,2,4,24,47,48,49,67]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'sarc':
+            index = [0,4,6,7,8,9,24,68]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'skcm':
+            index = [0,4,6,7,8,9,45,47,48,49,54,58]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'stad':
+            index = [0,1,2,18,20,22,23,24,26,47,48,49]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'thca':
+            index = [0,1,4,18,47,48,49,52,54,58,62]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'ucec':
+            index = [0,1,4,12,13,14,15,18,19,20,35,53]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'fake':
+            index = [83,84,85]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
+        else:
+            raise ValueError(f'Unknown cancer type {cancer_type}')
+    # index_signature = read_signature(signature_file)
     O = read_opportunity(M, opportunity_file)
     lambd = get_lambda(data_type)
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
+        ##normaize_m
+        # M /= M.sum(axis=-1, keepdims=True)
         E = _refit(M, S, O, lambd=lambd)[0]
         E_std = _bootstrap(M, S, O, n_bootstraps, lambd=lambd)
         E = [E, E_std]
         E = pd.DataFrame(data=E, columns=index_signature, index=['Signature', 'std_dev'])
-        E.drop(columns=E.columns[0], axis=1, inplace=True)
+        #   E.drop(columns=E.columns[0], axis=1, inplace=True)
         plot = single_plot(E)
-        #E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
+        # E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
         E.to_csv(f"{output_folder}/exposure_signature.txt", index=True, header=True, sep='\t')
         plot.savefig(f"{output_folder}/plot_exposure_signature.png", dpi=600)
 
     else:
         E = _refit(M, S, O, lambd=lambd)
+        #print(E)
         sum_expo = E.sum(axis=0, keepdims=True) / len(E)
         E = pd.DataFrame(data=E, columns=index_signature)
-        E.to_csv(output_file_exposure, index=False, header=True, sep='\t')
+        E.to_csv(f'{output_folder}/cucumber_cohort_exposure.txt', index=False, header=True, sep='\t')
         sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
         # print(sum_expo)
         sum_expo = np.transpose(sum_expo)
@@ -219,8 +340,10 @@ def refit(matrix_file: str, signature_file: str, output_file_exposure: str,
         plot_top_five.savefig(f"{output_folder}/exposures_cohort_top_5.png", dpi=600)
         plot_variance = cohort_violin(E)
         plot_variance.savefig(f"{output_folder}/exposures_cohort_variance.png", dpi=600)
+        # sum_expo.to_csv(output_file_exposure_avg, index=index_signature, header=T67.png", dpi=600)
         # sum_expo.to_csv(output_file_exposure_avg, index=index_signature, header=True, sep='\t')
-        sum_expo.to_csv(f'{output_folder}/output_file_exposure_avg.txt', index=index_signature, header=True, sep='\t')
+        sum_expo.to_csv(f'{output_folder}/average_exposure.txt', index=index_signature, header=True,
+                        sep='\t')
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
@@ -228,7 +351,7 @@ def get_lambda(data_type):
     if data_type == DataType.genome:
         lambd = 10
     else:
-        lambd = 5
+        lambd = 0.7
     return lambd
 
 
