@@ -189,7 +189,7 @@ def refit(matrix_file: str, signature_file: str,
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
     M = read_counts(matrix_file)
-   # M = M[0:1,0:96]
+    M = M[0:50,0:96]
     #    S, index_signature = read_signature(signature_file)
     S, index_signature = read_signature(signature_file)
     if cancer_type is not None:
@@ -346,7 +346,7 @@ def get_lambda(data_type):
     if data_type == DataType.genome:
         lambd = 10
     else:
-        lambd = 0.7
+        lambd = 5
     return lambd
 
 
