@@ -189,7 +189,7 @@ def refit(matrix_file: str, signature_file: str,
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
     M = read_counts(matrix_file)
-    #M = M[0:1,0:96]
+   # M = M[0:1,0:96]
     #    S, index_signature = read_signature(signature_file)
     S, index_signature = read_signature(signature_file)
     if cancer_type is not None:
@@ -301,13 +301,8 @@ def refit(matrix_file: str, signature_file: str,
             index = [0,1,4,12,13,14,15,18,19,20,35,53]
             S = S[index]
             index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'fake':
-            index = [83,84,85]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
         else:
             raise ValueError(f'Unknown cancer type {cancer_type}')
-    # index_signature = read_signature(signature_file)
     O = read_opportunity(M, opportunity_file)
     lambd = get_lambda(data_type)
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
