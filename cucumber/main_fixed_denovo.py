@@ -12,7 +12,7 @@ def compute_local_gradients(E, M, S, O):
         for r in range(n_signatures):
             numerator = M[i] * S[r]
             denumerator_sum = np.array([E[i] @ S[:, k] for k in range(n_mutations)])
-            denumerator_sum_c = denumerator_sum + 0.000001
+            denumerator_sum_c = denumerator_sum    + 0.000001
             local_gradients[i, r] = np.sum((numerator / denumerator_sum_c) - O[i] * S[r])
     return local_gradients
 
@@ -42,12 +42,12 @@ def compute_global_gradient(E, local_gradients, lambd):
 # function to compute the step-size
 def compute_topt(E, local_gradients, global_gradients, hessians):
     # print("local",hessians)
-    numerator = np.linalg.norm(global_gradients, ord= 2, axis=None, keepdims=False)
+    numerator = np.linalg.norm(global_gradients, ord= 'fro', axis=None, keepdims=False)
     #numerator = np.sum(global_gradients * local_gradients)
     # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
     denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])
-    topt = - (numerator / denominatior)  # + 10e-7
+    topt = - (numerator / denominatior) + 10e-5
     return topt
 
 
@@ -64,11 +64,11 @@ def compute_t_edge(E, global_gradients):
     if not np.any(mask):
         return np.inf
     assert np.all(global_gradients_conv != 0)
-    return np.min(-(E_Conv / global_gradients_conv)[mask])  # + 10e-10
+    return np.min(-(E_Conv / global_gradients_conv)[mask])  #+ 10e-2
 
 def compute_topt_denovo(E, local_gradients, global_gradients, hessians):
     # print("local",hessians)
-    numerator = np.linalg.norm(global_gradients, ord=2, axis=None, keepdims=False)
+    numerator = np.linalg.norm(global_gradients, ord='fro', axis=None, keepdims=False)
     #numerator = np.sum(global_gradients * local_gradients)
     # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
@@ -158,7 +158,7 @@ def check(global_gradients):
 #     conv = np.all(np.abs(E_hat - E) / E < tol)
 #     return conv
 
-def convergence(E, E_hat, tol=10e-7):
+def convergence(E, E_hat, tol=10e-9):
     conv = []
     conv = np.abs((E_hat - E) / E)
     if conv < tol:
@@ -200,7 +200,7 @@ def Frobinous_reconstuct(M, S, E, O):
 def sparsity(E):
     sparsity = 1.0 - (np.count_nonzero(E) / float(E.size))
     # print("The sparsity is :", sparsity)
-    if sparsity >= 0.6:
+    if sparsity >= 0.8:
         return True
     else:
         return False
@@ -260,9 +260,11 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
     minimun_topt_tedge = 0
     for step in range(n_steps):
         print("Gradient Step is:", step)
-        #print("topt", minimun_topt_tedge)
+        #print("Topt",topt)
+        #print("Tedge",tedge)
+        #print("Minimum", minimun_topt_tedge)
         # print(E)
-        print("PMF",np.mean(loss))
+        #print("PMF",np.mean(loss))
         mse_hat = mse_e
         # loss_hat = loss
         E_hat = E
@@ -274,7 +276,7 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
         tedge = compute_t_edge(E, global_gradients)
         topt = compute_topt(E, local_gradients, global_gradients, hessians)
         if topt >= tedge:
-            topt = tedge
+            #topt = tedge
             minimun_topt_tedge = min_topt_tedge(topt, tedge)
             E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
             mse_e = Frobinous(M, S, E, O)
@@ -309,10 +311,10 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
             E = np.maximum(E, 0)
         # print("PMF loss", np.mean(loss))
         # print("PMF HAT_IN", loss_hat)
-        #conv = convergence(np.mean(loss_hat), np.mean(loss))
+        conv = convergence(np.mean(loss_hat), np.mean(loss))
         loss_hat = np.mean(loss)
         # print("PMF HAT", loss_hat)
-        conv = sparsity(E)
+        #conv = sparsity(E)
         if conv == True:
             print(f"Cucumber converge: {conv}")
             if conv_iter_1 == -1:
@@ -324,7 +326,7 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
             print(f" Cucumber converged: {conv}")
             conv_iter_1 = -1
             conv_check = 0
-        if conv_check == 5:
+        if conv_check == 10:
             print("Thanks: Cucumber Algorithm converged")
             break
         mse_old = mse_e

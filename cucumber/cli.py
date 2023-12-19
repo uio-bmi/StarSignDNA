@@ -188,8 +188,10 @@ def refit(matrix_file: str, signature_file: str,
         assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
-    M = read_counts(matrix_file)
-    M = M[0:50,0:96]
+    #M = read_counts(matrix_file)
+    M, index_matrix = read_counts(matrix_file)
+    #print(index_matrix)
+    #M = M[0:5,0:96]
     #    S, index_signature = read_signature(signature_file)
     S, index_signature = read_signature(signature_file)
     if cancer_type is not None:
@@ -301,13 +303,19 @@ def refit(matrix_file: str, signature_file: str,
             index = [0,1,4,12,13,14,15,18,19,20,35,53]
             S = S[index]
             index_signature = [index_signature[i] for i in index]
+        elif cancer_type == 'test':
+            index = [0,1,2,3,4,5,6,7,8,9,10]
+            S = S[index]
+            index_signature = [index_signature[i] for i in index]
         else:
             raise ValueError(f'Unknown cancer type {cancer_type}')
     O = read_opportunity(M, opportunity_file)
-    lambd = get_lambda(data_type)
+    #lambd = get_lambda(data_type)
+    lambd = 5 * np.sqrt(len(M)/100)
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
         ##normaize_m
         # M /= M.sum(axis=-1, keepdims=True)
+        #print(lambd)
         E = _refit(M, S, O, lambd=lambd)[0]
         E_std = _bootstrap(M, S, O, n_bootstraps, lambd=lambd)
         E = [E, E_std]
@@ -319,12 +327,16 @@ def refit(matrix_file: str, signature_file: str,
         plot.savefig(f"{output_folder}/plot_exposure_signature.png", dpi=600)
 
     else:
+        #print(lambd)
         E = _refit(M, S, O, lambd=lambd)
         #print(E)
         sum_expo = E.sum(axis=0, keepdims=True) / len(E)
-        E = pd.DataFrame(data=E, columns=index_signature)
-        E.to_csv(f'{output_folder}/cucumber_cohort_exposure.txt', index=False, header=True, sep='\t')
+        E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
+ #       E.to_csv(f'{output_folder}/cucumber_cohort_exposure.txt', index=False, header=True, sep='\t')
+        E.to_csv(f'{output_folder}/cucumber_cohort_exposure.txt', index=index_matrix, header=True, sep='\t')
         sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
+        # Add the row index to the DataFrame
+        #sum_expo = sum_expo.index_matrix()
         # print(sum_expo)
         sum_expo = np.transpose(sum_expo)
         plot_summary = cohort_plot(sum_expo)
@@ -342,12 +354,12 @@ def refit(matrix_file: str, signature_file: str,
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
-def get_lambda(data_type):
-    if data_type == DataType.genome:
-        lambd = 10
-    else:
-        lambd = 5
-    return lambd
+# def get_lambda(data_type):
+#     if data_type == DataType.genome:
+#         lambd = 10
+#     else:
+#         lambd = 5
+#     return lambd
 
 
 def read_opportunity(M, opportunity_file):
@@ -367,11 +379,18 @@ def read_signature(signature_file):
     S = pd.read_csv(signature_file, delimiter=',')
     index_signature = S.index.values.tolist()
     S = S.to_numpy().astype(float)
+    #S = S[0:10,0:96]
     return S, index_signature
 
 
 def read_counts(matrix_file):
-    return pd.read_csv(matrix_file, delimiter='\t').to_numpy().astype(float)
+    M = pd.read_csv(matrix_file, delimiter='\t')
+    index_matrix = M.index.values.tolist()
+    M = M.to_numpy().astype(float)
+    #return pd.read_csv(matrix_file, delimiter='\t').to_numpy().astype(float)
+    #print(index_matrix)
+    return M, index_matrix
+
 
 
 def get_num_cpus():
