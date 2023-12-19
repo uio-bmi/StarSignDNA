@@ -42,7 +42,7 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, 
     E /= E.sum(axis=-1, keepdims=True)
     E[np.isnan(E)] = 0
     sparsity = 1.0 - ( count_nonzero(E) / float(E.size) )
-    E_norm = np.linalg.norm(E, ord=2, axis=None, keepdims=False)
+    E_norm = np.linalg.norm(E, ord='fro', axis=None, keepdims=False)
     mse_reconstruct, M_hat = Frobinous_reconstuct(M, S, E, O)
     #print("mse_reconstructed is:", mse_reconstruct)
 

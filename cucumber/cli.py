@@ -303,10 +303,10 @@ def refit(matrix_file: str, signature_file: str,
             index = [0,1,4,12,13,14,15,18,19,20,35,53]
             S = S[index]
             index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'test':
-            index = [0,1,2,3,4,5,6,7,8,9,10]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
+        # elif cancer_type == 'test':
+        #     index = [0,1,2,3,4,5,6,7,8,9,10]
+        #     S = S[index]
+        #     index_signature = [index_signature[i] for i in index]
         else:
             raise ValueError(f'Unknown cancer type {cancer_type}')
     O = read_opportunity(M, opportunity_file)
@@ -329,7 +329,7 @@ def refit(matrix_file: str, signature_file: str,
     else:
         #print(lambd)
         E = _refit(M, S, O, lambd=lambd)
-        #print(E)
+        #print(O)
         sum_expo = E.sum(axis=0, keepdims=True) / len(E)
         E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
  #       E.to_csv(f'{output_folder}/cucumber_cohort_exposure.txt', index=False, header=True, sep='\t')
@@ -366,7 +366,58 @@ def read_opportunity(M, opportunity_file):
     n_samples = len(M)
     n_mutations = M.shape[1]
     if opportunity_file is not None:
-        O = pd.read_csv(opportunity_file, sep='\t', header=None).to_numpy().astype(float)
+        if opportunity_file == "human-genome":
+            O = np.array([1.14e+08, 6.60e+07, 1.43e+07, 9.12e+07, # C>A @ AC[ACGT]
+                  1.05e+08, 7.46e+07, 1.57e+07, 1.01e+08, # C>A @ CC[ACGT]
+                  8.17e+07, 6.76e+07, 1.35e+07, 7.93e+07, # C>A @ GC[ACGT]
+                  1.11e+08, 8.75e+07, 1.25e+07, 1.25e+08, # C>A @ TC[ACGT]
+                  1.14e+08, 6.60e+07, 1.43e+07, 9.12e+07, # C>G @ AC[ACGT]
+                  1.05e+08, 7.46e+07, 1.57e+07, 1.01e+08, # C>G @ CC[ACGT]
+                  8.17e+07, 6.76e+07, 1.35e+07, 7.93e+07, # C>G @ GC[ACGT]
+                  1.11e+08, 8.75e+07, 1.25e+07, 1.25e+08, # C>G @ TC[ACGT]
+                  1.14e+08, 6.60e+07, 1.43e+07, 9.12e+07, # C>T @ AC[ACGT]
+                  1.05e+08, 7.46e+07, 1.57e+07, 1.01e+08, # C>T @ CC[ACGT]
+                  8.17e+07, 6.76e+07, 1.35e+07, 7.93e+07, # C>T @ GC[ACGT]
+                  1.11e+08, 8.75e+07, 1.25e+07, 1.25e+08, # C>T @ TC[ACGT]
+                  1.17e+08, 7.57e+07, 1.04e+08, 1.41e+08, # T>A @ AC[ACGT]
+                  7.31e+07, 9.55e+07, 1.15e+08, 1.13e+08, # T>A @ CC[ACGT]
+                  6.43e+07, 5.36e+07, 8.52e+07, 8.27e+07, # T>A @ GC[ACGT]
+                  1.18e+08, 1.12e+08, 1.07e+08, 2.18e+08, # T>A @ TC[ACGT]
+                  1.17e+08, 7.57e+07, 1.04e+08, 1.41e+08, # T>C @ AC[ACGT]
+                  7.31e+07, 9.55e+07, 1.15e+08, 1.13e+08, # T>C @ CC[ACGT]
+                  6.43e+07, 5.36e+07, 8.52e+07, 8.27e+07, # T>C @ GC[ACGT]
+                  1.18e+08, 1.12e+08, 1.07e+08, 2.18e+08, # T>C @ TC[ACGT]
+                  1.17e+08, 7.57e+07, 1.04e+08, 1.41e+08, # T>G @ AC[ACGT]
+                  7.31e+07, 9.55e+07, 1.15e+08, 1.13e+08, # T>G @ AC[ACGT]
+                  6.43e+07, 5.36e+07, 8.52e+07, 8.27e+07, # T>G @ AG[ACGT]
+                  1.18e+08, 1.12e+08, 1.07e+08, 2.18e+08]) # T>G @ AT[ACGT]])
+        elif opportunity_file == "human-exome":
+            O = np.array([1940794, 1442408, 514826, 1403756,
+                  2277398, 2318284, 774498, 2269674,
+                  1740752, 1968596, 631872, 1734468,
+                  1799540, 1910984, 398440, 2024770,
+                  1940794, 1442408, 514826, 1403756,
+                  2277398, 2318284, 774498, 2269674,
+                  1740752, 1968596, 631872, 1734468,
+                  1799540, 1910984, 398440, 2024770,
+                  1940794, 1442408, 514826, 1403756,
+                  2277398, 2318284, 774498, 2269674,
+                  1740752, 1968596, 631872, 1734468,
+                  1799540, 1910984, 398440, 2024770,
+                  1299256, 1166912, 1555012, 1689928,
+                  978400,  2119248, 2650754, 1684488,
+                  884052,  1173252, 1993110, 1251508,
+                  1391660, 1674368, 1559846, 2850934,
+                  1299256, 1166912, 1555012, 1689928,
+                  978400,  2119248, 2650754, 1684488,
+                  884052,  1173252, 1993110, 1251508,
+                  1391660, 1674368, 1559846, 2850934,
+                  1299256, 1166912, 1555012, 1689928,
+                  978400,  2119248, 2650754, 1684488,
+                  884052,  1173252, 1993110, 1251508,
+                  1391660, 1674368, 1559846, 2850934])
+        else:
+            O = pd.read_csv(opportunity_file, sep='\t', header=None).to_numpy().astype(float)
         O = np.broadcast_to(O, M.shape)
     else:
         O = np.ones((n_samples, n_mutations), dtype=float)
