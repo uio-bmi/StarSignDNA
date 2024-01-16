@@ -1,7 +1,7 @@
 import bionumpy as bnp
 import numpy as np
 from bionumpy.variants import count_mutation_types_genomic
-from bionumpy.io.delimited_buffers import PhasedVCFMatrixBuffer
+from bionumpy.io.vcf_buffers import PhasedVCFMatrixBuffer
 from bionumpy.io.matrix_dump import matrix_to_csv
 from bionumpy import Genome
 import logging

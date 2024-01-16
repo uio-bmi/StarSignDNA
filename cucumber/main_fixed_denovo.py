@@ -23,7 +23,7 @@ def compute_local_gradients(E, M, S, O,lambd):
             local_gradients[i, r] = np.sum((numerator / denumerator_sum_c) - O[i] * S[r])
     return local_gradients, matrice_lambda
 
-###denovo
+###denovo,
 
 def compute_local_gradients_denovo(E, M, S, O):
     n_samples, n_signatures, n_mutations = (E.shape[0], S.shape[0], M.shape[1])
