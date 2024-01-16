@@ -162,8 +162,7 @@ def plot_profile(data):
 
 
 def refit(matrix_file: str, signature_file: str,
-          opportunity_file: str = None, ref_genome: str = None,
-          data_type: DataType = DataType.exome, n_bootstraps: int = 25, numeric_chromosomes: bool = False,
+          opportunity_file: str = None, ref_genome: str = None, n_bootstraps: int = 25, numeric_chromosomes: bool = False,
           genotyped: bool = True, output_folder: str = 'output/', cancer_type: str = None):
     '''
     Parameters
@@ -191,7 +190,7 @@ def refit(matrix_file: str, signature_file: str,
     #M = read_counts(matrix_file)
     M, index_matrix = read_counts(matrix_file)
     #print(index_matrix)
-    #M = M[0:5,0:96]
+    #M = M[0:4,0:96]
     #    S, index_signature = read_signature(signature_file)
     S, index_signature = read_signature(signature_file)
     if cancer_type is not None:
@@ -310,12 +309,13 @@ def refit(matrix_file: str, signature_file: str,
         else:
             raise ValueError(f'Unknown cancer type {cancer_type}')
     O = read_opportunity(M, opportunity_file)
-    #lambd = get_lambda(data_type)
-    lambd = 5 * np.sqrt(len(M)/100)
+
+    if len(M) <= 100:
+         lambd = 0.7
+    else:
+        lambd = 0.7 * np.sqrt(len(M)/100)
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
-        ##normaize_m
-        # M /= M.sum(axis=-1, keepdims=True)
-        #print(lambd)
+        print(M)
         E = _refit(M, S, O, lambd=lambd)[0]
         E_std = _bootstrap(M, S, O, n_bootstraps, lambd=lambd)
         E = [E, E_std]
@@ -323,33 +323,33 @@ def refit(matrix_file: str, signature_file: str,
         #   E.drop(columns=E.columns[0], axis=1, inplace=True)
         plot = single_plot(E)
         # E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
-        E.to_csv(f"{output_folder}/exposure_signature.txt", index=True, header=True, sep='\t')
-        plot.savefig(f"{output_folder}/plot_exposure_signature.png", dpi=600)
+        E.to_csv(f"{output_folder}/exposure_signature_l07_brca_16jan_l07.txt", index=True, header=True, sep='\t')
+        plot.savefig(f"{output_folder}/plot_exposure_signature_l07_brca_16jan_l07.png", dpi=600)
 
     else:
-        #print(lambd)
+
         E = _refit(M, S, O, lambd=lambd)
         #print(O)
         sum_expo = E.sum(axis=0, keepdims=True) / len(E)
         E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
  #       E.to_csv(f'{output_folder}/cucumber_cohort_exposure.txt', index=False, header=True, sep='\t')
-        E.to_csv(f'{output_folder}/cucumber_cohort_exposure.txt', index=index_matrix, header=True, sep='\t')
+        E.to_csv(f'{output_folder}/cucumber_exposure_simulation_4_l7_step10000.txt', index=index_matrix, header=True, sep='\t')
         sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
         # Add the row index to the DataFrame
         #sum_expo = sum_expo.index_matrix()
         # print(sum_expo)
         sum_expo = np.transpose(sum_expo)
         plot_summary = cohort_plot(sum_expo)
-        plot_summary.savefig(f"{output_folder}/exposures_cohort_dotplot.png", dpi=600)
+        plot_summary.savefig(f"{output_folder}/exposures_cohort_dotplot_simulation_4_l7_step10000.png", dpi=600)
         sort_E = sum_expo.sort_values(by=['Signatures'], ascending=False)
         sort_E = sort_E.iloc[:5, 0:]
         plot_top_five = cohort_plot(sort_E)
-        plot_top_five.savefig(f"{output_folder}/exposures_cohort_top_5.png", dpi=600)
+        plot_top_five.savefig(f"{output_folder}/exposures_cohort_simulation_4_l7_step10000.png", dpi=600)
         plot_variance = cohort_violin(E)
-        plot_variance.savefig(f"{output_folder}/exposures_cohort_variance.png", dpi=600)
+        plot_variance.savefig(f"{output_folder}/exposures_cohort_simulation_4_l07_step10000.png", dpi=600)
         # sum_expo.to_csv(output_file_exposure_avg, index=index_signature, header=T67.png", dpi=600)
         # sum_expo.to_csv(output_file_exposure_avg, index=index_signature, header=True, sep='\t')
-        sum_expo.to_csv(f'{output_folder}/average_exposure.txt', index=index_signature, header=True,
+        sum_expo.to_csv(f'{output_folder}/average_cucumber_simulation_4_l07_step10000.txt', index=index_signature, header=True,
                         sep='\t')
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -422,12 +422,16 @@ def read_opportunity(M, opportunity_file):
     else:
         O = np.ones((n_samples, n_mutations), dtype=float)
     O = O / np.amax(O).sum(axis=-1, keepdims=True)
+#    print(O.shape)
+    #O = O.sum(axis=-1, keepdims=True)
+    O = O/O.sum(axis=-1, keepdims=True)
+    print(O.shape)
     assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
     return O
 
 
 def read_signature(signature_file):
-    S = pd.read_csv(signature_file, delimiter=',')
+    S = pd.read_csv(signature_file, delimiter='\t')
     index_signature = S.index.values.tolist()
     S = S.to_numpy().astype(float)
     #S = S[0:10,0:96]
@@ -450,7 +454,7 @@ def get_num_cpus():
 
 def denovo(matrix_file: str, n_signatures: int, lambd: float,
            opportunity_file: str = None, cosmic_file: str = None,
-           max_em_iterations: int = 10000,
+           max_em_iterations: int = 1000,
            max_gd_iterations: int = 50, numeric_chromosomes: bool = False, genotyped: bool = True, file_extension=None,
            ref_genome=None, output_folder: str = 'output/'):
     """
@@ -494,7 +498,7 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,
     if cosmic_file is not None:
         cosmic = pd.read_csv(cosmic_file, delimiter=',')
         cos_similarity = cos_sim_matrix(S, cosmic)[0]
-        cos_similarity.to_csv(f"{output_folder}/cosine_similarity_denovo.txt", sep="\t")
+        cos_similarity.to_csv(f"{output_folder}/cosine_similarity_denovo_pcawg_skin_step1000_refit.txt", sep="\t")
         # print(cos_similarity)
     S = np.transpose(S)
     alphabet = list(string.ascii_uppercase)
@@ -514,13 +518,13 @@ def denovo(matrix_file: str, n_signatures: int, lambd: float,
                        'G[T>G]A', 'G[T>G]C', 'G[T>G]G', 'G[T>G]T', 'T[T>G]A', 'T[T>G]C', 'T[T>G]G', 'T[T>G]T']
     label = list(mutation_labels)
     S = pd.DataFrame(S, columns=Sig, index=label)
-    S.to_csv(f"{output_folder}/denovo_signature.txt", sep='\t', index=label)
+    S.to_csv(f"{output_folder}/denovo_signature_pcawg_skin_step1000_refit.txt", sep='\t', index=label)
     # print(S)
     deno_figure = plot_profile(S)
-    deno_figure.savefig(f"{output_folder}/denovo_figure.png", dpi=600)
+    deno_figure.savefig(f"{output_folder}/denovo_figure_pcawg_skin_step1000_refit.png", dpi=600)
     E = pd.DataFrame(E, columns=Sig, index=None)
     # np.savetxt(output_file_exposure, np.array(E))
-    E.to_csv(f"{output_folder}/denovo_exposures.txt", sep='\t', index=None)
+    E.to_csv(f"{output_folder}/denovo_exposures_pcawg_skin_step1000_refit.txt", sep='\t', index=None)
     # np.savetxt(output_file_signature, np.array(S))
     print("--- %s seconds ---" % (time.time() - start_time))
 

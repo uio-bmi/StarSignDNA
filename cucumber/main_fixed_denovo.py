@@ -5,14 +5,34 @@ import numpy as np
 from numpy.random.mtrand import poisson
 from scipy.stats import poisson, entropy
 
-def compute_local_gradients(E, M, S, O):
+def compute_local_gradients(E, M, S, O,lambd):
+    n_samples, n_signatures, n_mutations = (E.shape[0], S.shape[0], M.shape[1])
+    local_gradients = np.empty_like(E)
+    matrice_sum = M.sum(axis=1, keepdims=True)
+    matrice_lambda = np.empty_like(matrice_sum).astype(float)
+    for idx, sum_ in np.ndenumerate(matrice_sum):
+        if sum_ < 200:
+            matrice_lambda[idx] = 0.7
+        else:
+            matrice_lambda[idx] = lambd
+    for i in range(n_samples):
+        for r in range(n_signatures):
+            numerator = M[i] * S[r]
+            denumerator_sum = np.array([E[i] @ S[:, k] for k in range(n_mutations)])
+            denumerator_sum_c = denumerator_sum    + 0.000001
+            local_gradients[i, r] = np.sum((numerator / denumerator_sum_c) - O[i] * S[r])
+    return local_gradients, matrice_lambda
+
+###denovo
+
+def compute_local_gradients_denovo(E, M, S, O):
     n_samples, n_signatures, n_mutations = (E.shape[0], S.shape[0], M.shape[1])
     local_gradients = np.empty_like(E)
     for i in range(n_samples):
         for r in range(n_signatures):
             numerator = M[i] * S[r]
             denumerator_sum = np.array([E[i] @ S[:, k] for k in range(n_mutations)])
-            denumerator_sum_c = denumerator_sum    + 0.000001
+            denumerator_sum_c = denumerator_sum + 0.000001
             local_gradients[i, r] = np.sum((numerator / denumerator_sum_c) - O[i] * S[r])
     return local_gradients
 
@@ -29,14 +49,77 @@ def compute_hessians(E, M, S):
 
 
 # function to compute the global gradient
-def compute_global_gradient(E, local_gradients, lambd):
+# def compute_global_gradient(E, local_gradients, matrice_lambda):
+#     out = np.empty_like(E)
+#     for i in range(E.shape[0]):
+#         for j in range(E.shape[1]):
+#            # print("NNNNN",local_gradients[i, :])
+#             print("LLLLLLL",matrice_lambda[j])
+#             if np.all(np.abs(local_gradients[i, :]) > matrice_lambda[j]):
+#                 out[i, j] = local_gradients[i, j] - matrice_lambda[j] * np.sign(local_gradients[i, j])
+#             elif np.all(np.abs(E[i, :]) > matrice_lambda[j]):
+#                 out[i, j] = local_gradients[i, j] - matrice_lambda[j] * np.sign(E[i, j])
+#             else:
+#                 out[i, j] = 0
+
+def compute_global_gradient_old(E, local_gradients, lambd):
+    cond_a = local_gradients-lambd*np.sign(E)
+    cond_b = local_gradients-lambd*np.sign(local_gradients)
+    cond_c = 0
+#    # print(np.where(E!=0, cond_a, np.where(np.abs(local_gradients)>lambd, cond_b, cond_c)))
+    return np.where(E != 0, cond_a, np.where(np.abs(local_gradients) > lambd, cond_b, cond_c))
+
+def compute_global_gradient_good(E, local_gradients, matrice_lambda):
+    out = np.empty_like(E)
+    for i in range(E.shape[0]):
+        for j in range(E.shape[1]):
+            print("NNNNN",local_gradients[i, :])
+            print("LLLLLLL",matrice_lambda[j])
+            if E[i, j] == 0 and np.all(np.abs(local_gradients[i, :]) > matrice_lambda[j]):
+                out[i, j] = local_gradients[i, j] - matrice_lambda[j] * np.sign(local_gradients[i, j])
+            elif E[i, j] != 0: #np.all(np.abs(E[i, :]) > matrice_lambda[j]):
+                out[i, j] = local_gradients[i, j] - matrice_lambda[j] * np.sign(E[i, j])
+            else:
+                out[i, j] = 0
+    return out
+
+def compute_global_gradient(E, local_gradients, matrice_lambda):
+    out = np.empty_like(E)
+
+    # Check if matrice_lambda is a scalar
+    if np.isscalar(matrice_lambda):
+        for i in range(E.shape[0]):
+            for j in range(E.shape[1]):
+                #print("NNNNN", local_gradients[i, :])
+                #print("LLLLLLL", matrice_lambda)
+                if E[i, j] == 0 and np.all(np.abs(local_gradients[i, :]) > matrice_lambda):
+                    out[i, j] = local_gradients[i, j] - matrice_lambda * np.sign(local_gradients[i, j])
+                elif E[i, j] != 0:
+                    out[i, j] = local_gradients[i, j] - matrice_lambda * np.sign(E[i, j])
+                else:
+                    out[i, j] = 0
+    else:
+        for i in range(E.shape[0]):
+            for j in range(E.shape[1]):
+                #print("NNNNN", local_gradients[i, :])
+                #print("LLLLLLL", matrice_lambda[i])
+                if E[i, j] == 0 and np.all(np.abs(local_gradients[i, :]) > matrice_lambda[i]):
+                    out[i, j] = local_gradients[i, j] - matrice_lambda[i] * np.sign(local_gradients[i, j])
+                elif E[i, j] != 0:
+                    out[i, j] = local_gradients[i, j] - matrice_lambda[i] * np.sign(E[i, j])
+                else:
+                    out[i, j] = 0
+
+    return out
+
+def compute_global_gradient_denovo(E, local_gradients, matrice_lambda):
     # print("gradient",local_gradients)
     # print("EEEE",np.sign(E) )
     # print("LAAA", lambd)
-    cond_a = local_gradients - lambd * np.sign(E)
-    cond_b = local_gradients - lambd * np.sign(local_gradients)
+    cond_a = local_gradients - matrice_lambda * np.sign(E)
+    cond_b = local_gradients - matrice_lambda * np.sign(local_gradients)
     cond_c = 0
-    return np.where(E != 0, cond_a, np.where(np.all(np.abs(local_gradients) > lambd), cond_b, cond_c))
+    return np.where(E != 0, cond_a, np.where(np.all(np.abs(local_gradients) > matrice_lambda), cond_b, cond_c))
 
 
 # function to compute the step-size
@@ -47,7 +130,7 @@ def compute_topt(E, local_gradients, global_gradients, hessians):
     # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
     denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])
-    topt = - (numerator / denominatior) + 10e-5
+    topt = - (numerator / denominatior)  + 10e-5
     return topt
 
 
@@ -64,12 +147,12 @@ def compute_t_edge(E, global_gradients):
     if not np.any(mask):
         return np.inf
     assert np.all(global_gradients_conv != 0)
-    return np.min(-(E_Conv / global_gradients_conv)[mask])  #+ 10e-2
+    return np.min(-(E_Conv / global_gradients_conv)[mask])   + 10e-2
 
 def compute_topt_denovo(E, local_gradients, global_gradients, hessians):
     # print("local",hessians)
-    numerator = np.linalg.norm(global_gradients, ord='fro', axis=None, keepdims=False)
-    #numerator = np.sum(global_gradients * local_gradients)
+    #numerator = np.linalg.norm(global_gradients, ord='fro', axis=None, keepdims=False)
+    numerator = np.sum(global_gradients * local_gradients)
     # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
     denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])
@@ -158,7 +241,7 @@ def check(global_gradients):
 #     conv = np.all(np.abs(E_hat - E) / E < tol)
 #     return conv
 
-def convergence(E, E_hat, tol=10e-9):
+def convergence(E, E_hat, tol=10e-8):
     conv = []
     conv = np.abs((E_hat - E) / E)
     if conv < tol:
@@ -270,9 +353,12 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
         E_hat = E
         if np.any(E < 0):
             E = np.maximum(E, 0)
-        local_gradients = compute_local_gradients(E, M, S, O)
+        local_gradients, matrice_lambda = compute_local_gradients(E, M, S, O, lambd)
+        #print(matrice_lambda)
+        #print(local_gradients)
+        #print(E)
         hessians = compute_hessians(E, M, S)
-        global_gradients = compute_global_gradient(E, local_gradients, lambd)
+        global_gradients = compute_global_gradient(E, local_gradients, matrice_lambda)
         tedge = compute_t_edge(E, global_gradients)
         topt = compute_topt(E, local_gradients, global_gradients, hessians)
         if topt >= tedge:
@@ -326,7 +412,7 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
             print(f" Cucumber converged: {conv}")
             conv_iter_1 = -1
             conv_check = 0
-        if conv_check == 10:
+        if conv_check == 5:
             print("Thanks: Cucumber Algorithm converged")
             break
         mse_old = mse_e
