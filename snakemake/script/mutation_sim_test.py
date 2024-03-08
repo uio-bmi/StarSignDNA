@@ -13,14 +13,15 @@ def main(M, S):
     O = np.ones((n_samples, n_mutations), dtype=int)
     E_true = np.abs(np.random.laplace(loc=0, scale=1, size=n_samples*n_signatures).reshape(n_samples, n_signatures))
     E = np.full_like(E_true, 0.00001)
-
+    ###
+    ###
     topt = np.float64("Inf")
     tedge = np.float64("Inf")
     if(np.any(E < 0)):
         E = np.maximum(E, 0)
     E = main_fixed_denovo.running_simulation_denovo(E, M, S, O, topt, tedge, 0)
     loss = -poisson.logpmf(M, (E@S)*O)
-    loss[loss == np.float64("Inf")] = 10e+6
+    loss[loss == np.float64("Inf")] = 0
     if(np.any(E < 0)):
         E = np.maximum(E, 0)
     E /= E.sum(axis=-1, keepdims= True)

@@ -9,7 +9,7 @@ wildcard_constraints:
 
 
 localrules: all
-ks = list(range(2, 6))
+ks = list(range(2, 12))
 lambdas = [0, 0.01,0.05, 0.1, 0.2]
 
 rule all:
@@ -37,9 +37,10 @@ rule cv:
     script:
         "script/ten_fold.py"
 
+# path to the input data in the folder /results/data/file.txt
 rule test_train_split:
     input:
-        "results/{dataset}/pcawg_skin_21.txt"
+        "results/{dataset}/simulated_pancreatic_paad_1_deconst_3jan23_mat_s100_100.txt"
     output:
         trains = ["results/{dataset}/{fold}/train_m.csv" for fold in range(5)],
         tests = ["results/{dataset}/{fold}/test_m.csv" for fold in range(5)]

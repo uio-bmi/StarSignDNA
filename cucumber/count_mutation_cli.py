@@ -8,7 +8,7 @@ import logging
 logging.basicConfig(level="INFO")
 
 
-def count_mutation(vcf_filename: str, fasta_filename: str, out_filename: str = None, numeric_chromosomes: bool = True, genotyped: bool=False):
+def count_mutation(vcf_filename: str, fasta_filename: str, out_filename: str = None, numeric_chromosomes: bool = True, genotyped: bool= True):
     """
     Count mutation types in a VCF file.
 

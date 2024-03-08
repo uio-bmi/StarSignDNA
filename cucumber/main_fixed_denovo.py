@@ -5,14 +5,33 @@ import numpy as np
 from numpy.random.mtrand import poisson
 from scipy.stats import poisson, entropy
 
+def compute_local_gradients_ori(E, M, S, O):
+    n_samples, n_signatures, n_mutations = (E.shape[0], S.shape[0], M.shape[1])
+    local_gradients = np.empty_like(E)
+    #print("EEE_Grdientttt", E)
+
+    for i in range(n_samples):
+        for r in range(n_signatures):
+            # print(type(M[i]))
+            # print(type(S[r]))
+            # print(M.dtype, S.dtype)
+            numerator = M[i]*S[r]
+            denumerator_sum = np.array([E[i] @ S[:, k] for k in range(n_mutations)])
+            denumerator_sum_c = denumerator_sum +  0.000001
+            local_gradients[i, r] = np.sum((numerator/denumerator_sum_c) - O[i]*S[r])
+
+    return local_gradients
+
+##
+
 def compute_local_gradients(E, M, S, O,lambd):
     n_samples, n_signatures, n_mutations = (E.shape[0], S.shape[0], M.shape[1])
     local_gradients = np.empty_like(E)
     matrice_sum = M.sum(axis=1, keepdims=True)
     matrice_lambda = np.empty_like(matrice_sum).astype(float)
     for idx, sum_ in np.ndenumerate(matrice_sum):
-        if sum_ < 200:
-            matrice_lambda[idx] = 0.7
+        if sum_ < 100:
+            matrice_lambda[idx] = 0
         else:
             matrice_lambda[idx] = lambd
     for i in range(n_samples):
@@ -39,7 +58,7 @@ def compute_local_gradients_denovo(E, M, S, O):
 
 # function to calculate the hessian matrix
 def compute_hessians(E, M, S):
-    denominatior = (E @ S) ** 2 + 0.000001
+    denominatior = (E @ S) ** 2 +  0.000001
     numerator = M[:, None, None, :] * S[None, :, None, :] * S[None, None, :, :]
     res = numerator / denominatior[:, None, None, :]
     # print(res)
@@ -48,40 +67,14 @@ def compute_hessians(E, M, S):
     return hessians
 
 
-# function to compute the global gradient
-# def compute_global_gradient(E, local_gradients, matrice_lambda):
-#     out = np.empty_like(E)
-#     for i in range(E.shape[0]):
-#         for j in range(E.shape[1]):
-#            # print("NNNNN",local_gradients[i, :])
-#             print("LLLLLLL",matrice_lambda[j])
-#             if np.all(np.abs(local_gradients[i, :]) > matrice_lambda[j]):
-#                 out[i, j] = local_gradients[i, j] - matrice_lambda[j] * np.sign(local_gradients[i, j])
-#             elif np.all(np.abs(E[i, :]) > matrice_lambda[j]):
-#                 out[i, j] = local_gradients[i, j] - matrice_lambda[j] * np.sign(E[i, j])
-#             else:
-#                 out[i, j] = 0
 
-def compute_global_gradient_old(E, local_gradients, lambd):
-    cond_a = local_gradients-lambd*np.sign(E)
-    cond_b = local_gradients-lambd*np.sign(local_gradients)
+def compute_global_gradient_ori(E, local_gradients, lambd):
+    cond_a = local_gradients-lambd*np.sign(E) #change 7feb
+    cond_b = local_gradients-lambd*np.sign(local_gradients) #change 7feb
     cond_c = 0
 #    # print(np.where(E!=0, cond_a, np.where(np.abs(local_gradients)>lambd, cond_b, cond_c)))
-    return np.where(E != 0, cond_a, np.where(np.abs(local_gradients) > lambd, cond_b, cond_c))
+    return np.where(E > 0, cond_a, np.where(np.abs(local_gradients) > lambd, cond_b, cond_c))
 
-def compute_global_gradient_good(E, local_gradients, matrice_lambda):
-    out = np.empty_like(E)
-    for i in range(E.shape[0]):
-        for j in range(E.shape[1]):
-            print("NNNNN",local_gradients[i, :])
-            print("LLLLLLL",matrice_lambda[j])
-            if E[i, j] == 0 and np.all(np.abs(local_gradients[i, :]) > matrice_lambda[j]):
-                out[i, j] = local_gradients[i, j] - matrice_lambda[j] * np.sign(local_gradients[i, j])
-            elif E[i, j] != 0: #np.all(np.abs(E[i, :]) > matrice_lambda[j]):
-                out[i, j] = local_gradients[i, j] - matrice_lambda[j] * np.sign(E[i, j])
-            else:
-                out[i, j] = 0
-    return out
 
 def compute_global_gradient(E, local_gradients, matrice_lambda):
     out = np.empty_like(E)
@@ -90,22 +83,19 @@ def compute_global_gradient(E, local_gradients, matrice_lambda):
     if np.isscalar(matrice_lambda):
         for i in range(E.shape[0]):
             for j in range(E.shape[1]):
-                #print("NNNNN", local_gradients[i, :])
-                #print("LLLLLLL", matrice_lambda)
+
                 if E[i, j] == 0 and np.all(np.abs(local_gradients[i, :]) > matrice_lambda):
                     out[i, j] = local_gradients[i, j] - matrice_lambda * np.sign(local_gradients[i, j])
-                elif E[i, j] != 0:
+                elif E[i, j] > 0:
                     out[i, j] = local_gradients[i, j] - matrice_lambda * np.sign(E[i, j])
                 else:
                     out[i, j] = 0
     else:
         for i in range(E.shape[0]):
             for j in range(E.shape[1]):
-                #print("NNNNN", local_gradients[i, :])
-                #print("LLLLLLL", matrice_lambda[i])
                 if E[i, j] == 0 and np.all(np.abs(local_gradients[i, :]) > matrice_lambda[i]):
                     out[i, j] = local_gradients[i, j] - matrice_lambda[i] * np.sign(local_gradients[i, j])
-                elif E[i, j] != 0:
+                elif E[i, j] > 0:
                     out[i, j] = local_gradients[i, j] - matrice_lambda[i] * np.sign(E[i, j])
                 else:
                     out[i, j] = 0
@@ -183,9 +173,21 @@ def min_topt_tedge(topt, tedge):
 
 # function to update gradient Ascent algorithm
 def update_exposure_gradient(E, global_gradients, topt_tedge):
-    if (np.any(E < 0)):
-        E = np.maximum(E, 0)
+    # print("topt_tedge",topt_tedge)
+    if (np.any(E < 0)): ##25feb change
+       E = np.maximum(E, 0) ##feb change
     return E + topt_tedge * global_gradients
+
+
+def update_exposure_gradient_loop(E, global_gradients, topt_tedge):
+    rows, cols = E.shape
+    for i in range(rows):
+        for j in range(cols):
+            if E[i, j] < 0:
+                E[i, j] = max(E[i, j], 0)
+            E[i, j] += topt_tedge * global_gradients[i, j]
+
+    return E
 
 
 # function to compute Newton_Raphson
@@ -195,7 +197,7 @@ def newton_raphson1(E, global_gradients, hessians):
     H = hessians
     active_mask = (E != 0)
     # print(E)
-    assert np.all(E >= 0), "Error: E matrix element is not  greater than zero."
+    assert np.all(E >= 0), "Error: E matrix element is not  greater than zero." #comment 25jan
     active_hessians = []
     for E_row, gradient_row, hessian in zip(E, global_gradients, H):
         non_active = ((E_row == 0) | (gradient_row == 0))
@@ -215,33 +217,37 @@ def newton_raphson1(E, global_gradients, hessians):
 
 # function to update newton optimization
 def update_exposure_NR(E, global_gradients, topt, tedge, new_E):
-    if (np.any(E < 0)):
-        E = np.maximum(E, 0)
+   if (np.any(E < 0)):
+       E = np.maximum(E, 0) ##25jan change
     # assert topt <= tedge
-    return np.where(np.sign(new_E) == np.sign(E),
+   return np.where(np.sign(new_E) == np.sign(E),
                     new_E,
                     E + topt * global_gradients)
 
 
-def check(global_gradients):
-    counter = 0
-    global_gradients = global_gradients.flatten()
-    for gradient in global_gradients:
-        if gradient != 0:
-            counter += 1
-    if counter == 0:
-        return (True)
-    else:
-        return (False)
+##
 
 
-# function to check the convergence
-# def convergence(E, E_hat, tol=1e-9):
-#     conv = []
-#     conv = np.all(np.abs(E_hat - E) / E < tol)
-#     return conv
+def update_exposure_NR_remove(E, global_gradients, topt, tedge, new_E):
+    rows, cols = E.shape
+    updated_E = np.empty_like(E)
 
-def convergence(E, E_hat, tol=10e-8):
+    for i in range(rows):
+        for j in range(cols):
+            if E[i, j] < 0:
+                E[i, j] = max(E[i, j], 0)
+
+            if np.sign(new_E[i, j]) == np.sign(E[i, j]):
+                updated_E[i, j] = new_E[i, j]
+            else:
+                updated_E[i, j] = E[i, j] + topt * global_gradients[i, j]
+
+    return updated_E
+
+##
+
+
+def convergence(E, E_hat, tol=10e-6):
     conv = []
     conv = np.abs((E_hat - E) / E)
     if conv < tol:
@@ -336,6 +342,10 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
     min_expo_in = 0
     loss = 0
     # mse_hat = 0
+    expose_mat = []
+    mse_s = []
+    expo_step = []
+    expose_mat1 = []
     conv_iter_1 = 0
     conv_check = 0
     mse_old = np.inf
@@ -343,80 +353,81 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
     minimun_topt_tedge = 0
     for step in range(n_steps):
         print("Gradient Step is:", step)
-        #print("Topt",topt)
-        #print("Tedge",tedge)
-        #print("Minimum", minimun_topt_tedge)
-        # print(E)
-        #print("PMF",np.mean(loss))
+        loss = -poisson.logpmf(M, (E @ S) * O)
         mse_hat = mse_e
         # loss_hat = loss
         E_hat = E
-        if np.any(E < 0):
-            E = np.maximum(E, 0)
+        if np.any(E < 0):  #comment 25jan
+            E = np.maximum(E, 0) #comment 25jan
         local_gradients, matrice_lambda = compute_local_gradients(E, M, S, O, lambd)
+        ###local_gradients = compute_local_gradients(E, M, S, O)
         #print(matrice_lambda)
         #print(local_gradients)
         #print(E)
         hessians = compute_hessians(E, M, S)
-        global_gradients = compute_global_gradient(E, local_gradients, matrice_lambda)
+        global_gradients = compute_global_gradient(E, local_gradients, matrice_lambda) #threshold lambda
+       ### global_gradients = compute_global_gradient(E, local_gradients,lambd)
         tedge = compute_t_edge(E, global_gradients)
         topt = compute_topt(E, local_gradients, global_gradients, hessians)
+        #print("topt", topt)
+        #print("tedge",tedge)
+        minimun_topt_tedge = min_topt_tedge(topt, tedge)
+        #    print("minimun_topt_tedge",minimun_topt_tedge)
+        E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
         if topt >= tedge:
             #topt = tedge
             minimun_topt_tedge = min_topt_tedge(topt, tedge)
+        #    print("minimun_topt_tedge",minimun_topt_tedge)
             E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
             mse_e = Frobinous(M, S, E, O)
             loss = -poisson.logpmf(M, (E @ S) * O)
             # min_expo_in = np.min(E)
-            if np.any(E < 0):
-                E = np.maximum(E, 0)
+            if np.any(E < 0): #comment 25jan
+                E = np.maximum(E, 0) #comment 25jan
         else:
-            if np.any(E < 0):
-                E = np.maximum(E, 0)
-            topt = compute_topt(E, local_gradients, global_gradients, hessians)
-            tedge = compute_t_edge(E, global_gradients)
+            if np.any(E < 0): #comment 25jan
+                E = np.maximum(E, 0) #comment 25jan
             newton_raphason = newton_raphson1(E, global_gradients, hessians)
             if newton_raphason is None:
-                if np.any(E < 0):
-                    E = np.maximum(E, 0)
-                minimun_topt_tedge = min_topt_tedge(topt, tedge)
+                if np.any(E < 0): #comment 25jan
+                    E = np.maximum(E, 0) #comment 25jan
                 E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
                 mse_e = Frobinous(M, S, E, O)
                 loss = -poisson.logpmf(M, (E @ S) * O)
-                if np.any(E < 0):
-                    E = np.maximum(E, 0)
+                if np.any(E < 0): #comment 25jan
+                    E = np.maximum(E, 0) #comment 25jan
             else:
-                if np.any(E < 0):
-                    E = np.maximum(E, 0)
-                topt = compute_topt(E, local_gradients, global_gradients, hessians)
-                tedge = compute_t_edge(E, global_gradients)
+                if np.any(E < 0): #comment 25jan
+                    E = np.maximum(E, 0) #comment 25jan
                 E = update_exposure_NR(E, global_gradients, topt, tedge, newton_raphason)
                 mse_e = Frobinous(M, S, E, O)
                 loss = -poisson.logpmf(M, (E @ S) * O)
-        if np.any(E < 0):
-            E = np.maximum(E, 0)
-        # print("PMF loss", np.mean(loss))
-        # print("PMF HAT_IN", loss_hat)
+        if np.any(E < 0): #comment 25jan
+            E = np.maximum(E, 0) #comment 25jan
         conv = convergence(np.mean(loss_hat), np.mean(loss))
         loss_hat = np.mean(loss)
-        # print("PMF HAT", loss_hat)
-        #conv = sparsity(E)
         if conv == True:
-            print(f"Cucumber converge: {conv}")
+            print(f"StarSign converge: {conv}")
             if conv_iter_1 == -1:
                 conv_iter_1 = step
                 conv_check = 0
             else:
                 conv_check = conv_check + 1
         else:
-            print(f" Cucumber converged: {conv}")
+            print(f" StarSign converged: {conv}")
             conv_iter_1 = -1
             conv_check = 0
-        if conv_check == 5:
-            print("Thanks: Cucumber Algorithm converged")
+        if conv_check == 10:
+            print("Thanks: StarSign Algorithm converged")
             break
         mse_old = mse_e
         loss_hat = np.mean(loss)
+        loss = -poisson.logpmf(M, (E @ S) * O)
+        mse_e = Frobinous(M, S, E, O)
+        loss[loss == np.float64("Inf")] = 0
+        pmf_s.append(np.mean(loss))
+        mse_s.append(np.mean(mse_e))
+        expo_step.append(np.mean(E, axis=0))
     return E
 
 def running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps):
@@ -434,12 +445,15 @@ def running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps):
         # E_hat = E
         if np.any(E < 0):
             E = np.maximum(E, 0)
-        local_gradients = compute_local_gradients(E, M, S, O)
+        ###local_gradients = compute_local_gradients(E, M, S, O)
+        local_gradients, matrice_lambda = compute_local_gradients(E, M, S, O, lambd)
         hessians = compute_hessians(E, M, S)
-        global_gradients = compute_global_gradient(E, local_gradients, lambd)
+        ###global_gradients = compute_global_gradient(E, local_gradients, lambd)
+        global_gradients = compute_global_gradient(E, local_gradients, matrice_lambda)
         topt = compute_topt_denovo(E, local_gradients, global_gradients, hessians)
         tedge = compute_t_edge_denovo(E, global_gradients)
         minimun_topt_tedge = min_topt_tedge(topt, tedge)
+        E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
         if topt >= tedge:
             if np.any(E < 0):
                 E = np.maximum(E, 0)

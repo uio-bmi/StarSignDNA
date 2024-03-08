@@ -5,17 +5,23 @@ import numpy as np
 from numpy.random.mtrand import poisson
 from scipy.stats import poisson, entropy
 
-def compute_local_gradients(E, M, S, O):
+def compute_local_gradients(E, M, S, O,lambd):
     n_samples, n_signatures, n_mutations = (E.shape[0], S.shape[0], M.shape[1])
     local_gradients = np.empty_like(E)
+    matrice_sum = M.sum(axis=1, keepdims=True)
+    matrice_lambda = np.empty_like(matrice_sum).astype(float)
+    for idx, sum_ in np.ndenumerate(matrice_sum):
+        if sum_ < 100:
+            matrice_lambda[idx] = 0
+        else:
+            matrice_lambda[idx] = lambd
     for i in range(n_samples):
         for r in range(n_signatures):
             numerator = M[i] * S[r]
             denumerator_sum = np.array([E[i] @ S[:, k] for k in range(n_mutations)])
-            denumerator_sum_c = denumerator_sum + 0.000001
+            denumerator_sum_c = denumerator_sum    + 0.000001
             local_gradients[i, r] = np.sum((numerator / denumerator_sum_c) - O[i] * S[r])
-    return local_gradients
-
+    return local_gradients, matrice_lambda
 
 # function to calculate the hessian matrix
 def compute_hessians(E, M, S):
@@ -29,15 +35,31 @@ def compute_hessians(E, M, S):
 
 
 # function to compute the global gradient
-def compute_global_gradient(E, local_gradients, lambd):
-    # print("gradient",local_gradients)
-    # print("EEEE",np.sign(E) )
-    # print("LAAA", lambd)
-    cond_a = local_gradients - lambd * np.sign(E)
-    cond_b = local_gradients - lambd * np.sign(local_gradients)
-    cond_c = 0
-    return np.where(E != 0, cond_a, np.where(np.all(np.abs(local_gradients) > lambd), cond_b, cond_c))
+def compute_global_gradient(E, local_gradients, matrice_lambda):
+    out = np.empty_like(E)
 
+    # Check if matrice_lambda is a scalar
+    if np.isscalar(matrice_lambda):
+        for i in range(E.shape[0]):
+            for j in range(E.shape[1]):
+
+                if E[i, j] == 0 and np.all(np.abs(local_gradients[i, :]) > matrice_lambda):
+                    out[i, j] = local_gradients[i, j] - matrice_lambda * np.sign(local_gradients[i, j])
+                elif E[i, j] > 0:
+                    out[i, j] = local_gradients[i, j] - matrice_lambda * np.sign(E[i, j])
+                else:
+                    out[i, j] = 0
+    else:
+        for i in range(E.shape[0]):
+            for j in range(E.shape[1]):
+                if E[i, j] == 0 and np.all(np.abs(local_gradients[i, :]) > matrice_lambda[i]):
+                    out[i, j] = local_gradients[i, j] - matrice_lambda[i] * np.sign(local_gradients[i, j])
+                elif E[i, j] > 0:
+                    out[i, j] = local_gradients[i, j] - matrice_lambda[i] * np.sign(E[i, j])
+                else:
+                    out[i, j] = 0
+
+    return out
 
 # function to compute the step-size
 def compute_topt(E, local_gradients, global_gradients, hessians):
@@ -47,7 +69,7 @@ def compute_topt(E, local_gradients, global_gradients, hessians):
     # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
     denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])
-    topt = - (numerator / denominatior) + 10e-7
+    topt = - (numerator / denominatior)
     return topt
 
 
@@ -64,33 +86,8 @@ def compute_t_edge(E, global_gradients):
     if not np.any(mask):
         return np.inf
     assert np.all(global_gradients_conv != 0)
-    return np.min(-(E_Conv / global_gradients_conv)[mask])  + 10e-10
-
-def compute_topt_denovo(E, local_gradients, global_gradients, hessians):
-    # print("local",hessians)
-    #numerator = np.linalg.norm(global_gradients, ord=None, axis=None, keepdims=False)
-    numerator = np.sum(global_gradients * local_gradients)
-    # print("numerator", numerator)
-    gg_vectors = (gg[:, None] for gg in global_gradients)
-    denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])
-    topt = - (numerator / denominatior)
-    return topt
-
-
-# function to compute the maximimum step-size value i.e the maximum step-size
-
-def compute_t_edge_denovo(E, global_gradients):
-    global_gradients = global_gradients.flatten()
-    E = E.flatten()
-    ind = np.where(global_gradients == 0)
-    E_Conv = np.delete(E, ind[0])
-    global_gradients_conv = np.delete(global_gradients, ind[0])
-    mask = np.sign(E_Conv) == -np.sign(global_gradients_conv)
-    mask &= (np.sign(E_Conv) != 0)
-    if not np.any(mask):
-        return np.inf
-    assert np.all(global_gradients_conv != 0)
     return np.min(-(E_Conv / global_gradients_conv)[mask])
+
 
 # function to select the minimum step size
 def min_topt_tedge(topt, tedge):
@@ -139,24 +136,6 @@ def update_exposure_NR(E, global_gradients, topt, tedge, new_E):
                     new_E,
                     E + topt * global_gradients)
 
-
-def check(global_gradients):
-    counter = 0
-    global_gradients = global_gradients.flatten()
-    for gradient in global_gradients:
-        if gradient != 0:
-            counter += 1
-    if counter == 0:
-        return (True)
-    else:
-        return (False)
-
-
-# function to check the convergence
-# def convergence(E, E_hat, tol=1e-9):
-#     conv = []
-#     conv = np.all(np.abs(E_hat - E) / E < tol)
-#     return conv
 
 def convergence(E, E_hat, tol=10e-6):
     conv = []
@@ -244,8 +223,7 @@ def cos_sim_matrix(matrix1, matrix2):
     cosine_index_detect = cosine_index.set_index([" "])
     return cosine_index_detect, match_coresp_1[:-2], df
 
-# function to run the optimisation algorithm
-
+#
 def running_simulation_denovo(E, M, S, O, topt, tedge, lambd):
     old_loss = np.inf
     pmf_s = []
@@ -254,19 +232,20 @@ def running_simulation_denovo(E, M, S, O, topt, tedge, lambd):
     conv_check = 0
     conv_iter_1 = 0
     mse_hat = mse_e
-    for step in range(50):
+    for step in range(25):
         mse_hat = mse_e
         loss_hat = loss
-        # print("Step is:", step)
+        # print("Gradient step is:", step)
         # E_hat = E
         if np.any(E < 0):
             E = np.maximum(E, 0)
-        local_gradients = compute_local_gradients(E, M, S, O)
+        local_gradients, matrice_lambda = compute_local_gradients(E, M, S, O, lambd)
         hessians = compute_hessians(E, M, S)
-        global_gradients = compute_global_gradient(E, local_gradients, lambd)
-        topt = compute_topt_denovo(E, local_gradients, global_gradients, hessians)
-        tedge = compute_t_edge_denovo(E, global_gradients)
+        global_gradients = compute_global_gradient(E, local_gradients, matrice_lambda)
+        topt = compute_topt(E, local_gradients, global_gradients, hessians)
+        tedge = compute_t_edge(E, global_gradients)
         minimun_topt_tedge = min_topt_tedge(topt, tedge)
+        E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
         if topt >= tedge:
             if np.any(E < 0):
                 E = np.maximum(E, 0)

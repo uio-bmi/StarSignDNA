@@ -7,5 +7,5 @@ for i in range(5):
 #    print(i)
     train, test = train_test_split(M, test_size=0.3)
     print(snakemake.output)
-    train.to_csv(snakemake.output.trains[i], sep="\t", header=False)
-    test.to_csv(snakemake.output.tests[i], sep="\t", header=False)
+    train.to_csv(snakemake.output.trains[i], sep="\t", header=True)
+    test.to_csv(snakemake.output.tests[i], sep="\t", header=True)

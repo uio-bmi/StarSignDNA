@@ -15,7 +15,7 @@ import scipy.spatial as sp
 from scipy.optimize import linear_sum_assignment
 
 
-def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,em_steps: int = 10000,
+def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,em_steps: int = 100,
            gd_steps: int = 50) -> np.ndarray:
     """
 
@@ -86,7 +86,7 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,
             print(f" Cucumber converged: {conv}")
             conv_iter_1 = -1
             conv_check = 0
-        if conv_check == 20:
+        if conv_check == 1:
             print("Thanks: Cucumber Algorithm converge converged")
             break
         mse_old = mse_e

@@ -13,8 +13,14 @@ def bootstrap_sample(M, rng):
     return boost
 
 
-def bootstrap(M, S, O, n_bootstraps, lambd):
+def bootstrap_std(M, S, O, n_bootstraps, lambd):
     rng = np.random.default_rng()
     exposures = [refit(bootstrap_sample(M, rng), S, O, lambd=lambd)[0] for _ in range(n_bootstraps)]
     return np.std(exposures, axis = 0)
+
+def bootstrap(M, S, O, n_bootstraps, lambd):
+    rng = np.random.default_rng()
+    exposures = [refit(bootstrap_sample(M, rng), S, O, lambd=lambd)[0] for _ in range(n_bootstraps)]
+    percentile_25 = np.percentile(exposures, 25, axis=0)
+    return percentile_25
 

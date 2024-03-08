@@ -12,6 +12,7 @@ def main(M, n_signatures, lambd):
     O = np.ones((n_samples, n_mutations), dtype=int)
     E = np.full((n_samples, n_signatures), 0.00001)
     S = np.random.rand(n_signatures*n_mutations).reshape(n_signatures, n_mutations)
+
     topt = np.float64("Inf")
     tedge = np.float64("Inf")
     if( np.any(E< 0)):
@@ -22,7 +23,7 @@ def main(M, n_signatures, lambd):
     d_mse_s = []
     mse_old = np.inf
     pmf_old = np.inf
-    for _ in range(100):
+    for _ in range(50):
         E = main_fixed_denovo.running_simulation_denovo(E, M, S, O, topt, tedge, lambd)# lambd)
         S = main_fixed_denovo.running_simulation_denovo(S.T, M.T, E.T, O.T, topt, tedge, 0).T
         mse_e = main_fixed_denovo.Frobinous(M,S,E,O)

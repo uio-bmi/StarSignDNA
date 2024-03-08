@@ -11,15 +11,15 @@ import seaborn as sns
 import string
 import multiprocessing
 
-np.random.seed(1000)
+np.random.seed(10000)
 
 
 # todo
 
 
-class DataType(str, Enum):
-    exome = 'exome'
-    genome = 'genome'
+# class DataType(str, Enum):
+#     exome = 'exome'
+#     genome = 'genome'
 
 
 import typer
@@ -30,32 +30,33 @@ from .bootstrapping import bootstrap as _bootstrap
 
 
 def bootstrap(matrix_file: str, signature_file: str, output_file_exposure_avg: str, output_file_exposure_std: str,
-              opportunity_file: str = None, data_type: DataType = DataType.exome):
+              opportunity_file: str = None):
     M = read_counts(matrix_file)
     S, index_signature = read_signature(signature_file)
     O = read_opportunity(M, opportunity_file)
-    lambd = get_lambda(data_type)
+####    lambd = get_lambda(data_type)
     estimated_exposure, exposure_std = _bootstrap(M, S, O, lambd=lambd)
     np.savetxt(output_file_exposure_avg, estimated_exposure, delimiter='\t')
     np.savetxt(output_file_exposure_std, exposure_std, delimiter='\t')
 
 
-# def plot(file, output_folder='output/'):
-#     plt.style.use('default')
-#     file.plot(kind="bar", figsize=(10, 4))
-#     plt.xticks(fontsize=8)
-#     plt.yticks(fontsize=8)
-#     plt.ylabel("Mutation fraction")
-#     plt.xlabel("Signatures")
-#     plt.tight_layout()
-#     return plt.savefig(f"{output_folder}/plot_cohort.png", dpi=600)
+def plot(file, output_folder='output/'):
+    plt.style.use('default')
+    file.plot(kind="bar", figsize=(10, 4))
+    plt.xticks(fontsize=8)
+    plt.yticks(fontsize=8)
+    plt.ylabel("Mutation fraction")
+    plt.xlabel("Signatures")
+    plt.tight_layout()
+    return plt.savefig(f"{output_folder}/plot_cohort.png", dpi=600)
 
 
-def single_plot(file):
+def single_plot(file):  # 2 feb
     file = file.transpose()
     file.columns = ['Signatures', 'std_dev']
     # filtered_data = file[file['Signatures'] != 0]
     filtered_data = file[file['Signatures'] >= 0.05]
+    color_palette = sns.color_palette("husl", n_colors=len(filtered_data))
 
     # Set up the figure and axis
     plt.style.use('default')
@@ -64,7 +65,7 @@ def single_plot(file):
 
     # Plot the bar plot with error bars for non-zero values
     ax.bar(filtered_data.index, filtered_data['Signatures'], yerr=filtered_data['std_dev'],
-           color='blue', alpha=0.5, align='center', capsize=3)
+           color= color_palette, alpha=0.5, align='center', capsize=3)
     plt.ylim(0, None)
     plt.xticks(rotation=45)
     plt.xticks(fontsize=8)
@@ -163,11 +164,11 @@ def plot_profile(data):
     return plt
 
 
-def refit(matrix_file: str, signature_file: str,
-          opportunity_file: str = None, ref_genome: str = None, n_bootstraps: int = 25,
-          numeric_chromosomes: bool = False,
-          genotyped: bool = True, output_folder: str = 'output/',
-          cancer_type: Annotated[str, typer.Argument(help='Cancer type abbreviation, eg.: "brca", "bcla", "col",,,')] = None):
+def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')], signature_file: Annotated[str, typer.Argument(help='Comma separated matrix file')] ,
+          opportunity_file: str = None, ref_genome: str = None, n_bootstraps: int = 25, numeric_chromosomes: bool=None, genotyped:bool=None, cancer_type:str=None, output_folder: str = 'output/'):
+      #    numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = True,
+       #   genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = False, output_folder: str = 'output/',
+       #   cancer_type: Annotated[str,typer.Argument(help="Cancer type abbreviation, eg.: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec")] = None):
     '''
     Parameters
     ----------
@@ -185,21 +186,20 @@ def refit(matrix_file: str, signature_file: str,
     '''
     start_time = time.time()
     # reference genome
-    # ref_genome = '/Users/bope/Documents/MutSig/scientafellow/packages/ref/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
+    ##ref_genome = '/Users/bope/Documents/MutSig/scientafellow/packages/ref/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
     file_name, file_extension = os.path.splitext(matrix_file)
     if file_extension == '.vcf':
         assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
-    # M = read_counts(matrix_file)
-    M, index_matrix = read_counts(matrix_file)
-    # print(index_matrix)
-    # M = M[0:4,0:96]
-    #    S, index_signature = read_signature(signature_file)
-    S, index_signature = read_signature(signature_file)
+    M, index_matrix= read_counts(matrix_file)
+    S,index_signature = read_signature(signature_file)
+
+
     if cancer_type is not None:
         true_order = 'Type	SBS1	SBS2	SBS3	SBS4	SBS5	SBS6	SBS7a	SBS7b	SBS7c	SBS7d	SBS8	SBS9	SBS10a	SBS10b	SBS10c	SBS10d	SBS11	SBS12	SBS13	SBS14	SBS15	SBS16	SBS17a	SBS17b	SBS18	SBS19	SBS20	SBS21	SBS22a	SBS22b	SBS23	SBS24	SBS25	SBS26	SBS27	SBS28	SBS29	SBS30	SBS31	SBS32	SBS33	SBS34	SBS35	SBS36	SBS37	SBS38	SBS39	SBS40a	SBS40b	SBS40c	SBS41	SBS42	SBS43	SBS44	SBS45	SBS46	SBS47	SBS48	SBS49	SBS50	SBS51	SBS52	SBS53	SBS54	SBS55	SBS56	SBS57	SBS58	SBS59	SBS60	SBS84	SBS85	SBS86	SBS87	SBS88	SBS89	SBS90	SBS91	SBS92	SBS93	SBS94	SBS95	SBS96	SBS97	SBS98	SBS99'.split()[1:]
-        assert index_signature.tolist() == true_order, (f'The order of the signatures in the signature file is not the same as cosmic 3.4. Cannot do automatic selection of {cancer_type} signatures', index_signature.tolist(), true_order)
+      #  assert index_signature.tolist() != true_order, (f'The order of the signatures in the signature file is not the same as cosmic 3.4. Cannot do automatic selection of {cancer_type} signatures', index_signature.tolist(), true_order)
+        assert index_signature == true_order, (f'The order of the signatures in the signature file is not the same as cosmic 3.4. You can download the file at https://cancer.sanger.ac.uk/cosmic/download/cosmic. Cannot do automatic selection of {cancer_type} signatures', index_signature, true_order)
         if cancer_type == 'bcla':
             index = [0, 1, 3, 4, 18]
             S = S[index]
@@ -308,66 +308,41 @@ def refit(matrix_file: str, signature_file: str,
             index = [0, 1, 4, 12, 13, 14, 15, 18, 19, 20, 35, 53]
             S = S[index]
             index_signature = [index_signature[i] for i in index]
-        # elif cancer_type == 'test':
-        #     index = [0,1,2,3,4,5,6,7,8,9,10]
-        #     S = S[index]
-        #     index_signature = [index_signature[i] for i in index]
         else:
             raise ValueError(f'Unknown cancer type {cancer_type}. Valid cancer types are: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec')
     O = read_opportunity(M, opportunity_file)
-
-    if len(M) <= 100:
-        lambd = 0.7
-    else:
-        lambd = 0.7 * np.sqrt(len(M) / 100)
+    lambd = 0.7
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
-        print(M)
         E = _refit(M, S, O, lambd=lambd)[0]
         E_std = _bootstrap(M, S, O, n_bootstraps, lambd=lambd)
         E = [E, E_std]
         E = pd.DataFrame(data=E, columns=index_signature, index=['Signature', 'std_dev'])
-        #   E.drop(columns=E.columns[0], axis=1, inplace=True)
         plot = single_plot(E)
-        # E.to_csv(output_file_exposure, index=True, header=True, sep='\t')
-        E.to_csv(f"{output_folder}/exposure_signature_l07_brca_16jan_l07.txt", index=True, header=True, sep='\t')
-        plot.savefig(f"{output_folder}/plot_exposure_signature_l07_brca_16jan_l07.png", dpi=600)
-
+        E.to_csv(f"{output_folder}/StarSign_exposure_signature_single_sample.txt", index=True, header=True, sep='\t')
+        plot.savefig(f"{output_folder}/StarSign_Exposure_exposure_single_sample_25_percentile.png", dpi=600)
     else:
 
         E = _refit(M, S, O, lambd=lambd)
         # print(O)
         sum_expo = E.sum(axis=0, keepdims=True) / len(E)
+        sum_expo_t= np.transpose(sum_expo)
         E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
-        #       E.to_csv(f'{output_folder}/cucumber_cohort_exposure.txt', index=False, header=True, sep='\t')
-        E.to_csv(f'{output_folder}/cucumber_exposure_simulation_4_l7_step10000.txt', index=index_matrix, header=True,
-                 sep='\t')
+        E.to_csv(f'{output_folder}/StarSign_Exposure_cohort.txt', index=index_matrix, header=True,sep='\t')
         sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
-        # Add the row index to the DataFrame
-        # sum_expo = sum_expo.index_matrix()
-        # print(sum_expo)
         sum_expo = np.transpose(sum_expo)
         plot_summary = cohort_plot(sum_expo)
-        plot_summary.savefig(f"{output_folder}/exposures_cohort_dotplot_simulation_4_l7_step10000.png", dpi=600)
+        plot_summary.savefig(f"{output_folder}/StarSign_Exposures_cohort_dotplot.png", dpi=600)
         sort_E = sum_expo.sort_values(by=['Signatures'], ascending=False)
         sort_E = sort_E.iloc[:5, 0:]
         plot_top_five = cohort_plot(sort_E)
-        plot_top_five.savefig(f"{output_folder}/exposures_cohort_simulation_4_l7_step10000.png", dpi=600)
+        plot_top_five.savefig(f"{output_folder}/StarSign_Exposures_cohort_dotplot_top5.png", dpi=600)
         plot_variance = cohort_violin(E)
-        plot_variance.savefig(f"{output_folder}/exposures_cohort_simulation_4_l07_step10000.png", dpi=600)
-        # sum_expo.to_csv(output_file_exposure_avg, index=index_signature, header=T67.png", dpi=600)
-        # sum_expo.to_csv(output_file_exposure_avg, index=index_signature, header=True, sep='\t')
-        sum_expo.to_csv(f'{output_folder}/average_cucumber_simulation_4_l07_step10000.txt', index=index_signature,
-                        header=True,
-                        sep='\t')
+        plot_variance.savefig(f"{output_folder}/StarS9gn_Exposures_cohort_dotplot_variance.png", dpi=600)
+        # sum_expo.to_csv(f'{output_folder}/average_exposure_cohort.txt', index=index_signature,
+        #                 header=True,
+        #                 sep='\t')
+        np.savetxt(f'{output_folder}/StarSign_Average_Exposure_cohort.txt.txt', np.array(sum_expo_t))
     print("--- %s seconds ---" % (time.time() - start_time))
-
-
-# def get_lambda(data_type):
-#     if data_type == DataType.genome:
-#         lambd = 10
-#     else:
-#         lambd = 5
-#     return lambd
 
 
 def read_opportunity(M, opportunity_file):
@@ -429,31 +404,35 @@ def read_opportunity(M, opportunity_file):
         O = np.broadcast_to(O, M.shape)
     else:
         O = np.ones((n_samples, n_mutations), dtype=float)
-    O = O / np.amax(O).sum(axis=-1, keepdims=True)
-    #    print(O.shape)
-    # O = O.sum(axis=-1, keepdims=True)
-    O = O / O.sum(axis=-1, keepdims=True)
-    print(O.shape)
+    O = O / np.amin(O).sum(axis=-1, keepdims=True)
+
+   # The exposure is normalize to have the same proportion to the catalogue matrix
+    normalized_vector1 = O / np.linalg.norm(O)
+    min_value_vector2 = np.min(M)
+    max_value_vector2 = np.max(M)
+    O = normalized_vector1 * (max_value_vector2 - min_value_vector2) + min_value_vector2
     assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
     return O
 
 
 def read_signature(signature_file):
-    S = pd.read_csv(signature_file, delimiter='\t')
+    S = pd.read_csv(signature_file, delimiter=',')
     index_signature = S.index.values.tolist()
     S = S.to_numpy().astype(float)
     # S = S[0:10,0:96]
-    return S, index_signature
+    return S , index_signature
 
 
 def read_counts(matrix_file):
     M = pd.read_csv(matrix_file, delimiter='\t')
     index_matrix = M.index.values.tolist()
     M = M.to_numpy().astype(float)
-    # return pd.read_csv(matrix_file, delimiter='\t').to_numpy().astype(float)
-    # print(index_matrix)
-    return M, index_matrix
+    return M , index_matrix
 
+def get_tri_context_fraction(mut_counts):
+    total_mutations = mut_counts.sum().sum()
+    trinucleotide_fractions = mut_counts.div(total_mutations) if total_mutations != 0 else mut_counts
+    return trinucleotide_fractions
 
 def get_num_cpus():
     return multiprocessing.cpu_count()
@@ -463,7 +442,7 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
            n_signatures: int, lambd: Annotated[float, typer.Argument(help='Regularization parameter')],
            opportunity_file: str = None,
            cosmic_file: Annotated[str, typer.Argument(help='Comma separated cosmic file')] = None,
-           max_em_iterations: int = 1000,
+           max_em_iterations: int = 100,
            max_gd_iterations: int = 50,
            numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
            genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
@@ -474,13 +453,11 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
 
     """
     start_time = time.time()
-    num_cpus = get_num_cpus()
-    print(f"Number of CPUs: {num_cpus}")
     if file_extension == '.vcf':
         assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
-    M = pd.read_csv(matrix_file, delimiter='\t').to_numpy().astype(float)
+    M, index_matrix= read_counts(matrix_file)
     n_samples = len(M)
     n_signatures = n_signatures
     lambd = lambd
@@ -497,7 +474,7 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
     if cosmic_file is not None:
         cosmic = pd.read_csv(cosmic_file, delimiter=',')
         cos_similarity = cos_sim_matrix(S, cosmic)[0]
-        cos_similarity.to_csv(f"{output_folder}/cosine_similarity_denovo_pcawg_skin_step1000_refit.txt", sep="\t")
+        cos_similarity.to_csv(f"{output_folder}/StarSign_Cosine_similarity_denovo.txt", sep="\t")
         # print(cos_similarity)
     S = np.transpose(S)
     alphabet = list(string.ascii_uppercase)
@@ -517,13 +494,13 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
                        'G[T>G]A', 'G[T>G]C', 'G[T>G]G', 'G[T>G]T', 'T[T>G]A', 'T[T>G]C', 'T[T>G]G', 'T[T>G]T']
     label = list(mutation_labels)
     S = pd.DataFrame(S, columns=Sig, index=label)
-    S.to_csv(f"{output_folder}/denovo_signature_pcawg_skin_step1000_refit.txt", sep='\t', index=label)
+    S.to_csv(f"{output_folder}/StarSign_Denovo_signature.txt", sep='\t', index=label)
     # print(S)
     deno_figure = plot_profile(S)
-    deno_figure.savefig(f"{output_folder}/denovo_figure_pcawg_skin_step1000_refit.png", dpi=600)
+    deno_figure.savefig(f"{output_folder}/StarSign_denovo.png", dpi=600)
     E = pd.DataFrame(E, columns=Sig, index=None)
     # np.savetxt(output_file_exposure, np.array(E))
-    E.to_csv(f"{output_folder}/denovo_exposures_pcawg_skin_step1000_refit.txt", sep='\t', index=None)
+    E.to_csv(f"{output_folder}/StarSign_Denovo_exposures.txt", sep='\t', index=None)
     # np.savetxt(output_file_signature, np.array(S))
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -537,12 +514,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # num_cpus = 4  # Define the number of CPUs to use
-    # processes = []
-    # for _ in range(num_cpus):
-    #     process = multiprocessing.Process(target=denovo)
-    #     processes.append(process)
-    #     process.start()
-    # for process in processes:
-    #     process.join()
     main()
