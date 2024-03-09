@@ -28,38 +28,12 @@ Stable release
 To install Cucumber, run this command in your terminal:
 
 .. code-block:: console
+    $ 1. download StarSign from https://github.com/uio-bmi/cucumber
+    $ 2. unzip cucumber-master.zip
+    $ 3. cd cucumber-master/
 
-    $ pip install cucumber
+    $ 4. pip install -e .
 
-or for the newest:
-
-.. code-block:: console
-
-    $ pip install git://github.com/cdbope/cucumber
-
-If you don't have `pip`_ installed, this `Python installation guide`_ can guide
-you through the process.
-
-.. _pip: https://pip.pypa.io
-.. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
-
-
-From sources
-------------
-
-The sources for Cucumber can be downloaded from the `Github repo`_.
-
-You can either clone the public repository:
-
-.. code-block:: console
-
-    $ git clone git://github.com/cdbope/cucumber
-
-Once you have a copy of the source, you can install it with:
-
-.. code-block:: console
-
-    $ pip install -e .
 
 Getting started
 ---------------
@@ -81,21 +55,21 @@ The refitting algorithm takes as input a mutational catalog and cosmic mutationa
 
 Running cucumber refit
 ::
-  %cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt output/expo.txt
-  %cucumber refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt output/expo.txt
+  %cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt --output-folder /test_result
+  %cucumber refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt --output-folder /test_result
 
-The test data is provided in example_data folder, to convert *.vcf to matrix, the user must provide the path to the reference genome.
-
-output files for a single sample
+The test data is provided in example_data folder, to convert *.vcf to matrix, the user must provide the path to the reference genome using the option --ref-genome
+output files for a single sample (example of TCGA-BRCA)
 ::
-   $output_file_exposure: exposure matrix with std_dev
-   $exposures_single_dotplot.png: exposure matrix plot with std_dev
+   $StarSign_exposure_signature_single_sample: exposure matrix with 25 percentile error
+   $StarSign_Exposure_exposure_single_sample_25_percentile: exposure matrix plot
+
 The standard deviation is computed using a default of 100 bootstraps.
 
-.. image:: output/exposures_single_dotplot_skin.png
+.. image:: output/StarSign_Exposure_exposure_single_sample_25_percentile.png
    :width: 600
 
-output files for a cohort
+output files for a cohort (example of TCGA-SKIN)
 ::
    $exposures_cohort_variance: a plot showing the variance of each sample and the mean exposures
    $output_file_exposure: a cohort exposures matrix
@@ -107,6 +81,9 @@ output files for a cohort
 
 .. image:: output/exposures_cohort_top_5.png
    :width: 600
+
+The user can also provide the distribution of triplets in a reference genome/exome or normal tissue in the same patient (Opportunity matrix) using option
+--opportunity-file human-genome/human-exome
 Running mutational signature de novo algorithm:
 -----------------------------------------------
 The de novo algorithm takes as input a mutational catalog and inferred the exposure matrix and mutational signature matrix. The cosmic mutational signature file is provided to compute the cosine similarity.
@@ -121,7 +98,7 @@ Step 1: Grid Search: The grid uses cross-validation to find the optimal pairwise
 Step 2: In the Sanakefile, provide the range of the number of signatures $k$ and $lambda$ for the grid search to determine the optimal k and lambda.
 ::
   %localrules: all
-  %ks = list(range(3, 10)): default range of the number of signatures
+  %ks = list(range(2, 10)): default range of the number of signatures
   %lambdas = [0, 0.01,0.05, 0.1, 0.2]: default range of lambda
 
 Input mutational catalogue needs to be provided in the dataset folder
@@ -136,7 +113,7 @@ To check manually the optimal $k$ and $lambda$ from the output
  % sort -k3n,3 results/data/all.csv
 Run denovo using optimal $k=4$ and $lambda=0.1$
 ::
- % cucumber denovo snakemake/results/data/pcawg_skin_21.txt 4 0.1 --cosmic-file example_data/sig_cosmic_v3_2019.txt
+ % cucumber denovo snakemake/results/data/pcawg_skin_21.txt 4 0.1 --cosmic-file example_data/sig_cosmic_v3_2019.txt --output-folder /test_result
 
 output files
 ::

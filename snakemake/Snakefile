@@ -9,7 +9,7 @@ wildcard_constraints:
 
 
 localrules: all
-ks = list(range(2, 12))
+ks = list(range(2, 10))
 lambdas = [0, 0.01,0.05, 0.1, 0.2]
 
 rule all:

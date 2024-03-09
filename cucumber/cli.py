@@ -165,7 +165,7 @@ def plot_profile(data):
 
 
 def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')], signature_file: Annotated[str, typer.Argument(help='Comma separated matrix file')] ,
-          opportunity_file: str = None, ref_genome: str = None, n_bootstraps: int = 25, numeric_chromosomes: bool=None, genotyped:bool=None, cancer_type:str=None, output_folder: str = 'output/'):
+          opportunity_file: str = None, ref_genome: str = None, n_bootstraps: int = 200, numeric_chromosomes: bool=None, genotyped:bool=None, cancer_type:str=None, output_folder: str = 'output/'):
       #    numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = True,
        #   genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = False, output_folder: str = 'output/',
        #   cancer_type: Annotated[str,typer.Argument(help="Cancer type abbreviation, eg.: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec")] = None):
@@ -337,7 +337,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         plot_top_five = cohort_plot(sort_E)
         plot_top_five.savefig(f"{output_folder}/StarSign_Exposures_cohort_dotplot_top5.png", dpi=600)
         plot_variance = cohort_violin(E)
-        plot_variance.savefig(f"{output_folder}/StarS9gn_Exposures_cohort_dotplot_variance.png", dpi=600)
+        plot_variance.savefig(f"{output_folder}/StarSign_Exposures_cohort_dotplot_variance.png", dpi=600)
         # sum_expo.to_csv(f'{output_folder}/average_exposure_cohort.txt', index=index_signature,
         #                 header=True,
         #                 sep='\t')
