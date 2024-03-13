@@ -54,7 +54,7 @@ output files for a single sample (example of TCGA-BRCA)
    StarSign_exposure_signature_single_sample: exposure matrix with 25 percentile error
    StarSign_Exposure_exposure_single_sample_25_percentile: exposure matrix plot
 
-The standard deviation is computed using a default of 100 bootstraps.
+The confidence is computed using 25 percentile of bootstraps.
 
 .. image:: output/StarSign_Exposure_exposure_single_sample_25_percentile.png
    :width: 600
