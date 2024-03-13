@@ -446,13 +446,15 @@ def get_num_cpus():
 
 
 def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
-           n_signatures: int, lambd: Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
+           n_signatures: int, lambd: float = 0.7, #Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
+  ###         lambd: Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
            opportunity_file: str = None,
-           cosmic_file: Annotated[str, typer.Argument(help='Comma separated cosmic file')] = None,
+           cosmic_file: str= None, #Annotated[str, typer.Argument(help='Comma separated cosmic file')] = None,
+ ###          cosmic_file: Annotated[str, typer.Argument(help='Comma separated cosmic file')] = None,
            numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
            genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
-           max_em_iterations: int = 100,
-           max_gd_iterations: int = 50,
+           max_em_iterations: int = 1,
+           max_gd_iterations: int = 2,
    #        numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
    #        genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
            file_extension=None,
@@ -470,6 +472,7 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
     n_samples = len(M)
     n_signatures = n_signatures
     lambd = lambd
+    print('Lambd',lambd)
     n_mutations = M.shape[1]
     O = read_opportunity(M, opportunity_file)
     # if opportunity_file is not None:
