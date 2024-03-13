@@ -172,23 +172,20 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     #   genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = False, output_folder: str = 'output/',
     #   cancer_type: Annotated[str,typer.Argument(help="Cancer type abbreviation, eg.: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec")] = None):
     '''
-    Parameters
-    ----------
-    numeric_chromosomes
-    n_bootstraps
-    matrix_file: str
-    signature_file: str
-    output_file_exposure: str
-    opportunity_file: str
-    data_type: DataType
-    numeric_chromosomes: bool
-        True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'
-    genotyped: bool
-        True if the VCF file has genotype information for many samples
+    Mutational SIgnatures Refit Parameters \n
+    n_bootstraps: \n
+    matrix_file: str \n
+    signature_file: str \n
+    output_file_exposure: str \n
+    opportunity_file: str \n
+    numeric_chromosomes,bool: True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3' \n
+    genotyped,bool:True if the VCF file has genotype information for many samples \n
+    cancer_type, str: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec
+
     '''
     start_time = time.time()
     # reference genome
-    ##ref_genome = '/Users/bope/Documents/MutSig/scientafellow/packages/ref/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
+    #ref_genome = '/Users/bope/Documents/MutSig/scientafellow/packages/ref/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
     file_name, file_extension = os.path.splitext(matrix_file)
     if file_extension == '.vcf':
         assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
@@ -450,7 +447,7 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
   ###         lambd: Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
            opportunity_file: str = None,
            cosmic_file: str= None, #Annotated[str, typer.Argument(help='Comma separated cosmic file')] = None,
- ###          cosmic_file: Annotated[str, typer.Argument(help='Comma separated cosmic file')] = None,
+    ##       cosmic_file: Annotated[str, typer.Option(help='Comma separated cosmic file')] = None,
            numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
            genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
            max_em_iterations: int = 1,
@@ -459,9 +456,15 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
    #        genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
            file_extension=None,
            ref_genome=None, output_folder: str = 'output/'):
-    """
-    Do de novo signature extraction
 
+    """Performs denovo  Mutational Signatures analysis.
+
+    Args:   matrix_file (str): Path to the tab-separated matrix file \n
+            n_signatures (int): Number of signatures to identify \n
+            lambd (float, optional): Regularization parameter. Defaults to 0.7 \n
+            help_lambda (bool, optional): Flag to display lambda help message. Defaults to False \n
+            numeric_chromosomes (bool): True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3' \n
+            genotyped (bool) : True if the VCF file has genotype information for many samples
     """
     start_time = time.time()
     if file_extension == '.vcf':
@@ -472,15 +475,9 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
     n_samples = len(M)
     n_signatures = n_signatures
     lambd = lambd
-    print('Lambd',lambd)
+    print('Lambda',lambd)
     n_mutations = M.shape[1]
     O = read_opportunity(M, opportunity_file)
-    # if opportunity_file is not None:
-    #     O = pd.read_csv(opportunity_file, sep='\t', header=None).to_numpy().astype(float)
-    #     O = np.broadcast_to(O, M.shape)
-    # else:
-    #     O = np.ones((n_samples, n_mutations), dtype=float)
-    #     # print(O)
     O = O / np.amax(O).sum(axis=-1, keepdims=True)
     assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
     E, S = _denovo(M, n_signatures, lambd, O, em_steps=max_em_iterations, gd_steps=max_gd_iterations)
