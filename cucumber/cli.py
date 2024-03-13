@@ -13,7 +13,6 @@ import multiprocessing
 
 np.random.seed(10000)
 
-
 # todo
 
 
@@ -34,7 +33,7 @@ def bootstrap(matrix_file: str, signature_file: str, output_file_exposure_avg: s
     M = read_counts(matrix_file)
     S, index_signature = read_signature(signature_file)
     O = read_opportunity(M, opportunity_file)
-####    lambd = get_lambda(data_type)
+    ####    lambd = get_lambda(data_type)
     estimated_exposure, exposure_std = _bootstrap(M, S, O, lambd=lambd)
     np.savetxt(output_file_exposure_avg, estimated_exposure, delimiter='\t')
     np.savetxt(output_file_exposure_std, exposure_std, delimiter='\t')
@@ -65,7 +64,7 @@ def single_plot(file):  # 2 feb
 
     # Plot the bar plot with error bars for non-zero values
     ax.bar(filtered_data.index, filtered_data['Signatures'], yerr=filtered_data['std_dev'],
-           color= color_palette, alpha=0.5, align='center', capsize=3)
+           color=color_palette, alpha=0.5, align='center', capsize=3)
     plt.ylim(0, None)
     plt.xticks(rotation=45)
     plt.xticks(fontsize=8)
@@ -164,11 +163,14 @@ def plot_profile(data):
     return plt
 
 
-def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')], signature_file: Annotated[str, typer.Argument(help='Comma separated matrix file')] ,
-          opportunity_file: str = None, ref_genome: str = None, n_bootstraps: int = 200, numeric_chromosomes: bool=None, genotyped:bool=None, cancer_type:str=None, output_folder: str = 'output/'):
-      #    numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = True,
-       #   genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = False, output_folder: str = 'output/',
-       #   cancer_type: Annotated[str,typer.Argument(help="Cancer type abbreviation, eg.: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec")] = None):
+def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
+          signature_file: Annotated[str, typer.Argument(help='Comma separated matrix file')],
+          opportunity_file: str = None, ref_genome: str = None, n_bootstraps: int = 200,
+          numeric_chromosomes: bool = None, genotyped: bool = None, cancer_type: str = None,
+          output_folder: str = 'output/'):
+    #    numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = True,
+    #   genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = False, output_folder: str = 'output/',
+    #   cancer_type: Annotated[str,typer.Argument(help="Cancer type abbreviation, eg.: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec")] = None):
     '''
     Parameters
     ----------
@@ -192,14 +194,16 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
-    M, index_matrix= read_counts(matrix_file)
-    S,index_signature = read_signature(signature_file)
-
+    M, index_matrix = read_counts(matrix_file)
+    S, index_signature = read_signature(signature_file)
 
     if cancer_type is not None:
-        true_order = 'Type	SBS1	SBS2	SBS3	SBS4	SBS5	SBS6	SBS7a	SBS7b	SBS7c	SBS7d	SBS8	SBS9	SBS10a	SBS10b	SBS10c	SBS10d	SBS11	SBS12	SBS13	SBS14	SBS15	SBS16	SBS17a	SBS17b	SBS18	SBS19	SBS20	SBS21	SBS22a	SBS22b	SBS23	SBS24	SBS25	SBS26	SBS27	SBS28	SBS29	SBS30	SBS31	SBS32	SBS33	SBS34	SBS35	SBS36	SBS37	SBS38	SBS39	SBS40a	SBS40b	SBS40c	SBS41	SBS42	SBS43	SBS44	SBS45	SBS46	SBS47	SBS48	SBS49	SBS50	SBS51	SBS52	SBS53	SBS54	SBS55	SBS56	SBS57	SBS58	SBS59	SBS60	SBS84	SBS85	SBS86	SBS87	SBS88	SBS89	SBS90	SBS91	SBS92	SBS93	SBS94	SBS95	SBS96	SBS97	SBS98	SBS99'.split()[1:]
-      #  assert index_signature.tolist() != true_order, (f'The order of the signatures in the signature file is not the same as cosmic 3.4. Cannot do automatic selection of {cancer_type} signatures', index_signature.tolist(), true_order)
-        assert index_signature == true_order, (f'The order of the signatures in the signature file is not the same as cosmic 3.4. You can download the file at https://cancer.sanger.ac.uk/cosmic/download/cosmic. Cannot do automatic selection of {cancer_type} signatures', index_signature, true_order)
+        true_order = 'Type	SBS1	SBS2	SBS3	SBS4	SBS5	SBS6	SBS7a	SBS7b	SBS7c	SBS7d	SBS8	SBS9	SBS10a	SBS10b	SBS10c	SBS10d	SBS11	SBS12	SBS13	SBS14	SBS15	SBS16	SBS17a	SBS17b	SBS18	SBS19	SBS20	SBS21	SBS22a	SBS22b	SBS23	SBS24	SBS25	SBS26	SBS27	SBS28	SBS29	SBS30	SBS31	SBS32	SBS33	SBS34	SBS35	SBS36	SBS37	SBS38	SBS39	SBS40a	SBS40b	SBS40c	SBS41	SBS42	SBS43	SBS44	SBS45	SBS46	SBS47	SBS48	SBS49	SBS50	SBS51	SBS52	SBS53	SBS54	SBS55	SBS56	SBS57	SBS58	SBS59	SBS60	SBS84	SBS85	SBS86	SBS87	SBS88	SBS89	SBS90	SBS91	SBS92	SBS93	SBS94	SBS95	SBS96	SBS97	SBS98	SBS99'.split()[
+                     1:]
+        #  assert index_signature.tolist() != true_order, (f'The order of the signatures in the signature file is not the same as cosmic 3.4. Cannot do automatic selection of {cancer_type} signatures', index_signature.tolist(), true_order)
+        assert index_signature == true_order, (
+        f'The order of the signatures in the signature file is not the same as cosmic 3.4. You can download the file at https://cancer.sanger.ac.uk/cosmic/download/cosmic. Cannot do automatic selection of {cancer_type} signatures',
+        index_signature, true_order)
         if cancer_type == 'bcla':
             index = [0, 1, 3, 4, 18]
             S = S[index]
@@ -309,7 +313,8 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
             S = S[index]
             index_signature = [index_signature[i] for i in index]
         else:
-            raise ValueError(f'Unknown cancer type {cancer_type}. Valid cancer types are: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec')
+            raise ValueError(
+                f'Unknown cancer type {cancer_type}. Valid cancer types are: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec')
     O = read_opportunity(M, opportunity_file)
     lambd = 0.7
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
@@ -325,9 +330,9 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         E = _refit(M, S, O, lambd=lambd)
         # print(O)
         sum_expo = E.sum(axis=0, keepdims=True) / len(E)
-        sum_expo_t= np.transpose(sum_expo)
+        sum_expo_t = np.transpose(sum_expo)
         E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
-        E.to_csv(f'{output_folder}/StarSign_Exposure_cohort.txt', index=index_matrix, header=True,sep='\t')
+        E.to_csv(f'{output_folder}/StarSign_Exposure_cohort.txt', index=index_matrix, header=True, sep='\t')
         sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
         sum_expo = np.transpose(sum_expo)
         plot_summary = cohort_plot(sum_expo)
@@ -406,7 +411,7 @@ def read_opportunity(M, opportunity_file):
         O = np.ones((n_samples, n_mutations), dtype=float)
     O = O / np.amin(O).sum(axis=-1, keepdims=True)
 
-   # The exposure is normalize to have the same proportion to the catalogue matrix
+    # The exposure is normalize to have the same proportion to the catalogue matrix
     normalized_vector1 = O / np.linalg.norm(O)
     min_value_vector2 = np.min(M)
     max_value_vector2 = np.max(M)
@@ -420,32 +425,36 @@ def read_signature(signature_file):
     index_signature = S.index.values.tolist()
     S = S.to_numpy().astype(float)
     # S = S[0:10,0:96]
-    return S , index_signature
+    return S, index_signature
 
 
 def read_counts(matrix_file):
     M = pd.read_csv(matrix_file, delimiter='\t')
     index_matrix = M.index.values.tolist()
     M = M.to_numpy().astype(float)
-    return M , index_matrix
+    return M, index_matrix
+
 
 def get_tri_context_fraction(mut_counts):
     total_mutations = mut_counts.sum().sum()
     trinucleotide_fractions = mut_counts.div(total_mutations) if total_mutations != 0 else mut_counts
     return trinucleotide_fractions
 
+
 def get_num_cpus():
     return multiprocessing.cpu_count()
 
 
 def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
-           n_signatures: int, lambd: Annotated[float, typer.Argument(help='Regularization parameter')],
+           n_signatures: int, lambd: Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
            opportunity_file: str = None,
            cosmic_file: Annotated[str, typer.Argument(help='Comma separated cosmic file')] = None,
-           max_em_iterations: int = 1,
-           max_gd_iterations: int = 2,
            numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
            genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
+           max_em_iterations: int = 100,
+           max_gd_iterations: int = 50,
+   #        numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
+   #        genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
            file_extension=None,
            ref_genome=None, output_folder: str = 'output/'):
     """
@@ -457,17 +466,18 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
         assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
-    M, index_matrix= read_counts(matrix_file)
+    M, index_matrix = read_counts(matrix_file)
     n_samples = len(M)
     n_signatures = n_signatures
     lambd = lambd
     n_mutations = M.shape[1]
-    if opportunity_file is not None:
-        O = pd.read_csv(opportunity_file, sep='\t', header=None).to_numpy().astype(float)
-        O = np.broadcast_to(O, M.shape)
-    else:
-        O = np.ones((n_samples, n_mutations), dtype=float)
-        # print(O)
+    O = read_opportunity(M, opportunity_file)
+    # if opportunity_file is not None:
+    #     O = pd.read_csv(opportunity_file, sep='\t', header=None).to_numpy().astype(float)
+    #     O = np.broadcast_to(O, M.shape)
+    # else:
+    #     O = np.ones((n_samples, n_mutations), dtype=float)
+    #     # print(O)
     O = O / np.amax(O).sum(axis=-1, keepdims=True)
     assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
     E, S = _denovo(M, n_signatures, lambd, O, em_steps=max_em_iterations, gd_steps=max_gd_iterations)
