@@ -50,7 +50,7 @@ def plot(file, output_folder='output/'):
     return plt.savefig(f"{output_folder}/plot_cohort.png", dpi=600)
 
 
-def single_plot(file):  # 2 feb
+def single_plot_old(file):  # 2 feb
     file = file.transpose()
     file.columns = ['Signatures', 'std_dev']
     # filtered_data = file[file['Signatures'] != 0]
@@ -74,6 +74,87 @@ def single_plot(file):  # 2 feb
     ax.set_xlabel('Signature exposures')
     ax.set_ylabel('Mutation fraction')
     ax.set_title('Single Sample Mutational Signatures')
+    return plt
+
+def single_plot_old2(file):
+    data = file.transpose()
+    filtered_data = data[data['Signature'] >= 0.06]
+    plt.style.use('default')
+    fig, ax = plt.subplots(figsize=(20, 8))
+    for i, row in filtered_data.iterrows():
+        lower_error = row['E_25']
+        upper_error = row['E_95']
+        # lower_error = abs(row['Signature'] - row['E_25'])
+        # upper_error = abs(row['E_95'] - row['Signature'])
+        ax.bar(i, row['Signature'], yerr=[[lower_error], [upper_error]], capsize=5)
+    ax.set_xticks(range(len(filtered_data)))
+    ax.set_xticklabels(filtered_data.index)
+    plt.xticks(rotation=45)
+    plt.xticks(fontsize=8)
+    plt.yticks(fontsize=8)
+    plt.xticks(rotation=45)
+    ax.set_xlabel('Signature exposures')
+    ax.set_ylabel('Mutation fraction')
+    ax.set_title('Single Sample Mutational Signatures')
+    return plt
+
+
+def single_plot(df):
+    header = df.columns.tolist()
+
+# 2. Compute the median per column and output as a vector with the row name 'signatures'
+    sorted_df = df.sort_values(by=list(df.columns))
+#    print(sorted_df)
+    median = sorted_df.median()
+    median.name = 'signatures'
+
+# 3. Compute the 2.5 percentile of the dataframe and output the vector with the row name 'perc2.5'
+#perc_2_5 = df.quantile(0.025)
+    perc_2_5 = df.quantile(0.25)
+    perc_2_5.name = 'perc2.5'
+
+# 4. Compute the 97.5 percentile of the dataframe and output the vector with the row name 'perc97.5'
+#perc_97_5 = df.quantile(0.975)
+    perc_97_5 = df.quantile(0.75)
+    perc_97_5.name = 'perc97.5'
+
+# 5. Append the 3 vectors in a dataframe with the header and the following row names ['Signature', 'E_25', 'E_95']
+    output_df = pd.concat([median, perc_2_5, perc_97_5], axis=1).transpose()
+    output_df.index = ['Signature', 'E_25', 'E_75']
+    output_df.columns = header
+    data = output_df.transpose()
+    filtered_data = data[data['Signature'] >= 0.06]
+#    print(filtered_data)
+    plt.style.use('default')
+    fig, ax = plt.subplots(figsize=(20, 8))
+    for i, row in filtered_data.iterrows():
+        lower_error = row['E_25']
+        upper_error = row['E_75']
+        # lower_error = abs(row['Signature'] - row['E_25'])
+        # upper_error = abs(row['E_95'] - row['Signature'])
+        ax.bar(i, row['Signature'], yerr=[[lower_error], [upper_error]], capsize=5)
+    ax.set_xticks(range(len(filtered_data)))
+    ax.set_xticklabels(filtered_data.index)
+    plt.xticks(rotation=45)
+    plt.xticks(fontsize=8)
+    plt.yticks(fontsize=8)
+    plt.xticks(rotation=45)
+    ax.set_xlabel('Signature exposures')
+    ax.set_ylabel('Mutation fraction')
+    ax.set_title('Single Sample Mutational Signatures')
+    return plt
+
+# Plot the violin plot
+def single_plot_old(file):
+    data_transposed = file.T
+    data_transposed = data_transposed[data_transposed['Signature'] >= 0.01]
+    data_transposed = data_transposed.T
+    plt.figure(figsize=(10, 6))
+    sns.violinplot(data=data_transposed, palette='Set2', cut=0)
+    plt.title('Violin Plots of Signature with E_2.5 and E_97.5')
+    plt.xlabel('Signature exposures')
+    plt.ylabel('Mutation fraction')
+    #plt.set_title('Single Sample Mutational Signatures')
     return plt
 
 
@@ -315,13 +396,24 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     O = read_opportunity(M, opportunity_file)
     lambd = 0.7
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
-        E = _refit(M, S, O, lambd=lambd)[0]
-        E_std = _bootstrap(M, S, O, n_bootstraps, lambd=lambd)
-        E = [E, E_std]
-        E = pd.DataFrame(data=E, columns=index_signature, index=['Signature', 'std_dev'])
-        plot = single_plot(E)
-        E.to_csv(f"{output_folder}/StarSign_exposure_signature_single_sample.txt", index=True, header=True, sep='\t')
-        plot.savefig(f"{output_folder}/StarSign_Exposure_exposure_single_sample_25_percentile.png", dpi=600)
+   #     print(M.shape)
+    #    E = _refit(M, S, O, lambd=lambd)[0]
+        boostrap_M = _bootstrap(M,n_bootstraps)
+    #    print(boostrap_M.shape)
+        expo_run = _refit(boostrap_M, S, O, lambd=lambd)
+ #       expo_run = _bootstrap(M, S, O, n_bootstraps, lambd=lambd)
+ ##       E = [E, E_std]
+    #    E = [E,E_25,E_95]
+    #    E = pd.DataFrame(data=E, columns=index_signature, index=['Signature', 'E_25', 'E_95'])
+        expo_run = pd.DataFrame(data=expo_run, columns=index_signature)
+      #  print(expo_run)
+        plot = single_plot(expo_run)
+        #expo_run = np.array(expo_run)
+        np.savetxt(f'{output_folder}/boostrap_catalogue.txt', np.array(boostrap_M))
+    #    np.savetxt(f'{output_folder}/Exposure_3avril.txt', np.array(E))
+ #       np.savetxt(f'{output_folder}/Exposure_run_3avril_1.txt', np.array(expo_run))
+        expo_run.to_csv(f"{output_folder}/StarSign_exposure_Exposure_run_3avril_1.txt", index=True, header=True, sep='\t')
+        plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_run_3avril_1.png", dpi=600)
     else:
 
         E = _refit(M, S, O, lambd=lambd)
@@ -329,21 +421,21 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         sum_expo = E.sum(axis=0, keepdims=True) / len(E)
         sum_expo_t = np.transpose(sum_expo)
         E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
-        E.to_csv(f'{output_folder}/StarSign_Exposure_cohort.txt', index=index_matrix, header=True, sep='\t')
+        E.to_csv(f'{output_folder}/sim5_cosmic67_binomial_common_500_l07_l0_19mars_5000.txt', index=index_matrix, header=True, sep='\t')
         sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
         sum_expo = np.transpose(sum_expo)
         plot_summary = cohort_plot(sum_expo)
-        plot_summary.savefig(f"{output_folder}/StarSign_Exposures_cohort_dotplot.png", dpi=600)
+        plot_summary.savefig(f"{output_folder}/sim5_cosmic67_binomial_common_500_l07_l0_19mars_5000.png", dpi=600)
         sort_E = sum_expo.sort_values(by=['Signatures'], ascending=False)
         sort_E = sort_E.iloc[:5, 0:]
         plot_top_five = cohort_plot(sort_E)
-        plot_top_five.savefig(f"{output_folder}/StarSign_Exposures_cohort_dotplot_top5.png", dpi=600)
+        plot_top_five.savefig(f"{output_folder}/sim5_cosmic67_binomial_common_500_l07_l0_19mars_5000.png", dpi=600)
         plot_variance = cohort_violin(E)
-        plot_variance.savefig(f"{output_folder}/StarSign_Exposures_cohort_dotplot_variance.png", dpi=600)
+        plot_variance.savefig(f"{output_folder}/sim5_cosmic67_binomial_common_500_l07_l0_19mars_5000.png", dpi=600)
         # sum_expo.to_csv(f'{output_folder}/average_exposure_cohort.txt', index=index_signature,
         #                 header=True,
         #                 sep='\t')
-        np.savetxt(f'{output_folder}/StarSign_Average_Exposure_cohort.txt.txt', np.array(sum_expo_t))
+        np.savetxt(f'{output_folder}/average_sim5_cosmic67_binomial_common_500_l07_l0_19mars_5000.txt', np.array(sum_expo_t))
     print("--- %s seconds ---" % (time.time() - start_time))
 
 

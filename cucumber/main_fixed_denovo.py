@@ -25,6 +25,12 @@ def compute_local_gradients_ori(E, M, S, O):
 ##
 
 def compute_local_gradients(E, M, S, O,lambd):
+#    print("MMM",M.shape)
+#    print("SSS",S.shape)
+#    print("OOO",O.shape)
+    if O.shape != M.shape:
+     #   O = O.reshape(M.shape)
+        O = np.broadcast_to(O, M.shape)
     n_samples, n_signatures, n_mutations = (E.shape[0], S.shape[0], M.shape[1])
     local_gradients = np.empty_like(E)
     matrice_sum = M.sum(axis=1, keepdims=True)
@@ -115,8 +121,8 @@ def compute_global_gradient_denovo(E, local_gradients, matrice_lambda):
 # function to compute the step-size
 def compute_topt(E, local_gradients, global_gradients, hessians):
     # print("local",hessians)
-    numerator = np.linalg.norm(global_gradients, ord= 'fro', axis=None, keepdims=False)
-    #numerator = np.sum(global_gradients * local_gradients)
+    numerator = np.linalg.norm(global_gradients, ord= None, axis=None, keepdims=False)
+  ###  numerator = np.sum(global_gradients * local_gradients)
     # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
     denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])
@@ -267,7 +273,7 @@ def Frobinous(M, S, E, O):
     fibo = []
     fibo1 = []
     fibo1 = (E @ S) * O
-    fibo = LA.norm(M - fibo1, ord=2)
+    fibo = LA.norm(M - fibo1, ord=None)
     return fibo
 
 
@@ -282,7 +288,7 @@ def Frobinous_reconstuct(M, S, E, O):
     M_count = M.sum(axis=1)
     fibo1 *= M_count.reshape(-1, 1)
     M_hat = fibo1
-    fibo = LA.norm(M - M_hat, ord=2)
+    fibo = LA.norm(M - M_hat, ord=None)
     return fibo, M_hat
 
 #calculation of sparsity
@@ -366,7 +372,7 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
         #print(E)
         hessians = compute_hessians(E, M, S)
         global_gradients = compute_global_gradient(E, local_gradients, matrice_lambda) #threshold lambda
-       ### global_gradients = compute_global_gradient(E, local_gradients,lambd)
+        ###global_gradients = compute_global_gradient(E, local_gradients,lambd)
         tedge = compute_t_edge(E, global_gradients)
         topt = compute_topt(E, local_gradients, global_gradients, hessians)
         #print("topt", topt)
