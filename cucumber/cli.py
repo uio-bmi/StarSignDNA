@@ -123,7 +123,7 @@ def single_plot(df):
     output_df.index = ['Signature', 'E_25', 'E_75']
     output_df.columns = header
     data = output_df.transpose()
-    filtered_data = data[data['Signature'] >= 0.06]
+    filtered_data = data[data['Signature'] >= 0.01]
 #    print(filtered_data)
     plt.style.use('default')
     fig, ax = plt.subplots(figsize=(20, 8))
@@ -147,7 +147,7 @@ def single_plot(df):
 # Plot the violin plot
 def single_plot_old(file):
     data_transposed = file.T
-    data_transposed = data_transposed[data_transposed['Signature'] >= 0.01]
+    data_transposed = data_transposed[data_transposed['Signature'] >= 0.06]
     data_transposed = data_transposed.T
     plt.figure(figsize=(10, 6))
     sns.violinplot(data=data_transposed, palette='Set2', cut=0)
@@ -273,8 +273,18 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
     M, index_matrix = read_counts(matrix_file)
+    #print("MMMM",M.columns)
     S, index_signature = read_signature(signature_file)
+    desired_order = M.columns
 
+# Check for missing columns
+    missing_cols = set(desired_order) - set(S.columns)  # Set difference for missing columns
+    if len(missing_cols) > 0:
+        raise ValueError("Error: Following columns are not present in the DataFrame:", missing_cols)
+# Reorder columns
+    S = S[desired_order]
+    S = S.to_numpy().astype(float)
+    M = M.to_numpy().astype(float)
     if cancer_type is not None:
         true_order = 'Type	SBS1	SBS2	SBS3	SBS4	SBS5	SBS6	SBS7a	SBS7b	SBS7c	SBS7d	SBS8	SBS9	SBS10a	SBS10b	SBS10c	SBS10d	SBS11	SBS12	SBS13	SBS14	SBS15	SBS16	SBS17a	SBS17b	SBS18	SBS19	SBS20	SBS21	SBS22a	SBS22b	SBS23	SBS24	SBS25	SBS26	SBS27	SBS28	SBS29	SBS30	SBS31	SBS32	SBS33	SBS34	SBS35	SBS36	SBS37	SBS38	SBS39	SBS40a	SBS40b	SBS40c	SBS41	SBS42	SBS43	SBS44	SBS45	SBS46	SBS47	SBS48	SBS49	SBS50	SBS51	SBS52	SBS53	SBS54	SBS55	SBS56	SBS57	SBS58	SBS59	SBS60	SBS84	SBS85	SBS86	SBS87	SBS88	SBS89	SBS90	SBS91	SBS92	SBS93	SBS94	SBS95	SBS96	SBS97	SBS98	SBS99'.split()[
                      1:]
@@ -395,11 +405,12 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
                 f'Unknown cancer type {cancer_type}. Valid cancer types are: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec')
     O = read_opportunity(M, opportunity_file)
     lambd = 0.7
+    print(M.shape)
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
-   #     print(M.shape)
-    #    E = _refit(M, S, O, lambd=lambd)[0]
+        print("HERRRRRRE")
+   #     E = _refit(M, S, O, lambd=lambd)[0]
         boostrap_M = _bootstrap(M,n_bootstraps)
-    #    print(boostrap_M.shape)
+    #    print(E.shape)
         expo_run = _refit(boostrap_M, S, O, lambd=lambd)
  #       expo_run = _bootstrap(M, S, O, n_bootstraps, lambd=lambd)
  ##       E = [E, E_std]
@@ -409,13 +420,13 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
       #  print(expo_run)
         plot = single_plot(expo_run)
         #expo_run = np.array(expo_run)
-        np.savetxt(f'{output_folder}/boostrap_catalogue.txt', np.array(boostrap_M))
+        np.savetxt(f'{output_folder}/boostrap_catalogue_test.txt', np.array(boostrap_M))
     #    np.savetxt(f'{output_folder}/Exposure_3avril.txt', np.array(E))
  #       np.savetxt(f'{output_folder}/Exposure_run_3avril_1.txt', np.array(expo_run))
-        expo_run.to_csv(f"{output_folder}/StarSign_exposure_Exposure_run_3avril_1.txt", index=True, header=True, sep='\t')
-        plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_run_3avril_1.png", dpi=600)
+        expo_run.to_csv(f"{output_folder}/StarSign_exposure_Exposure_test.txt", index=True, header=True, sep='\t')
+        plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_test.png", dpi=600)
     else:
-
+        print("NOOOOOOOOO")
         E = _refit(M, S, O, lambd=lambd)
         # print(O)
         sum_expo = E.sum(axis=0, keepdims=True) / len(E)
@@ -495,32 +506,39 @@ def read_opportunity(M, opportunity_file):
                           1391660, 1674368, 1559846, 2850934])
         else:
             O = pd.read_csv(opportunity_file, sep='\t', header=None).to_numpy().astype(float)
+            normalized_vector1 = O / np.linalg.norm(O)
+            min_value_vector2 = np.min(M)
+            max_value_vector2 = np.max(M)
+            O = normalized_vector1 * (max_value_vector2 - min_value_vector2) + min_value_vector2
         O = np.broadcast_to(O, M.shape)
     else:
         O = np.ones((n_samples, n_mutations), dtype=float)
     O = O / np.amin(O).sum(axis=-1, keepdims=True)
 
     # The exposure is normalize to have the same proportion to the catalogue matrix
-    normalized_vector1 = O / np.linalg.norm(O)
-    min_value_vector2 = np.min(M)
-    max_value_vector2 = np.max(M)
-    O = normalized_vector1 * (max_value_vector2 - min_value_vector2) + min_value_vector2
+    #     normalized_vector1 = O / np.linalg.norm(O)
+    #     min_value_vector2 = np.min(M)
+    #     max_value_vector2 = np.max(M)
+    #     O = normalized_vector1 * (max_value_vector2 - min_value_vector2) + min_value_vector2
+
     assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
     return O
 
 
 def read_signature(signature_file):
-    S = pd.read_csv(signature_file, delimiter=',')
+    S = pd.read_csv(signature_file, delimiter='\t')
+    #S = S.T
     index_signature = S.index.values.tolist()
-    S = S.to_numpy().astype(float)
+    #S = S.to_numpy().astype(float)
     # S = S[0:10,0:96]
     return S, index_signature
 
 
 def read_counts(matrix_file):
     M = pd.read_csv(matrix_file, delimiter='\t')
+  #  M = M.T
     index_matrix = M.index.values.tolist()
-    M = M.to_numpy().astype(float)
+    #M = M.to_numpy().astype(float)
     return M, index_matrix
 
 
@@ -542,8 +560,8 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
     ##       cosmic_file: Annotated[str, typer.Option(help='Comma separated cosmic file')] = None,
            numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
            genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
-           max_em_iterations: int = 1,
-           max_gd_iterations: int = 2,
+           max_em_iterations: int = 100,
+           max_gd_iterations: int = 50,
    #        numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
    #        genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
            file_extension=None,
@@ -564,17 +582,29 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
     M, index_matrix = read_counts(matrix_file)
+    #print(M)
     n_samples = len(M)
     n_signatures = n_signatures
     lambd = lambd
     print('Lambda',lambd)
     n_mutations = M.shape[1]
     O = read_opportunity(M, opportunity_file)
-    O = O / np.amax(O).sum(axis=-1, keepdims=True)
-    assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
+    # O = O / np.amax(O).sum(axis=-1, keepdims=True)
+    # assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
+    desired_order = M.columns
+    #print(desired_order)
+    M = M.to_numpy().astype(float)
     E, S = _denovo(M, n_signatures, lambd, O, em_steps=max_em_iterations, gd_steps=max_gd_iterations)
     if cosmic_file is not None:
-        cosmic = pd.read_csv(cosmic_file, delimiter=',')
+        cosmic = pd.read_csv(cosmic_file, delimiter='\t')
+        #desired_order = M.columns
+
+# Check for missing columns
+        missing_cols = set(desired_order) - set(cosmic.columns)  # Set difference for missing columns
+        if len(missing_cols) > 0:
+            raise ValueError("Error: Following columns are not present in the DataFrame:", missing_cols)
+# Reorder columns
+        cosmic = cosmic[desired_order]
         cos_similarity = cos_sim_matrix(S, cosmic)[0]
         cos_similarity.to_csv(f"{output_folder}/StarSign_Cosine_similarity_denovo.txt", sep="\t")
         # print(cos_similarity)
