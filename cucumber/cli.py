@@ -272,9 +272,27 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
-    M, index_matrix = read_counts(matrix_file)
+    M = read_counts(matrix_file)
+    index_matrix = M.index.values.tolist()
+    S = read_signature(signature_file)
+    # print(S)
+    index_matrix = M.index.values.tolist()
+    normalized_df = M.div(M.sum(axis=1), axis=0)
+    col_means = normalized_df.mean(axis=0)
+    count_less_than_01 = (col_means < 0.0008).sum()
+    print("count_less_than_01", count_less_than_01)
+    threshold = 0.25 * len(col_means)
+    print("threshold",threshold)
+         # print("len(col_means)",len(col_means))
+    if count_less_than_01 <= threshold:
+        zero_contexts = np.array(M.columns)[(M.values < 0.01).any(axis=0)]
+        # print("zero_contexts",zero_contexts)
+        corr_sigs_mask = (S.loc[:, zero_contexts] >= 0.1).any(axis=1)
+        signatures = S.loc[~S.index.isin(corr_sigs_mask[corr_sigs_mask].index)]
+        S = signatures
+        # print("SSSS", S.shape)
     #print("MMMM",M.columns)
-    S, index_signature = read_signature(signature_file)
+    index_signature = S.index.values.tolist()
     desired_order = M.columns
 
 # Check for missing columns
@@ -407,7 +425,6 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     lambd = 0.7
     print(M.shape)
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
-        print("HERRRRRRE")
    #     E = _refit(M, S, O, lambd=lambd)[0]
         boostrap_M = _bootstrap(M,n_bootstraps)
     #    print(E.shape)
@@ -426,7 +443,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         expo_run.to_csv(f"{output_folder}/StarSign_exposure_Exposure_test.txt", index=True, header=True, sep='\t')
         plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_test.png", dpi=600)
     else:
-        print("NOOOOOOOOO")
+
         E = _refit(M, S, O, lambd=lambd)
         # print(O)
         sum_expo = E.sum(axis=0, keepdims=True) / len(E)
@@ -531,7 +548,7 @@ def read_signature(signature_file):
     index_signature = S.index.values.tolist()
     #S = S.to_numpy().astype(float)
     # S = S[0:10,0:96]
-    return S, index_signature
+    return S #, index_signature
 
 
 def read_counts(matrix_file):
@@ -539,7 +556,7 @@ def read_counts(matrix_file):
   #  M = M.T
     index_matrix = M.index.values.tolist()
     #M = M.to_numpy().astype(float)
-    return M, index_matrix
+    return M #, index_matrix
 
 
 def get_tri_context_fraction(mut_counts):

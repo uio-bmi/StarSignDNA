@@ -5,7 +5,7 @@ from scipy.stats import poisson, entropy
 from numpy import count_nonzero
 from .main_fixed_denovo import Frobinous, Frobinous_reconstuct, running_simulation_refit
 from scipy import stats
-def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, n_iterations: int= 1000) -> np.ndarray:
+def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, n_iterations: int=1000) -> np.ndarray:
     '''
     Refit the signatures to the data
     M: Matrix of observed mutational signatures
@@ -23,7 +23,7 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, 
     M, S, O = (np.asarray(a) for a in (M, S, O))
 #    n_mutations = 96
     tmp = np.abs(np.random.laplace(loc=0, scale=1, size=n_samples * n_signatures).reshape(n_samples, n_signatures))
-    E = np.full_like(tmp, 0.00001) #modify 25 jan
+    E = np.full_like(tmp, 1) #modify 25 jan
     topt = np.float64("Inf")
     # topt= -math.inf
     tedge = np.float64("Inf")
@@ -33,7 +33,7 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, 
     expo_step = []
     E = running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps=n_iterations)
     if (np.any(E < 0)): #comment 25jan
-        E = np.maximum(E, 0) #comment 25jan
+        E = np.maximum(E, 0.00001) #comment 25jan
     mse_e = Frobinous(M, S, E, O)
     loss = -poisson.logpmf(M, (E @ S) * O)
     # print("PMF",np.mean(loss))
