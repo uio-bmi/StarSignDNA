@@ -8,8 +8,6 @@ from scipy.stats import poisson, entropy
 def compute_local_gradients(E, M, S, O):
     n_samples, n_signatures, n_mutations = (E.shape[0], S.shape[0], M.shape[1])
     local_gradients = np.empty_like(E)
-    #print("EEE_Grdientttt", E)
-
     for i in range(n_samples):
         for r in range(n_signatures):
             # print(type(M[i]))
@@ -17,7 +15,7 @@ def compute_local_gradients(E, M, S, O):
             # print(M.dtype, S.dtype)
             numerator = M[i]*S[r]
             denumerator_sum = np.array([E[i] @ S[:, k] for k in range(n_mutations)])
-            denumerator_sum_c = denumerator_sum + np.finfo(float).eps # 0.000001
+            denumerator_sum_c = denumerator_sum +  0.000001
             #print("deno", denumerator_sum_c)
             #print("num", numerator)
             local_gradients[i, r] = np.sum((numerator/denumerator_sum_c) - O[i]*S[r])
@@ -532,11 +530,11 @@ def running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps):
         # E_hat = E
         if np.any(E < 0):
             E = np.maximum(E, 0)
-        ###local_gradients = compute_local_gradients(E, M, S, O)
-        local_gradients, matrice_lambda = compute_local_gradients(E, M, S, O, lambd)
+        local_gradients = compute_local_gradients(E, M, S, O)
+      #  local_gradients, matrice_lambda = compute_local_gradients(E, M, S, O, lambd)
         hessians = compute_hessians(E, M, S)
-        ###global_gradients = compute_global_gradient(E, local_gradients, lambd)
-        global_gradients = compute_global_gradient(E, local_gradients, matrice_lambda)
+        global_gradients = compute_global_gradient(E, local_gradients, lambd)
+     ##   global_gradients = compute_global_gradient(E, local_gradients, matrice_lambda)
         topt = compute_topt_denovo(E, local_gradients, global_gradients, hessians)
         tedge = compute_t_edge_denovo(E, global_gradients)
         minimun_topt_tedge = min_topt_tedge(topt, tedge)

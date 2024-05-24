@@ -20,6 +20,8 @@ def refit(M: np.ndarray, S: np.ndarray, O: np.ndarray=None, lambd: float = int, 
     n_mutations = 96
     if O is None:
         O = np.ones((n_samples, n_mutations), dtype=int)
+    elif O.shape !=M.shape:
+        O = np.tile(O, (M.shape[0], 1))
     M, S, O = (np.asarray(a) for a in (M, S, O))
 #    n_mutations = 96
     tmp = np.abs(np.random.laplace(loc=0, scale=1, size=n_samples * n_signatures).reshape(n_samples, n_signatures))
