@@ -278,7 +278,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     #   genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = False, output_folder: str = 'output/',
     #   cancer_type: Annotated[str,typer.Argument(help="Cancer type abbreviation, eg.: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec")] = None):
     '''
-    Mutational SIgnatures Refit Parameters \n
+    Mutational Signatures Refit Parameters \n
     n_bootstraps: \n
     matrix_file: str \n
     signature_file: str \n
@@ -286,7 +286,6 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     opportunity_file: str \n
     numeric_chromosomes,bool: True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3' \n
     genotyped,bool:True if the VCF file has genotype information for many samples \n
-    cancer_type, str: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec
 
     '''
     sig_name = Path(signature_file).stem
@@ -331,7 +330,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     S = S[desired_order]
     S = S.to_numpy().astype(float)
     M = M.to_numpy().astype(float)
-    S, index_signature = select_signature_matrix(S, cancer_type, index_signature)
+   # S, index_signature = select_signature_matrix(S, cancer_type, index_signature)
     O = read_opportunity(M, opportunity_file)
     lambd = 0.7
 
@@ -373,133 +372,9 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         plot_top_five.savefig(f"{output_folder}/{run_name}.png", dpi=600)
         plot_variance = cohort_violin(E)
         plot_variance.savefig(f"{output_folder}/{run_name}.png", dpi=600)
-        # sum_expo.to_csv(f'{output_folder}/average_exposure_cohort.txt', index=index_signature,
-        #                 header=True,
-        #                 sep='\t')
         np.savetxt(f'{output_folder}/average_{run_name}.txt', np.array(sum_expo_t))
     print("--- %s seconds ---" % (time.time() - start_time))
 
-
-def select_signature_matrix(S, cancer_type, index_signature):
-    if cancer_type is not None:
-        true_order = 'Type	SBS1	SBS2	SBS3	SBS4	SBS5	SBS6	SBS7a	SBS7b	SBS7c	SBS7d	SBS8	SBS9	SBS10a	SBS10b	SBS10c	SBS10d	SBS11	SBS12	SBS13	SBS14	SBS15	SBS16	SBS17a	SBS17b	SBS18	SBS19	SBS20	SBS21	SBS22a	SBS22b	SBS23	SBS24	SBS25	SBS26	SBS27	SBS28	SBS29	SBS30	SBS31	SBS32	SBS33	SBS34	SBS35	SBS36	SBS37	SBS38	SBS39	SBS40a	SBS40b	SBS40c	SBS41	SBS42	SBS43	SBS44	SBS45	SBS46	SBS47	SBS48	SBS49	SBS50	SBS51	SBS52	SBS53	SBS54	SBS55	SBS56	SBS57	SBS58	SBS59	SBS60	SBS84	SBS85	SBS86	SBS87	SBS88	SBS89	SBS90	SBS91	SBS92	SBS93	SBS94	SBS95	SBS96	SBS97	SBS98	SBS99'.split()[
-                     1:]
-        #  assert index_signature.tolist() != true_order, (f'The order of the signatures in the signature file is not the same as cosmic 3.4. Cannot do automatic selection of {cancer_type} signatures', index_signature.tolist(), true_order)
-        assert index_signature == true_order, (
-            f'The order of the signatures in the signature file is not the same as cosmic 3.4. You can download the file at https://cancer.sanger.ac.uk/cosmic/download/cosmic. Cannot do automatic selection of {cancer_type} signatures',
-            index_signature, true_order)
-        if cancer_type == 'bcla':
-            index = [0, 1, 3, 4, 18]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'brca':
-            index = [0, 1, 2, 4, 18, 24, 37, 41, 50]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'chol':
-            index = [0, 1, 4, 18, 24, 47, 48, 49, 67]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'gbm':
-            index = [0, 4, 37, 47, 48, 49]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'lgg':
-            index = [0, 4]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'cesc':
-            index = [0, 1, 4, 18]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'coad':
-            index = [0, 4, 20, 47, 48, 49, 53]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'esca':
-            index = [0, 2, 4, 18, 22, 23, 24, 47, 48, 49]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'uvm':
-            index = [0, 4, 47, 48, 49, 60, 61]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'hnsc':
-            index = [0, 1, 3, 4, 18, 47, 48, 49, 54]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'kich':
-            index = [0, 1, 18, 36, 47, 48, 49]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'kirp':
-            index = [0, 1, 4, 18, 54, 58]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'kirc':
-            index = [0, 4, 28, 29, 47, 48, 49, 50]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'lihc':
-            index = [0, 2, 3, 4, 17, 21, 24, 28, 29, 36, 47, 48, 49]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'luad':
-            index = [0, 1, 3, 4, 18, 47, 48, 54]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'lusc':
-            index = [0, 1, 3, 4, 18, 54]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'dlbc':
-            index = [1, 2, 4, 5, 11, 18, 22, 23, 41, 43, 44, 47, 48, 49, 65]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'dlbc':
-            index = [0, 1, 2, 4, 5, 11, 18, 22, 23, 41, 43, 44, 47, 48, 49]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'laml':
-            index = [0, 4, 52]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'ov':
-            index = [0, 1, 2, 4, 18, 24, 47, 48, 49]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'paad':
-            index = [0, 1, 2, 4, 18, 22, 23, 24, 47, 48, 49]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'prad':
-            index = [0, 2, 4, 24, 47, 48, 49, 67]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'sarc':
-            index = [0, 4, 6, 7, 8, 9, 24, 68]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'skcm':
-            index = [0, 4, 6, 7, 8, 9, 45, 47, 48, 49, 54, 58]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'stad':
-            index = [0, 1, 2, 18, 20, 22, 23, 24, 26, 47, 48, 49]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'thca':
-            index = [0, 1, 4, 18, 47, 48, 49, 52, 54, 58, 62]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        elif cancer_type == 'ucec':
-            index = [0, 1, 4, 12, 13, 14, 15, 18, 19, 20, 35, 53]
-            S = S[index]
-            index_signature = [index_signature[i] for i in index]
-        else:
-            raise ValueError(
-                f'Unknown cancer type {cancer_type}. Valid cancer types are: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec')
-    return S, index_signature
 
 
 def read_opportunity(M, opportunity_file):
@@ -566,12 +441,6 @@ def read_opportunity(M, opportunity_file):
     else:
         O = np.ones((n_samples, n_mutations), dtype=float)
     O = O / np.amin(O).sum(axis=-1, keepdims=True)
-
-    # The exposure is normalize to have the same proportion to the catalogue matrix
-    #     normalized_vector1 = O / np.linalg.norm(O)
-    #     min_value_vector2 = np.min(M)
-    #     max_value_vector2 = np.max(M)
-    #     O = normalized_vector1 * (max_value_vector2 - min_value_vector2) + min_value_vector2
 
     assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
     return O
