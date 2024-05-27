@@ -5,18 +5,18 @@ watchdog==0.9.0
 flake8==3.7.8
 twine==1.14.0
 Sphinx
-typer~=0.9.0
-pytest~=7.3.1
-hypothesis~=6.75.6
+typer
+pytest
+hypothesis
 coverage
 pytest-cov
 build
 
-numpy~=1.23.5
-scipy~=1.10.1
-pandas~=2.0.2
-bionumpy~=0.2.21
-setuptools~=67.0.0
+numpy
+scipy
+pandas
+bionumpy
+setuptools
 
-seaborn~=0.12.2
-matplotlib~=3.7.2
+seaborn
+matplotlib
