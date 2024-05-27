@@ -1,5 +1,5 @@
 ========
-Cucumber
+StarSign
 ========
 
 
@@ -17,11 +17,11 @@ Features
 Stable release
 --------------
 
-To install Cucumber, run this command in your terminal:
+To install StarSign, run this command in your terminal:
 ::
-    1. download StarSign from https://github.com/uio-bmi/cucumber
-    2. unzip cucumber-master.zip
-    3. cd cucumber-master/
+    1. download StarSign from https://github.com/uio-bmi/StarSign
+    2. unzip StarSign-master.zip
+    3. cd StarSign-master/
     4. pip install -e .
 
 
@@ -29,8 +29,8 @@ Getting started
 ---------------
 To obtain help :
 ::
-   cucumber --help
-   Usage: cucumber [OPTIONS] COMMAND [ARGS]...
+   StarSign --help
+   Usage: StarSign [OPTIONS] COMMAND [ARGS]...
 Commands:
 ::
   count-mutation ---Count mutation types in a VCF file
@@ -41,12 +41,12 @@ Running mutational signature refit algorithm:
 -----------------------------------------------
 The refitting algorithm takes as input a mutational catalog and cosmic mutational signature file
 ::
-  cucumber refit --help
+  StarSign refit --help
 
-Running cucumber refit
+Running StarSign refit
 ::
-  cucumber refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt --output-folder /test_result
-  cucumber refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt --output-folder /test_result
+  StarSign refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt --output-folder /test_result
+  StarSign refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt --output-folder /test_result
 
 The test data is provided in example_data folder, to convert *.vcf to matrix, the user must provide the path to the reference genome using the option --ref-genome
 output files for a single sample (example of TCGA-BRCA)
@@ -78,7 +78,7 @@ Running mutational signature de novo algorithm:
 -----------------------------------------------
 The de novo algorithm takes as input a mutational catalog and inferred the exposure matrix and mutational signature matrix. The cosmic mutational signature file is provided to compute the cosine similarity.
 ::
-  cucumber denovo --help
+  StarSign denovo --help
 
 Step 1: Grid Search: The grid uses cross-validation to find the optimal pairwise (k and $\lambda$)
 ::
@@ -103,7 +103,7 @@ To check manually the optimal $k$ and $lambda$ from the output
  sort -k3n,3 results/data/all.csv
 Run denovo using optimal $k=4$ and $lambda=0.1$
 ::
- cucumber denovo snakemake/results/data/pcawg_skin_21.txt 4 0.1 --cosmic-file example_data/sig_cosmic_v3_2019.txt --output-folder /test_result
+ StarSign denovo snakemake/results/data/pcawg_skin_21.txt 4 0.1 --cosmic-file example_data/sig_cosmic_v3_2019.txt --output-folder /test_result
 
 output files
 ::
