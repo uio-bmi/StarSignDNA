@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Tests for `cucumber` package."""
+"""Tests for `starsign` package."""
 
 import pytest
 

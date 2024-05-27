@@ -1,6 +1,6 @@
 import numpy as np
 
-from cucumber import denovo
+from starsign import denovo
 from .test_refit import M, n_signatures, n_samples, n_mutations
 
 

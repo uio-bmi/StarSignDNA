@@ -1,1 +1,1 @@
-"""Unit test package for cucumber."""
+"""Unit test package for starsign."""

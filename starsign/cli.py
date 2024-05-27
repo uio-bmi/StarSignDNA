@@ -1,4 +1,7 @@
-"""Console script for cucumber."""
+"""Console script for starsign."""
+from pathlib import Path
+from typing import Optional
+import logging
 # from typing import Annotated
 from typing_extensions import Annotated
 import numpy as np
@@ -10,7 +13,8 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 import string
 import multiprocessing
-
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 np.random.seed(10000)
 
 # todo
@@ -258,11 +262,18 @@ def plot_profile(data):
     return plt
 
 
+def filter_signatures(S, signature_names):
+    S = S.loc[signature_names]
+    return S
+
+
 def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
           signature_file: Annotated[str, typer.Argument(help='Comma separated matrix file')],
           opportunity_file: str = None, ref_genome: str = None, n_bootstraps: int = 200,
           numeric_chromosomes: bool = None, genotyped: bool = None, cancer_type: str = None,
-          output_folder: str = 'output/'):
+          output_folder: str = 'output/',
+          signature_names: Annotated[Optional[str], typer.Option(help='Comma separated list of signature names')] = None,
+          n_iterations: int=1000):
     #    numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = True,
     #   genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = False, output_folder: str = 'output/',
     #   cancer_type: Annotated[str,typer.Argument(help="Cancer type abbreviation, eg.: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec")] = None):
@@ -278,6 +289,10 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     cancer_type, str: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec
 
     '''
+    sig_name = Path(signature_file).stem
+    matrix_name = Path(matrix_file).stem
+    run_name = f'{matrix_name}_{sig_name}_{n_iterations}'
+    logger.info(f'Refitting mutational signatures with {n_iterations} iterations')
     start_time = time.time()
     # reference genome
     #ref_genome = '/Users/bope/Documents/MutSig/scientafellow/packages/ref/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
@@ -301,6 +316,9 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         corr_sigs_mask = (S.loc[:, zero_contexts] >= 0.1).any(axis=1)
         signatures = S.loc[~S.index.isin(corr_sigs_mask[corr_sigs_mask].index)]
         S = signatures
+    if signature_names is not None:
+        S = filter_signatures(S, signature_names.split(','))
+
     index_signature = S.index.values.tolist()
     desired_order = M.columns
 
@@ -312,13 +330,63 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     S = S[desired_order]
     S = S.to_numpy().astype(float)
     M = M.to_numpy().astype(float)
+    S, index_signature = select_signature_matrix(S, cancer_type, index_signature)
+    O = read_opportunity(M, opportunity_file)
+    lambd = 0.7
+
+    if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
+        boostrap_M = _bootstrap(M,n_bootstraps)
+
+        expo_run = _refit(boostrap_M, S, O, lambd=lambd, n_iterations=n_iterations)
+        expo_run = pd.DataFrame(data=expo_run, columns=index_signature)
+      #  print(expo_run)
+        plot = single_plot(expo_run)
+        #expo_run = np.array(expo_run)
+        np.savetxt(f'{output_folder}/boostrap_catalogue_test.txt', np.array(boostrap_M))
+    #    np.savetxt(f'{output_folder}/Exposure_3avril.txt', np.array(E))
+ #       np.savetxt(f'{output_folder}/Exposure_run_3avril_1.txt', np.array(expo_run))
+        expo_run_median = expo_run.median()
+        expo_run_median.to_csv(f"{output_folder}/StarSign_exposure_median_{run_name}.txt", index=True, sep='\t')
+        expo_run.to_csv(f"{output_folder}/StarSign_exposure_Exposure_test_{run_name}.txt", index=True, header=True, sep='\t')
+        if plot is not None:
+            plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_test_{run_name}.png", dpi=600)
+            plot.close()
+        else:
+            print("No plot was generated due to filtering criteria.")
+     #   plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_test.png", dpi=600)
+    else:
+
+        E = _refit(M, S, O, lambd=lambd, n_iterations=n_iterations)
+        # print(O)
+        sum_expo = E.sum(axis=0, keepdims=True) / len(E)
+        sum_expo_t = np.transpose(sum_expo)
+        E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
+        E.to_csv(f'{output_folder}/{run_name}.txt', index=index_matrix, header=True, sep='\t')
+        sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
+        sum_expo = np.transpose(sum_expo)
+        plot_summary = cohort_plot(sum_expo)
+        plot_summary.savefig(f"{output_folder}/{run_name}.png", dpi=600)
+        sort_E = sum_expo.sort_values(by=['Signatures'], ascending=False)
+        sort_E = sort_E.iloc[:5, 0:]
+        plot_top_five = cohort_plot(sort_E)
+        plot_top_five.savefig(f"{output_folder}/{run_name}.png", dpi=600)
+        plot_variance = cohort_violin(E)
+        plot_variance.savefig(f"{output_folder}/{run_name}.png", dpi=600)
+        # sum_expo.to_csv(f'{output_folder}/average_exposure_cohort.txt', index=index_signature,
+        #                 header=True,
+        #                 sep='\t')
+        np.savetxt(f'{output_folder}/average_{run_name}.txt', np.array(sum_expo_t))
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+
+def select_signature_matrix(S, cancer_type, index_signature):
     if cancer_type is not None:
         true_order = 'Type	SBS1	SBS2	SBS3	SBS4	SBS5	SBS6	SBS7a	SBS7b	SBS7c	SBS7d	SBS8	SBS9	SBS10a	SBS10b	SBS10c	SBS10d	SBS11	SBS12	SBS13	SBS14	SBS15	SBS16	SBS17a	SBS17b	SBS18	SBS19	SBS20	SBS21	SBS22a	SBS22b	SBS23	SBS24	SBS25	SBS26	SBS27	SBS28	SBS29	SBS30	SBS31	SBS32	SBS33	SBS34	SBS35	SBS36	SBS37	SBS38	SBS39	SBS40a	SBS40b	SBS40c	SBS41	SBS42	SBS43	SBS44	SBS45	SBS46	SBS47	SBS48	SBS49	SBS50	SBS51	SBS52	SBS53	SBS54	SBS55	SBS56	SBS57	SBS58	SBS59	SBS60	SBS84	SBS85	SBS86	SBS87	SBS88	SBS89	SBS90	SBS91	SBS92	SBS93	SBS94	SBS95	SBS96	SBS97	SBS98	SBS99'.split()[
                      1:]
         #  assert index_signature.tolist() != true_order, (f'The order of the signatures in the signature file is not the same as cosmic 3.4. Cannot do automatic selection of {cancer_type} signatures', index_signature.tolist(), true_order)
         assert index_signature == true_order, (
-        f'The order of the signatures in the signature file is not the same as cosmic 3.4. You can download the file at https://cancer.sanger.ac.uk/cosmic/download/cosmic. Cannot do automatic selection of {cancer_type} signatures',
-        index_signature, true_order)
+            f'The order of the signatures in the signature file is not the same as cosmic 3.4. You can download the file at https://cancer.sanger.ac.uk/cosmic/download/cosmic. Cannot do automatic selection of {cancer_type} signatures',
+            index_signature, true_order)
         if cancer_type == 'bcla':
             index = [0, 1, 3, 4, 18]
             S = S[index]
@@ -430,52 +498,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         else:
             raise ValueError(
                 f'Unknown cancer type {cancer_type}. Valid cancer types are: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec')
-    O = read_opportunity(M, opportunity_file)
-    lambd = 0.7
-
-    if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
-        boostrap_M = _bootstrap(M,n_bootstraps)
-
-        expo_run = _refit(boostrap_M, S, O, lambd=lambd)
-        expo_run = pd.DataFrame(data=expo_run, columns=index_signature)
-      #  print(expo_run)
-        plot = single_plot(expo_run)
-        #expo_run = np.array(expo_run)
-        np.savetxt(f'{output_folder}/boostrap_catalogue_test.txt', np.array(boostrap_M))
-    #    np.savetxt(f'{output_folder}/Exposure_3avril.txt', np.array(E))
- #       np.savetxt(f'{output_folder}/Exposure_run_3avril_1.txt', np.array(expo_run))
-        expo_run_median = expo_run.median()
-        expo_run_median.to_csv(f"{output_folder}/StarSign_exposure_median.txt", index=True, sep='\t')
-        expo_run.to_csv(f"{output_folder}/StarSign_exposure_Exposure_test.txt", index=True, header=True, sep='\t')
-        if plot is not None:
-            plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_test.png", dpi=600)
-            plot.close()
-        else:
-            print("No plot was generated due to filtering criteria.")
-     #   plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_test.png", dpi=600)
-    else:
-
-        E = _refit(M, S, O, lambd=lambd)
-        # print(O)
-        sum_expo = E.sum(axis=0, keepdims=True) / len(E)
-        sum_expo_t = np.transpose(sum_expo)
-        E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
-        E.to_csv(f'{output_folder}/sim5_cosmic67_binomial_common_500_l07_l0_19mars_5000.txt', index=index_matrix, header=True, sep='\t')
-        sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
-        sum_expo = np.transpose(sum_expo)
-        plot_summary = cohort_plot(sum_expo)
-        plot_summary.savefig(f"{output_folder}/sim5_cosmic67_binomial_common_500_l07_l0_19mars_5000.png", dpi=600)
-        sort_E = sum_expo.sort_values(by=['Signatures'], ascending=False)
-        sort_E = sort_E.iloc[:5, 0:]
-        plot_top_five = cohort_plot(sort_E)
-        plot_top_five.savefig(f"{output_folder}/sim5_cosmic67_binomial_common_500_l07_l0_19mars_5000.png", dpi=600)
-        plot_variance = cohort_violin(E)
-        plot_variance.savefig(f"{output_folder}/sim5_cosmic67_binomial_common_500_l07_l0_19mars_5000.png", dpi=600)
-        # sum_expo.to_csv(f'{output_folder}/average_exposure_cohort.txt', index=index_signature,
-        #                 header=True,
-        #                 sep='\t')
-        np.savetxt(f'{output_folder}/average_sim5_cosmic67_binomial_common_500_l07_l0_19mars_5000.txt', np.array(sum_expo_t))
-    print("--- %s seconds ---" % (time.time() - start_time))
+    return S, index_signature
 
 
 def read_opportunity(M, opportunity_file):

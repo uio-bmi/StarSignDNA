@@ -1,6 +1,6 @@
 import numpy as np
 
-from cucumber import refit
+from starsign import refit
 
 
 def bootstrap_sample_old(M, rng):

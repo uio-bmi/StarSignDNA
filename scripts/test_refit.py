@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from cucumber import denovo
-from cucumber.refit import refit
+from starsign import denovo
+from starsign.refit import refit
 
 n_samples = 2
 n_signatures = 3
