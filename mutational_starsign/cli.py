@@ -293,6 +293,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     matrix_name = Path(matrix_file).stem
     run_name = f'{matrix_name}_{sig_name}_{n_iterations}'
     logger.info(f'Refitting mutational signatures with {n_iterations} iterations')
+    logger.info(f'Run name: {run_name}')
     start_time = time.time()
     # reference genome
     #ref_genome = '/Users/bope/Documents/MutSig/scientafellow/packages/ref/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
