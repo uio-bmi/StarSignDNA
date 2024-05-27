@@ -1,4 +1,4 @@
-"""Console script for starsign."""
+"""Console script for mutational_starsign."""
 from pathlib import Path
 from typing import Optional
 import logging

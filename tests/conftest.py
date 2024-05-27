@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from starsign.cli import read_signature
+from mutational_starsign.cli import read_signature
 
 
 

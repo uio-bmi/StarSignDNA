@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Tests for `starsign` package."""
+"""Tests for `mutational_starsign` package."""
 
 import pytest
 

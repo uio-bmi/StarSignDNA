@@ -1,1 +1,1 @@
-"""Unit test package for starsign."""
+"""Unit test package for mutational_starsign."""

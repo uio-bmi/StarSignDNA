@@ -1,6 +1,6 @@
 import pytest
 
-from starsign.cli import filter_signatures
+from mutational_starsign.cli import filter_signatures
 
 
 def test_filter_signatures(signature_matrix):

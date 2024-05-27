@@ -1,6 +1,6 @@
 import numpy as np
 
-from starsign import refit
+from mutational_starsign import refit
 
 
 def bootstrap_sample_old(M, rng):
