@@ -270,7 +270,7 @@ def filter_signatures(S, signature_names):
 def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
           signature_file: Annotated[str, typer.Argument(help='Comma separated matrix file')],
           opportunity_file: str = None, ref_genome: str = None, n_bootstraps: int = 200,
-          numeric_chromosomes: bool = None, genotyped: bool = None, cancer_type: str = None,
+          numeric_chromosomes: bool = None, genotyped: bool = None,
           output_folder: str = 'output/',
           signature_names: Annotated[Optional[str], typer.Option(help='Comma separated list of signature names')] = None,
           n_iterations: int=1000):
@@ -330,7 +330,6 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     S = S[desired_order]
     S = S.to_numpy().astype(float)
     M = M.to_numpy().astype(float)
-   # S, index_signature = select_signature_matrix(S, cancer_type, index_signature)
     O = read_opportunity(M, opportunity_file)
     lambd = 0.7
 
@@ -339,12 +338,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
 
         expo_run = _refit(boostrap_M, S, O, lambd=lambd, n_iterations=n_iterations)
         expo_run = pd.DataFrame(data=expo_run, columns=index_signature)
-      #  print(expo_run)
         plot = single_plot(expo_run)
-        #expo_run = np.array(expo_run)
-        np.savetxt(f'{output_folder}/boostrap_catalogue_test.txt', np.array(boostrap_M))
-    #    np.savetxt(f'{output_folder}/Exposure_3avril.txt', np.array(E))
- #       np.savetxt(f'{output_folder}/Exposure_run_3avril_1.txt', np.array(expo_run))
         expo_run_median = expo_run.median()
         expo_run_median.to_csv(f"{output_folder}/StarSign_exposure_median_{run_name}.txt", index=True, sep='\t')
         expo_run.to_csv(f"{output_folder}/StarSign_exposure_Exposure_test_{run_name}.txt", index=True, header=True, sep='\t')
@@ -353,7 +347,6 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
             plot.close()
         else:
             print("No plot was generated due to filtering criteria.")
-     #   plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_test.png", dpi=600)
     else:
 
         E = _refit(M, S, O, lambd=lambd, n_iterations=n_iterations)
@@ -363,6 +356,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
         E.to_csv(f'{output_folder}/{run_name}.txt', index=index_matrix, header=True, sep='\t')
         sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
+        sum_expo.to_csv(f'{output_folder}/average_{run_name}.txt',columns=index_signature, index= False, sep='\t')
         sum_expo = np.transpose(sum_expo)
         plot_summary = cohort_plot(sum_expo)
         plot_summary.savefig(f"{output_folder}/{run_name}.png", dpi=600)
@@ -372,7 +366,6 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         plot_top_five.savefig(f"{output_folder}/{run_name}.png", dpi=600)
         plot_variance = cohort_violin(E)
         plot_variance.savefig(f"{output_folder}/{run_name}.png", dpi=600)
-        np.savetxt(f'{output_folder}/average_{run_name}.txt', np.array(sum_expo_t))
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
