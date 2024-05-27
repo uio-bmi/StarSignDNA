@@ -56,10 +56,7 @@ test: ## run tests quickly with the default Python
 	pytest
 
 test-all: ## run pytest, doctests, examples
-	pytest --cov=cucumber --cov-report html
-	pytest --cov=cucumber --cov-report html --cov-append scripts/*_example.py
-	pytest --cov-report html --cov=cucumber --cov-append --doctest-modules cucumber/
-	cd docs_source && make doctest
+	pytest --cov=mutational_starsign --cov-report html
 
 coverage: ## check code coverage quickly with the default Python
 	coverage report -m
