@@ -57,7 +57,7 @@ Output files for a single sample (example of TCGA-BRCA)::
 
 The confidence is computed using the 25th percentile of bootstraps.
 
-.. image:: output/StarSign_Exposure_exposure_single_sample_25_percentile.png
+.. image:: output/Figure8.png
    :width: 600
 
 Output files for a cohort (example of TCGA-SKIN)::
