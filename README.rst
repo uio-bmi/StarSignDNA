@@ -39,14 +39,14 @@ Commands::
 Running mutational signature refit algorithm:
 ---------------------------------------------
 
-The refitting algorithm takes as input a mutational catalog and a COSMIC mutational signature file::
+The refitting algorithm takes as input a mutational catalog and a COSMIC mutational signature file. The user can also specify signatures to be considered instead of using the full COSMIC matrix or a subset matrix::
 
     mutational_starsign refit --help
 
 Running StarSign refit::
 
-    mutational_starsign refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt --output-folder /test_result
-    mutational_starsign refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt --output-folder /test_result
+    mutational_starsign refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt --output-folder /test_result -signature-names SBS40c,SBS2,SBS94
+    mutational_starsign refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt --output-folder /test_result -signature-names SBS40c,SBS2,SBS94
 
 The test data is provided in the example_data folder. To convert *.vcf to a matrix, the user must provide the path to the reference genome using the option --ref-genome.
 
