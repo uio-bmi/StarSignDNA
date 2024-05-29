@@ -145,7 +145,7 @@ def single_plot(data, target_median=0.06, show_percentiles=True):
     for column_name in filtered_columns:
         median_val = filtered_data[column_name].median()
         ax.axvline(x=filtered_columns.index(column_name), ymin=0, ymax=1, color='white', linestyle='-', linewidth=2)
-        ax.axvline(x=filtered_columns.index(column_name), ymin=0.25, ymax=0.75, color='black', linestyle='-', linewidth=1)
+        #ax.axvline(x=filtered_columns.index(column_name), ymin=0.25, ymax=0.75, color='black', linestyle='-', linewidth=1)
 
     # Calculate and plot percentiles if needed
     if show_percentiles:
@@ -270,13 +270,12 @@ def filter_signatures(S, signature_names):
 def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
           signature_file: Annotated[str, typer.Argument(help='Comma separated matrix file')],
           opportunity_file: str = None, ref_genome: str = None, n_bootstraps: int = 200,
-          numeric_chromosomes: bool = None, genotyped: bool = None,
+          numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
+          genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
           output_folder: str = 'output/',
           signature_names: Annotated[Optional[str], typer.Option(help='Comma separated list of signature names')] = None,
           n_iterations: int=1000):
-    #    numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = True,
-    #   genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = False, output_folder: str = 'output/',
-    #   cancer_type: Annotated[str,typer.Argument(help="Cancer type abbreviation, eg.: bcla, brca, chol, gbm, lgg, cesc, coad, esca, uvm, hnsc, kich, kirp, kirc, lihc, luad, lusc, dlbc, laml, ov, paad, prad, sarc, skcm, stad, thca, ucec")] = None):
+
     '''
     Mutational Signatures Refit Parameters \n
     n_bootstraps: \n
@@ -467,17 +466,17 @@ def get_num_cpus():
 
 
 def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
-           n_signatures: int, lambd: float = 0.7, #Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
+           n_signatures: Annotated[int, typer.Argument(help='Tab separated signature file')],
+           #lambd: float = 0.7, #Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
+           lambd: Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
   ###         lambd: Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
            opportunity_file: str = None,
-           cosmic_file: str= None, #Annotated[str, typer.Argument(help='Comma separated cosmic file')] = None,
-    ##       cosmic_file: Annotated[str, typer.Option(help='Comma separated cosmic file')] = None,
+           ##cosmic_file: str= None, #Annotated[str, typer.Argument(help=' Tab separated cosmic file')] = None,
+           cosmic_file: Annotated[str, typer.Option(help='Tab separated cosmic file')] = None,
            numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
            genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
            max_em_iterations: int = 100,
            max_gd_iterations: int = 50,
-   #        numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
-   #        genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
            file_extension=None,
            ref_genome=None, output_folder: str = 'output/'):
 
@@ -495,7 +494,9 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
         assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
         count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
-    M, index_matrix = read_counts(matrix_file)
+    M  = read_counts(matrix_file)
+    index_matrix = M.index.values.tolist()
+    #M, index_matrix = read_counts(matrix_file)
     #print(M)
     n_samples = len(M)
     n_signatures = n_signatures
@@ -541,9 +542,9 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
     label = list(mutation_labels)
     S = pd.DataFrame(S, columns=Sig, index=label)
     S.to_csv(f"{output_folder}/StarSign_Denovo_signature.txt", sep='\t', index=label)
-    # print(S)
-    deno_figure = plot_profile(S)
-    deno_figure.savefig(f"{output_folder}/StarSign_denovo.png", dpi=600)
+    #print(S)
+    ###deno_figure = plot_profile(S)
+    ###deno_figure.savefig(f"{output_folder}/StarSign_denovo.png", dpi=600)
     E = pd.DataFrame(E, columns=Sig, index=None)
     # np.savetxt(output_file_exposure, np.array(E))
     E.to_csv(f"{output_folder}/StarSign_Denovo_exposures.txt", sep='\t', index=None)

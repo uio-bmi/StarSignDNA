@@ -46,7 +46,7 @@ The refitting algorithm takes as input a mutational catalog and a COSMIC mutatio
 Running StarSign refit::
 
     mutational_starsign refit example_data/M_catalogue.txt example_data/sig_cosmic_v3_2019.txt --output-folder /test_result -signature-names SBS40c,SBS2,SBS94
-    mutational_starsign refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt --output-folder /test_result -signature-names SBS40c,SBS2,SBS94
+    mutational_starsign refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt --output-folder /output -signature-names SBS40c,SBS2,SBS94 --ref-genome
 
 The test data is provided in the example_data folder. To convert *.vcf to a matrix, the user must provide the path to the reference genome using the option --ref-genome.
 
