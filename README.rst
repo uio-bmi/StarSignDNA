@@ -45,7 +45,7 @@ The refitting algorithm takes as input a mutational catalog and a COSMIC mutatio
 
 Running StarSign refit::
 
-    mutational_starsign refit example_data/skin20.txt example_data/sig_cosmic_v3_2019.txt --output-folder /test_result -signature-names SBS40c,SBS2,SBS94
+    mutational_starsign refit example_data/M_catalogue.txt example_data/sig_cosmic_v3_2019.txt --output-folder /test_result -signature-names SBS40c,SBS2,SBS94
     mutational_starsign refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt --output-folder /test_result -signature-names SBS40c,SBS2,SBS94
 
 The test data is provided in the example_data folder. To convert *.vcf to a matrix, the user must provide the path to the reference genome using the option --ref-genome.
@@ -95,7 +95,7 @@ Step 2: In the Snakefile, provide the range of the number of signatures k and λ
 Input mutational catalogue needs to be provided in the dataset folder::
 
     rule test_train_split:
-        input: "results/{dataset}/pcawg_skin_21.txt"
+        input: "results/{dataset}/M_catalogue.txt"
 
 Running the grid search::
 
