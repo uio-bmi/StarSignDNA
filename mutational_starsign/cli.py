@@ -266,8 +266,9 @@ def plot_profile(data):
 
 
 def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
-          signature_file: Annotated[str, typer.Argument(help='Comma separated matrix file')],
-          ref_genome: str = None, n_bootstraps: int = 200,
+          signature_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
+          ref_genome: str = None,
+          n_bootstraps: int = 200,
           opportunity_file: Annotated[str, typer.Option(help="The distribution of triplets in a reference 'human-genome' or 'human-exome' or normal tissue")] = None,
           numeric_chromosomes: Annotated[bool, typer.Option(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
           genotyped: Annotated[bool, typer.Option(help="True if the VCF file has genotype information for many samples")] = True,
@@ -277,13 +278,15 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
 
     '''
     Mutational Signatures Refit Parameters \n
-    n_bootstraps: \n
-    matrix_file: str \n
-    signature_file: str \n
-    output_file_exposure: str \n
-    opportunity_file: str \n
-    numeric_chromosomes,bool: True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3' \n
-    genotyped,bool:True if the VCF file has genotype information for many samples \n
+    n_bootstraps (int): Number of bootstraps to consider for a single sample\n
+    matrix_file (str): Path to a file containing Mutational Catalogue Matrix \n
+    signature_file (str): Path to a file containing Known Mutational Signature reference signature\n
+    output_file_exposure (str): Path to save the refitted exposure matrix \n
+    opportunity_file (str): Path to a file defining Opportunity matrix\n
+    numeric_chromosomes (bool): True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3' \n
+    genotyped,bool (True) if the VCF file has genotype information for many samples \n
+    ref_genome (str): Path to a file containing the reference genome\n
+    n-iteration (int): Number of running iteration
 
     '''
     sig_name = Path(signature_file).stem
@@ -316,9 +319,6 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         S = signatures
     if signature_names is not None:
         S = filter_signatures(S, signature_names.split(','))
-
-
-
 
     index_signature = S.index.values.tolist()
     desired_order = M.columns
