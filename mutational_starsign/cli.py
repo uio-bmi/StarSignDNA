@@ -200,14 +200,14 @@ def cohort_violin(file):
     return plt
 
 
+
 def plot_profile(data):
     plt.style.use('default')
-    # data.drop(columns=data.columns[0], axis=1, inplace=True)
-    data = data.T
+
     header = data.index
     data_list = data.values.tolist()
-    len(data_list)
     mutation_categories = np.arange(1, 97)
+
     mutation_labels = [
         'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A',
         'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A', 'C>A',
@@ -234,44 +234,43 @@ def plot_profile(data):
 
     mutation_colors = [color_groups[label] for label in mutation_labels]
 
-    mutation_matrix = np.zeros((1, 96))
     fig = plt.figure(figsize=(15, 8))
+
+    # Calculate number of rows correctly
     n_rows = len(data_list)
-    fig_rows = round(n_rows / 2, 0)
-    # print("NNN", fig_rows)
-    fi_rows_rest = len(data_list) % 2
-    # print("RRR", fi_rows_rest)
-    for id_x in range(len(data_list)):
-        plt.subplot(fig_rows + fi_rows_rest, 2, id_x + 1)
-        plt.subplots_adjust(left=0.1,
-                            bottom=0.1,
-                            right=0.9,
-                            top=0.9,
-                            wspace=0.4,
-                            hspace=0.4)
+    fig_rows = int(np.ceil(n_rows / 2))  # Use ceiling to handle odd numbers
+
+    for id_x in range(n_rows):
+        plt.subplot(fig_rows, 2, id_x + 1)  # Use fig_rows directly
+        plt.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9, wspace=0.4, hspace=0.4)
         plt.bar(mutation_categories, data_list[id_x], color=mutation_colors)
         plt.xlabel('Mutation Categories')
         plt.ylabel('Mutations')
         plt.title(f'{header[id_x]}')
         plt.xticks(mutation_categories[::16], mutation_labels[::16], ha='center')
         plt.xlim(1, 97)
-        plt.grid(b=True, color='grey', linestyle='-.', linewidth=0.5, alpha=0.2)
-        legend_handles = [plt.Rectangle((0, 0), 1, 1, color=color) for color in color_groups.values()]
-        legend_labels = color_groups.keys()
-        plt.legend(legend_handles, legend_labels)
+    #    plt.grid(b=True, color='grey', linestyle='-.', linewidth=0.5, alpha=0.2)
+        plt.grid(visible=True, color='grey', linestyle='-.', linewidth=0.5, alpha=0.2)
+
+        # Place legend outside of individual subplots
+        if id_x == 0:
+            legend_handles = [plt.Rectangle((0, 0), 1, 1, color=color) for color in color_groups.values()]
+            legend_labels = color_groups.keys()
+            plt.legend(legend_handles, legend_labels, bbox_to_anchor=(1.05, 1), loc='upper left')
+
     return plt
 
 
-def filter_signatures(S, signature_names):
-    S = S.loc[signature_names]
-    return S
+
+
 
 
 def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
           signature_file: Annotated[str, typer.Argument(help='Comma separated matrix file')],
-          opportunity_file: str = None, ref_genome: str = None, n_bootstraps: int = 200,
-          numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
-          genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
+          ref_genome: str = None, n_bootstraps: int = 200,
+          opportunity_file: Annotated[str, typer.Option(help="The distribution of triplets in a reference 'human-genome' or 'human-exome' or normal tissue")] = None,
+          numeric_chromosomes: Annotated[bool, typer.Option(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
+          genotyped: Annotated[bool, typer.Option(help="True if the VCF file has genotype information for many samples")] = True,
           output_folder: str = 'output/',
           signature_names: Annotated[Optional[str], typer.Option(help='Comma separated list of signature names')] = None,
           n_iterations: int=1000):
@@ -318,6 +317,9 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     if signature_names is not None:
         S = filter_signatures(S, signature_names.split(','))
 
+
+
+
     index_signature = S.index.values.tolist()
     desired_order = M.columns
 
@@ -357,14 +359,15 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
         sum_expo.to_csv(f'{output_folder}/average_{run_name}.txt',columns=index_signature, index= False, sep='\t')
         sum_expo = np.transpose(sum_expo)
-        plot_summary = cohort_plot(sum_expo)
-        plot_summary.savefig(f"{output_folder}/{run_name}.png", dpi=600)
         sort_E = sum_expo.sort_values(by=['Signatures'], ascending=False)
         sort_E = sort_E.iloc[:5, 0:]
-        plot_top_five = cohort_plot(sort_E)
-        plot_top_five.savefig(f"{output_folder}/{run_name}.png", dpi=600)
+        index_sort_E = sort_E.index.values.tolist()
+        sort_E = pd.DataFrame(data=sort_E, index=index_sort_E)
+        sort_E = sort_E.T
+        plot_top_five = cohort_violin(sort_E)
+        plot_top_five.savefig(f"{output_folder}/starsign_top5_signatures_{run_name}.png", dpi=600)
         plot_variance = cohort_violin(E)
-        plot_variance.savefig(f"{output_folder}/{run_name}.png", dpi=600)
+        plot_variance.savefig(f"{output_folder}/starsign_cohort_{run_name}.png", dpi=600)
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
@@ -440,19 +443,22 @@ def read_opportunity(M, opportunity_file):
 
 def read_signature(signature_file):
     S = pd.read_csv(signature_file, delimiter='\t')
-    #S = S.T
-    index_signature = S.index.values.tolist()
-    #S = S.to_numpy().astype(float)
-    # S = S[0:10,0:96]
-    return S #, index_signature
+    return S
 
 
 def read_counts(matrix_file):
     M = pd.read_csv(matrix_file, delimiter='\t')
-  #  M = M.T
-    index_matrix = M.index.values.tolist()
-    #M = M.to_numpy().astype(float)
-    return M #, index_matrix
+    return M
+
+def filter_signatures_old(S, signature_names):
+    S = S.loc[signature_names]
+    return S
+
+def filter_signatures(S, signature_names):
+    if len(signature_names) < 5:
+        raise ValueError("You must select at least 5 signature names.")
+    S = S.loc[signature_names]
+    return S
 
 
 def get_tri_context_fraction(mut_counts):
@@ -467,14 +473,13 @@ def get_num_cpus():
 
 def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
            n_signatures: Annotated[int, typer.Argument(help='Tab separated signature file')],
-           #lambd: float = 0.7, #Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
-           lambd: Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
-  ###         lambd: Annotated[float, typer.Argument(help='Regularization parameter')] = 0.7,
-           opportunity_file: str = None,
-           ##cosmic_file: str= None, #Annotated[str, typer.Argument(help=' Tab separated cosmic file')] = None,
+           lambd: Annotated[float, typer.Option(help='Regularization parameter')] = 0.7,
+       #    opportunity_file: str = None,
+           opportunity_file: Annotated[str, typer.Option(help="The distribution of triplets in a reference 'human-genome' or 'human-exome' or normal tissue")] = None,
+         #  opportunity_file: Annotated[str,typer.Argument(help='The distribution of triplets in a reference genome/exome or normal tissue')] = None,
            cosmic_file: Annotated[str, typer.Option(help='Tab separated cosmic file')] = None,
-           numeric_chromosomes: Annotated[bool, typer.Argument(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
-           genotyped: Annotated[bool, typer.Argument(help="True if the VCF file has genotype information for many samples")] = True,
+           numeric_chromosomes: Annotated[bool, typer.Option(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
+           genotyped: Annotated[bool, typer.Option(help="True if the VCF file has genotype information for many samples")] = True,
            max_em_iterations: int = 100,
            max_gd_iterations: int = 50,
            file_extension=None,
@@ -489,6 +494,9 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
             numeric_chromosomes (bool): True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3' \n
             genotyped (bool) : True if the VCF file has genotype information for many samples
     """
+    matrix_name = Path(matrix_file).stem
+    run_name = f'{matrix_name}'
+    logger.info(f'Run name: {run_name}')
     start_time = time.time()
     if file_extension == '.vcf':
         assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
@@ -496,23 +504,18 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
         matrix_file = f'{output_folder}/matrix.csv'
     M  = read_counts(matrix_file)
     index_matrix = M.index.values.tolist()
-    #M, index_matrix = read_counts(matrix_file)
-    #print(M)
     n_samples = len(M)
     n_signatures = n_signatures
     lambd = lambd
-    print('Lambda',lambd)
+    print('lambda',lambd)
     n_mutations = M.shape[1]
     O = read_opportunity(M, opportunity_file)
-    # O = O / np.amax(O).sum(axis=-1, keepdims=True)
-    # assert O.shape == (n_samples, n_mutations), f'{O.shape} != {(n_samples, n_mutations)}'
     desired_order = M.columns
     #print(desired_order)
     M = M.to_numpy().astype(float)
     E, S = _denovo(M, n_signatures, lambd, O, em_steps=max_em_iterations, gd_steps=max_gd_iterations)
     if cosmic_file is not None:
         cosmic = pd.read_csv(cosmic_file, delimiter='\t')
-        #desired_order = M.columns
 
 # Check for missing columns
         missing_cols = set(desired_order) - set(cosmic.columns)  # Set difference for missing columns
@@ -521,11 +524,11 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
 # Reorder columns
         cosmic = cosmic[desired_order]
         cos_similarity = cos_sim_matrix(S, cosmic)[0]
-        cos_similarity.to_csv(f"{output_folder}/StarSign_Cosine_similarity_denovo.txt", sep="\t")
+        cos_similarity.to_csv(f"{output_folder}/StarSign_{run_name}_cosine_similarity.txt", sep="\t")
         # print(cos_similarity)
     S = np.transpose(S)
     alphabet = list(string.ascii_uppercase)
-    Sig = ['Denovo ' + alphabet[k] for k in range(S.shape[1])]
+    Sig = ['De novo ' + alphabet[k] for k in range(S.shape[1])]
     # print(Sig)
     mutation_labels = ['A[C>A]A', 'A[C>A]C', 'A[C>A]G', 'A[C>A]T', 'C[C>A]A', 'C[C>A]C', 'C[C>A]G', 'C[C>A]T',
                        'G[C>A]A', 'G[C>A]C', 'G[C>A]G', 'G[C>A]T', 'T[C>A]A', 'T[C>A]C', 'T[C>A]G', 'T[C>A]T',
@@ -541,14 +544,11 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
                        'G[T>G]A', 'G[T>G]C', 'G[T>G]G', 'G[T>G]T', 'T[T>G]A', 'T[T>G]C', 'T[T>G]G', 'T[T>G]T']
     label = list(mutation_labels)
     S = pd.DataFrame(S, columns=Sig, index=label)
-    S.to_csv(f"{output_folder}/StarSign_Denovo_signature.txt", sep='\t', index=label)
-    #print(S)
-    ###deno_figure = plot_profile(S)
-    ###deno_figure.savefig(f"{output_folder}/StarSign_denovo.png", dpi=600)
+    S.to_csv(f"{output_folder}/StarSign_{run_name}_Denovo_signature.txt", sep='\t', index=label)
+    deno_figure = plot_profile(S.T)
+    deno_figure.savefig(f"{output_folder}/StarSign_{run_name}_profile.png", dpi=600)
     E = pd.DataFrame(E, columns=Sig, index=None)
-    # np.savetxt(output_file_exposure, np.array(E))
-    E.to_csv(f"{output_folder}/StarSign_Denovo_exposures.txt", sep='\t', index=None)
-    # np.savetxt(output_file_signature, np.array(S))
+    E.to_csv(f"{output_folder}/StarSign_{run_name}_Denovo_exposures.txt", sep='\t', index=None)
     print("--- %s seconds ---" % (time.time() - start_time))
 
 

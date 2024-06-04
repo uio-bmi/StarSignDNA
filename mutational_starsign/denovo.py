@@ -6,13 +6,7 @@ import warnings
 from scipy.stats import poisson
 
 from .main_fixed_denovo import running_simulation_denovo, Frobinous, convergence, cos_sim_matrix, Frobinous
-# from .main_fixed_denovo_sig import Frobinous, convergence, cos_sim_matrix, \
-#     running_simulation_new, convergence1, running_simulation_new_E, running_simulation_new_S
-from numpy import linalg as LA
-from scipy import stats
-from scipy import stats
-import scipy.spatial as sp
-from scipy.optimize import linear_sum_assignment
+
 
 
 def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,em_steps: int = 100,
