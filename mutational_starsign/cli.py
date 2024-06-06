@@ -450,13 +450,10 @@ def read_counts(matrix_file):
     M = pd.read_csv(matrix_file, delimiter='\t')
     return M
 
-def filter_signatures_old(S, signature_names):
-    S = S.loc[signature_names]
-    return S
 
 def filter_signatures(S, signature_names):
-    if len(signature_names) < 5:
-        raise ValueError("You must select at least 5 signature names.")
+    if len(signature_names) < 3:
+        raise ValueError("You must select at least 3 signature names.")
     S = S.loc[signature_names]
     return S
 

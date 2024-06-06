@@ -5,7 +5,7 @@ StarSignDNA
 Mutation signature analysis package
 -----------------------------------
 
-* Free software: MIT license
+* Free software: `MIT license <https://opensource.org/licenses/MIT>`_
 * Documentation: Link to be provided
 
 Features
@@ -21,6 +21,9 @@ To install StarSign, run this command in your terminal::
     3. cd StarSigndna-master/
     4. pip install -e .
 
+Alternatively, you can install the package directly from PyPi::
+
+    pip install starsigndna
 Getting started
 ---------------
 
