@@ -31,39 +31,21 @@ To obtain help::
 Usage: starsigndna [OPTIONS] COMMAND [ARGS]...
 
 
-Mutational Signatures Refit Parameters
---------------------------------------
-
-- **n_bootstraps** (int): Number of bootstraps to consider for a single sample
-- **matrix_file** (str): Path to a file containing Mutational Catalogue Matrix
-- **signature_file** (str): Path to a file containing Known Mutational Signature reference set
-- **output_file_exposure** (str): Path to save the refitted exposure matrix
-- **opportunity_file** (str): Path to a file defining Opportunity matrix
-- **numeric_chromosomes** (bool): True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'
-- **genotyped** (bool): True if the VCF file has genotype information for many samples
-- **ref_genome** (str): Path to a file containing the reference genome
-- **n_iteration** (int): Number of running iterations
-
-Arguments
----------
-
-- **matrix_file** (TEXT): Tab separated matrix file [default: None] [required]
-- **signature_file** (TEXT): Tab separated matrix file [default: None] [required]
-
 Options
 -------
 
-- **--ref_genome** (TEXT): Path to the reference genome [default: None]
-- **--n_bootstraps** (INTEGER): Number of bootstraps [default: 200]
-- **--opportunity_file** (TEXT): Path to the opportunity file [default: None]
-- **--numeric_chromosomes**: If set, chromosome names are numeric [default: no-numeric-chromosomes]
-- **--no_numeric_chromosomes**: If set, chromosome names are not numeric [default: no-numeric-chromosomes]
-- **--genotyped**: If set, VCF file has genotype information for many samples [default: genotyped]
-- **--no_genotyped**: If set, VCF file does not have genotype information for many samples [default: genotyped]
-- **--output_folder** (TEXT): Path to the output folder [default: output/]
-- **--signature_names** (TEXT): Comma separated list of signature names [default: None]
-- **--n_iterations** (INTEGER): Number of iterations [default: 1000]
-- **--help**: Show this message and exit
+- **--install-completion**: Install completion for the current shell.
+- **--show-completion**: Show completion for the current shell, to copy it or customize the installation.
+- **--help**: Show this message and exit.
+
+Commands
+--------
+
+- **count-mutation**: Count mutation types in VCF file.
+- **denovo**: Performs denovo Mutational Signatures analysis.
+- **refit**: Mutational Signatures Refit Parameters
+
+
 
 
 Running mutational signature refit algorithm:
