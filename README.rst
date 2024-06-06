@@ -82,9 +82,11 @@ Running StarSignDNA refit::
     starsigndna refit example_data/M_catalogue.txt example_data/COSMICv34.txt --output-folder /test_result --signature-names SBS40c,SBS2,SBS94
     starsigndna refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt --output-folder /output --signature-names SBS40c,SBS2,SBS94 --ref-genome
 
+When the --signature-names option is used, the default number of signature is 3, but we recommend minimum of 5 signatures.
 The test data is provided in the example_data folder. To convert *.vcf to a matrix, the user must provide the path to the reference genome using the option --ref-genome.
 
 The user can also provide the distribution of triplets in a reference genome/exome or normal tissue in the same patient (Opportunity matrix) using the option --opportunity-file human-genome/human-exome.
+
 
 Running mutational signature de novo algorithm
 -----------------------------------------------
@@ -148,6 +150,6 @@ Run denovo using optimal k=4 and λ=0.1::
 Contact
 -------
 
-Maintainer Name - chrisbop@uio.no
+Maintainer Name - chrisbop@uio.no or christianbope@gmail.com
 
 
