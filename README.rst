@@ -5,6 +5,10 @@ StarSignDNA
 Mutation signature analysis package
 -----------------------------------
 
+.. image:: https://img.shields.io/badge/license-MIT-blue.svg
+    :target: https://opensource.org/licenses/MIT
+    :alt: MIT License
+
 * Free software: `MIT license <https://opensource.org/licenses/MIT>`_
 * Documentation: Link to be provided
 
