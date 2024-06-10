@@ -16,8 +16,6 @@ def compute_local_gradients(E, M, S, O):
             numerator = M[i]*S[r]
             denumerator_sum = np.array([E[i] @ S[:, k] for k in range(n_mutations)])
             denumerator_sum_c = denumerator_sum +  0.000001
-            #print("deno", denumerator_sum_c)
-            #print("num", numerator)
             local_gradients[i, r] = np.sum((numerator/denumerator_sum_c) - O[i]*S[r])
 
     return local_gradients
@@ -60,9 +58,6 @@ def compute_global_gradient(E, local_gradients, lambd):
 
 
 def compute_global_gradient_denovo(E, local_gradients, matrice_lambda):
-    # print("gradient",local_gradients)
-    # print("EEEE",np.sign(E) )
-    # print("LAAA", lambd)
     cond_a = local_gradients - matrice_lambda * np.sign(E)
     cond_b = local_gradients - matrice_lambda * np.sign(local_gradients)
     cond_c = 0

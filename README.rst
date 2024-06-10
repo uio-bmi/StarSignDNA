@@ -1,6 +1,10 @@
 ========
 StarSignDNA
 ========
+StarSignDNA algorithm for mutational signature analysis which offers efficient refitting and de novo
+mutational signature extraction. StarSignDNA is capable of deciphering well-differentiated signatures linked to known
+mutagenic mechanisms and demonstrates strong associations with patient clinical features. The package offers a user-
+friendly interface and data visualization routines.
 
 Mutation signature analysis package
 -----------------------------------
@@ -12,6 +16,12 @@ Mutation signature analysis package
 * Free software: `MIT license <https://opensource.org/licenses/MIT>`_
 * Documentation: Link to be provided
 
+
+
+Paper
+--------
+Link to be provided
+
 Features
 --------
 
@@ -20,7 +30,7 @@ Stable release
 
 To install StarSign, run this command in your terminal::
 
-    1. Download StarSign from https://github.com/uio-bmi/StarSign
+    1. Download StarSign from https://github.com/uio-bmi/StarSignDNA
     2. Unzip StarSignDNA-master.zip
     3. cd StarSigndna-master/
     4. pip install -e .
