@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import pytest
 
-from mutational_starsign.cli import filter_signatures
+from starsigndna.cli import filter_signatures
 import pytest
 
 
