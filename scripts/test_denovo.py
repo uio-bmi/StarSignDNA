@@ -1,6 +1,6 @@
 import numpy as np
 
-from mutational_starsign import denovo
+from starsigndna import denovo
 from .test_refit import M, n_signatures, n_samples, n_mutations
 
 

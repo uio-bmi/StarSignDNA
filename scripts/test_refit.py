@@ -1,8 +1,7 @@
 import numpy as np
 import pytest
 
-from mutational_starsign import denovo
-from mutational_starsign.refit import refit
+from starsigndna import denovo
 
 n_samples = 2
 n_signatures = 3

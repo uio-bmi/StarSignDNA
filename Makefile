@@ -56,7 +56,7 @@ test: ## run tests quickly with the default Python
 	pytest
 
 test-all: ## run pytest, doctests, examples
-	pytest --cov=mutational_starsign --cov-report html
+	pytest --cov=starsigndna --cov-report html
 
 coverage: ## check code coverage quickly with the default Python
 	coverage report -m

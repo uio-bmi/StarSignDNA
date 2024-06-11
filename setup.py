@@ -38,7 +38,7 @@ setup(
     description="Mutation signature analysis package",
     entry_points={
         'console_scripts': [
-            'StarSignDNA=mutational_starsign.cli:main',
+            'StarSignDNA=starsigndna.cli:main',
         ],
     },
     install_requires=requirements,
@@ -47,10 +47,10 @@ setup(
     include_package_data=True,
     keywords='starsigndna',
     name='starsigndna',
-    packages=find_packages(include=['mutational_starsign', 'mutational_starsign.*']),
+    packages=find_packages(include=['starsigndna', 'starsigndna.*']),
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/uio-bmi/starsign',
+    url='https://github.com/uio-bmi/StarSignDNA',
     version='0.0.13',
     zip_safe=False,
 )
