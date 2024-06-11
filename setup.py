@@ -50,7 +50,7 @@ setup(
     packages=find_packages(include=['starsigndna', 'starsigndna.*']),
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/uio-bmi/StarSignDNA',
-    version='0.0.13',
+    url='https://github.com/uio-bmi/starsign',
+    version='0.0.14',
     zip_safe=False,
 )
