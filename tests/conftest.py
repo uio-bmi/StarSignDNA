@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from mutational_starsign.cli import read_signature
+from starsigndna.cli import read_signature
 
 
 
@@ -11,4 +11,4 @@ def data_path():
 
 @pytest.fixture
 def signature_matrix(data_path):
-    return read_signature(data_path/ 'COSMIC_v34_SBS_GRCh37_oct2023_order.txt')
+    return read_signature(data_path / 'COSMICv34.txt')

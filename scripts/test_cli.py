@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from mutational_starsign.cli import refit, count_mutation
+from starsigndna.cli import refit, count_mutation
 from .test_refit import M, S, O
 
 
