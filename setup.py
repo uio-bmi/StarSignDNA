@@ -38,7 +38,7 @@ setup(
     description="Mutation signature analysis package",
     entry_points={
         'console_scripts': [
-            'mutational_starsign=mutational_starsign.cli:main',
+            'StarSignDNA=mutational_starsign.cli:main',
         ],
     },
     install_requires=requirements,
@@ -46,7 +46,7 @@ setup(
     long_description=readme + '\n\n' + history,
     include_package_data=True,
     keywords='mutational_starsign',
-    name='mutational_starsign',
+    name='starsigndna',
     packages=find_packages(include=['mutational_starsign', 'mutational_starsign.*']),
     test_suite='tests',
     tests_require=test_requirements,
