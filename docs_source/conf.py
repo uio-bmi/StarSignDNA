@@ -22,7 +22,7 @@ import sys
 import doctest
 sys.path.insert(0, os.path.abspath('..'))
 
-import mutational_starsign
+import starsigndna
 
 # -- General configuration ---------------------------------------------
 
