@@ -103,77 +103,38 @@ def single_plot_old2(file):
     return plt
 
 
-def single_plot(data, target_median=0.06, show_percentiles=True):
-    """
-    This function creates a single violin plot for selected columns in a DataFrame,
-    with column names on the x-axis and highlighting percentiles (optional).
+def single_plot(data):
+    df = pd.DataFrame(data)
 
-    Args:
-        data: A pandas DataFrame containing the data.
-        target_median: The target median value for filtering columns (default: 0.06).
-        show_percentiles: Boolean flag to display percentiles (default: True).
+    # Calculate medians
+    medians = df.median()
 
-    Returns:
-        A matplotlib figure object containing the violin plot.
-    """
+    # Select columns where the median is above the threshold
+    threshold = 0.06
+    selected_columns = medians[medians > threshold].index
 
-    # Calculate median for each column
-    median_values = data.mean()
+    # Filter the DataFrame
+    filtered_df = df[selected_columns]
 
-    # Filter columns based on median condition
-    filtered_columns = median_values[median_values >= target_median].index.tolist()
+    # Calculate percentiles for the filtered DataFrame
+    percentiles = filtered_df.quantile([0.025, 0.975])
 
-    if not filtered_columns:
-        print(f"No columns found with median value equal to {target_median}")
-        return None
-
-    # Subset the DataFrame to include only selected columns
-    filtered_data = data[filtered_columns]
-
-    # Reshape the DataFrame using melt to have all values in one column
-    melted_data = filtered_data.melt()
-
+    # Create the plot
     plt.figure(figsize=(12, 8))
 
-    # Create violin plot
-    ax = sns.violinplot(data=melted_data, x='variable', y='value', inner=None, cut=0)
+    # Plotting the data points
+    for column in filtered_df.columns:
+        plt.violinplot(filtered_df[column], positions=[list(filtered_df.columns).index(column)], showmeans=True)
+        plt.scatter([list(filtered_df.columns).index(column)], [percentiles.at[0.025, column]], color='red', zorder=5, label='2.5th Percentile' if column == filtered_df.columns[0] else "")
+        plt.scatter([list(filtered_df.columns).index(column)], [percentiles.at[0.975, column]], color='green', zorder=5, label='97.5th Percentile' if column == filtered_df.columns[0] else "")
 
-    # Add swarmplot to show data points
-    sns.swarmplot(data=melted_data, x='variable', y='value', color='k', size=3, ax=ax)
-
-    # Add median as vertical bar inside violin
-    for column_name in filtered_columns:
-        median_val = filtered_data[column_name].median()
-        ax.axvline(x=filtered_columns.index(column_name), ymin=0, ymax=1, color='white', linestyle='-', linewidth=2)
-        #ax.axvline(x=filtered_columns.index(column_name), ymin=0.25, ymax=0.75, color='black', linestyle='-', linewidth=1)
-
-    # Calculate and plot percentiles if needed
-    if show_percentiles:
-        percentiles = melted_data.groupby('variable')['value'].quantile([0.025, 0.975]).unstack()
-        plt.scatter(range(len(filtered_columns)), percentiles.iloc[:, 0], color='red', marker='o', label='2.5th Percentile')
-        plt.scatter(range(len(filtered_columns)), percentiles.iloc[:, 1], color='green', marker='o', label='97.5th Percentile')
-
-    plt.xlabel('Signature exposures')
-    plt.ylabel('Mutation fractions')
- #   plt.title('Violin Plot of Selected Columns')
-    plt.xticks(ticks=range(len(filtered_columns)), labels=filtered_columns, rotation= 0, ha='right')
-    if show_percentiles:
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-
+    plt.xticks(ticks=range(len(filtered_df.columns)), labels=filtered_df.columns)
+    plt.xlabel('Signature Exposures')
+    plt.ylabel('Mutation Fractions')
+    plt.legend()
     return plt
-
 # Plot the violin plot
-def single_plot_old(file):
-    data_transposed = file.T
-    data_transposed = data_transposed[data_transposed['Signature'] >= 0.06]
-    data_transposed = data_transposed.T
-    plt.figure(figsize=(10, 6))
-    sns.violinplot(data=data_transposed, palette='Set2', cut=0)
-    plt.title('Violin Plots of Signature with E_2.5 and E_97.5')
-    plt.xlabel('Signature exposures')
-    plt.ylabel('Mutation fraction')
-    #plt.set_title('Single Sample Mutational Signatures')
-    return plt
+
 
 
 def cohort_plot(file):
@@ -341,10 +302,10 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         expo_run = pd.DataFrame(data=expo_run, columns=index_signature)
         plot = single_plot(expo_run)
         expo_run_median = expo_run.median()
-        expo_run_median.to_csv(f"{output_folder}/StarSign_exposure_median_{run_name}.txt", index=True, sep='\t')
-        expo_run.to_csv(f"{output_folder}/StarSign_exposure_Exposure_test_{run_name}.txt", index=True, header=True, sep='\t')
+        expo_run_median.to_csv(f"{output_folder}/StarSign_exposure_median_milan{run_name}.txt", index=True, sep='\t')
+        expo_run.to_csv(f"{output_folder}/StarSign_exposure_Exposure_milan_{run_name}.txt", index=True, header=True, sep='\t')
         if plot is not None:
-            plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_test_{run_name}.png", dpi=600)
+            plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_milan_{run_name}.png", dpi=600)
             plot.close()
         else:
             print("No plot was generated due to filtering criteria.")
