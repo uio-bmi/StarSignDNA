@@ -293,7 +293,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     S = S.to_numpy().astype(float)
     M = M.to_numpy().astype(float)
     O = read_opportunity(M, opportunity_file)
-    lambd = 0.7
+    lambd = 4
 
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
         boostrap_M = _bootstrap(M,n_bootstraps)

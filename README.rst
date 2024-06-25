@@ -8,6 +8,9 @@ friendly interface and data visualization routines.
 
 Mutation signature analysis package
 -----------------------------------
+.. image:: docs/images/pypi-logo.png
+   :target: https://pypi.org/project/starsigndna/
+   :alt: PyPI
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
     :target: https://opensource.org/licenses/MIT
@@ -28,16 +31,20 @@ Features
 Stable release
 --------------
 
-To install StarSign, run this command in your terminal::
+To install StarSign,
+
+you can install the package directly from PyPi::
+
+    pip install starsigndna
+
+ Alternatively,  you can install it via terminal by running this command::
 
     1. Download StarSign from https://github.com/uio-bmi/StarSignDNA
     2. Unzip StarSignDNA-master.zip
     3. cd StarSigndna-master/
     4. pip install -e .
 
-Alternatively, you can install the package directly from PyPi::
 
-    pip install starsigndna
 Getting started
 ---------------
 
