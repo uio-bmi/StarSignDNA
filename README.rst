@@ -8,9 +8,6 @@ friendly interface and data visualization routines.
 
 Mutation signature analysis package
 -----------------------------------
-.. image:: docs/images/pypi-logo.png
-   :target: https://pypi.org/project/starsigndna/
-   :alt: PyPI
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
     :target: https://opensource.org/licenses/MIT
