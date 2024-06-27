@@ -1,0 +1,7 @@
+Methods	Mutations_100	Mutations_Downsample10	Mutations_Downsample20	Mutations_Downsample30	Mutations_Downsample50
+Sigfit	0	0	0	0	0
+Siglasso	0.13	0.13	0.11	0.116	0.089
+SigPro	0.26	0.26	0.24	0.2	0.18
+MutaPattern	0.09	0.098	0.08	0.08	0.064
+DeconstructSig	0.13	0.14	0.11	0.12	0.08
+StarSign	0.28	0.28	0.28	0.24	0.222

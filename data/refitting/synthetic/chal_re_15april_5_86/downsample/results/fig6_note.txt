@@ -1,0 +1,3 @@
+This is for fig7
+input: f1_score_30_50_only.txt
+script: fitting_error_chal.py

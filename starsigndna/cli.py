@@ -16,13 +16,22 @@ import multiprocessing
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 np.random.seed(10000)
+import os
+import requests
+import gzip
+import shutil
+import typer
+from typing import Optional, Annotated
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 # todo
 
 
-# class DataType(str, Enum):
-#     exome = 'exome'
-#     genome = 'genome'
+class DataType(str, Enum):
+    exome = 'exome'
+    genome = 'genome'
 
 
 import typer
@@ -33,17 +42,17 @@ from .bootstrapping import bootstrap as _bootstrap
 
 
 def bootstrap(matrix_file: str, signature_file: str, output_file_exposure_avg: str, output_file_exposure_std: str,
-              opportunity_file: str = None):
+              opportunity_file: str = None, data_type: DataType = DataType.exome):
     M = read_counts(matrix_file)
     S, index_signature = read_signature(signature_file)
     O = read_opportunity(M, opportunity_file)
-    ####    lambd = get_lambda(data_type)
+    lambd = get_lambda(data_type)
     estimated_exposure, exposure_std = _bootstrap(M, S, O, lambd=lambd)
     np.savetxt(output_file_exposure_avg, estimated_exposure, delimiter='\t')
     np.savetxt(output_file_exposure_std, exposure_std, delimiter='\t')
 
 
-def plot(file, output_folder='output/'):
+def plot(file):
     plt.style.use('default')
     file.plot(kind="bar", figsize=(10, 4))
     plt.xticks(fontsize=8)
@@ -51,56 +60,8 @@ def plot(file, output_folder='output/'):
     plt.ylabel("Mutation fraction")
     plt.xlabel("Signatures")
     plt.tight_layout()
-    return plt.savefig(f"{output_folder}/plot_cohort.png", dpi=600)
-
-
-def single_plot_old(file):  # 2 feb
-    file = file.transpose()
-    file.columns = ['Signatures', 'std_dev']
-    # filtered_data = file[file['Signatures'] != 0]
-    filtered_data = file[file['Signatures'] >= 0.05]
-    color_palette = sns.color_palette("husl", n_colors=len(filtered_data))
-
-    # Set up the figure and axis
-    plt.style.use('default')
-    fig, ax = plt.subplots()
-    fig, ax = plt.subplots(figsize=(20, 8))
-
-    # Plot the bar plot with error bars for non-zero values
-    ax.bar(filtered_data.index, filtered_data['Signatures'], yerr=filtered_data['std_dev'],
-           color=color_palette, alpha=0.5, align='center', capsize=3)
-    plt.ylim(0, None)
-    plt.xticks(rotation=45)
-    plt.xticks(fontsize=8)
-    plt.yticks(fontsize=8)
-    plt.xticks(rotation=45)
-    # Set labels and title
-    ax.set_xlabel('Signature exposures')
-    ax.set_ylabel('Mutation fraction')
-    ax.set_title('Single Sample Mutational Signatures')
     return plt
 
-def single_plot_old2(file):
-    data = file.transpose()
-    filtered_data = data[data['Signature'] >= 0.06]
-    plt.style.use('default')
-    fig, ax = plt.subplots(figsize=(20, 8))
-    for i, row in filtered_data.iterrows():
-        lower_error = row['E_25']
-        upper_error = row['E_95']
-        # lower_error = abs(row['Signature'] - row['E_25'])
-        # upper_error = abs(row['E_95'] - row['Signature'])
-        ax.bar(i, row['Signature'], yerr=[[lower_error], [upper_error]], capsize=5)
-    ax.set_xticks(range(len(filtered_data)))
-    ax.set_xticklabels(filtered_data.index)
-    plt.xticks(rotation=45)
-    plt.xticks(fontsize=8)
-    plt.yticks(fontsize=8)
-    plt.xticks(rotation=45)
-    ax.set_xlabel('Signature exposures')
-    ax.set_ylabel('Mutation fraction')
-    ax.set_title('Single Sample Mutational Signatures')
-    return plt
 
 
 def single_plot(data):
@@ -115,8 +76,7 @@ def single_plot(data):
 
     # Filter the DataFrame
     filtered_df = df[selected_columns]
-
-    # Calculate percentiles for the filtered DataFrame
+# Calculate percentiles for the filtered DataFrame
     percentiles = filtered_df.quantile([0.025, 0.975])
 
     # Create the plot
@@ -135,12 +95,14 @@ def single_plot(data):
     return plt
 # Plot the violin plot
 
-
-
 def cohort_plot(file):
+    # Get the colorblind-friendly palette from seaborn
+    num_colors = len(file.index)
+    color_palette = sns.color_palette("colorblind", num_colors)
     plt.style.use('default')
-    fig, ax = plt.subplots(figsize=(20, 8))
-    file.plot(kind="bar", figsize=(10, 4))
+    fig, ax = plt.subplots(figsize=(10, 4))
+    # Transpose the dataframe so that the signatures are columns
+    file.plot(kind="bar", color=color_palette, ax=ax)
     plt.xticks(rotation=45)
     plt.xticks(fontsize=7)
     plt.yticks(fontsize=7)
@@ -222,20 +184,87 @@ def plot_profile(data):
     return plt
 
 
+def download_reference_genome(ref_genome=None, genome_path=None, dest_dir='genomes'):
+    """
+    Download and unzip a reference genome if not already available locally,
+    or use a provided reference genome path.
+
+    Parameters:
+    ref_genome (str): The name of the reference genome to download (e.g., 'GRCh37', 'mm10').
+    genome_path (str): The local path to the reference genome file.
+    dest_dir (str): The directory to save the downloaded genome file. Default is 'genomes'.
+
+    Returns:
+    str: The path to the reference genome file.
+    """
+    if genome_path:
+        if os.path.isfile(genome_path):
+            print(f"Using provided reference genome at {genome_path}")
+            return genome_path
+        else:
+            raise FileNotFoundError(f"The provided genome path {genome_path} does not exist.")
+
+    if ref_genome is None:
+        raise ValueError("Either ref_genome or genome_path must be provided.")
+
+    genome_urls = {
+        'GRCh37': 'http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz',
+        'GRCh38': 'http://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz',
+        'mm10': 'http://hgdownload.cse.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz',
+        'mm9': 'http://hgdownload.cse.ucsc.edu/goldenPath/mm9/bigZips/mm9.fa.gz',
+        'rn6': 'http://hgdownload.cse.ucsc.edu/goldenPath/rn6/bigZips/rn6.fa.gz',
+        'mm6': 'http://hgdownload.cse.ucsc.edu/goldenPath/mm6/bigZips/mm6.fa.gz'
+    }
+
+    if ref_genome not in genome_urls:
+        raise ValueError(f"Reference genome {ref_genome} is not supported.")
+
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+
+    genome_file_gz = os.path.join(dest_dir, f"{ref_genome}.fa.gz")
+    genome_file = os.path.join(dest_dir, f"{ref_genome}.fa")
+
+    if not os.path.isfile(genome_file):
+        if not os.path.isfile(genome_file_gz):
+            print(f"Downloading reference genome {ref_genome}...")
+            response = requests.get(genome_urls[ref_genome], stream=True)
+            if response.status_code == 200:
+                with open(genome_file_gz, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                print(f"Downloaded {ref_genome} successfully.")
+            else:
+                raise Exception(f"Failed to download reference genome {ref_genome}.")
+        else:
+            print(f"Compressed reference genome {ref_genome} already exists locally.")
+
+        print(f"Unzipping {genome_file_gz}...")
+        with gzip.open(genome_file_gz, 'rb') as f_in:
+            with open(genome_file, 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+        print(f"Unzipped {genome_file} successfully.")
+    else:
+        print(f"Reference genome {ref_genome} already exists locally.")
+
+    return genome_file
 
 
 
 
 def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
           signature_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
-          ref_genome: str = None,
+          ref_genome: Annotated[Optional[str], typer.Option(help='Reference genome to use. Options: GRCh37, GRCh38, mm10, mm9, rn6, mm6')] = None,
+          genome_path: Annotated[Optional[str], typer.Option(help='Local path to the reference genome file')] = None,
           n_bootstraps: int = 200,
           opportunity_file: Annotated[str, typer.Option(help="The distribution of triplets in a reference 'human-genome' or 'human-exome' or normal tissue")] = None,
-          numeric_chromosomes: Annotated[bool, typer.Option(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
+          numeric_chromosomes: Annotated[bool, typer.Option(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = True,
           genotyped: Annotated[bool, typer.Option(help="True if the VCF file has genotype information for many samples")] = True,
           output_folder: str = 'output/',
           signature_names: Annotated[Optional[str], typer.Option(help='Comma separated list of signature names')] = None,
-          n_iterations: int=1000):
+          n_iterations: int=1000,
+          data_type: DataType = DataType.exome):
+
 
     '''
     Mutational Signatures Refit Parameters \n
@@ -243,11 +272,12 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     matrix_file (str): Path to a file containing Mutational Catalogue Matrix \n
     signature_file (str): Path to a file containing Known Mutational Signature reference signature\n
     output_file_exposure (str): Path to save the refitted exposure matrix \n
-    opportunity_file (str): Path to a file defining Opportunity matrix\n
+    opportunity_file (str): Path to a file defining weight matrix\n
     numeric_chromosomes (bool): True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3' \n
     genotyped,bool (True) if the VCF file has genotype information for many samples \n
     ref_genome (str): Path to a file containing the reference genome\n
     n-iteration (int): Number of running iteration
+    data_type: The default lambda values are set as follows: Exome: 0.7, Genome: 100. These values are optimized for the respective data types to ensure accurate analysis and results.
 
     '''
     sig_name = Path(signature_file).stem
@@ -256,12 +286,14 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     logger.info(f'Refitting mutational signatures with {n_iterations} iterations')
     logger.info(f'Run name: {run_name}')
     start_time = time.time()
-    # reference genome
-    #ref_genome = '/Users/bope/Documents/MutSig/scientafellow/packages/ref/Homo_sapiens.GRCh38.dna.primary_assembly.fa'
     file_name, file_extension = os.path.splitext(matrix_file)
+    provided_genome_path = None
     if file_extension == '.vcf':
-        assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
-        count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
+        if not ref_genome and not genome_path:
+            raise ValueError("Either ref_genome or genome_path must be provided.")
+        genome_path = download_reference_genome(ref_genome=ref_genome, genome_path=genome_path)
+        print(f"Reference genome path: {genome_path}")
+        count_mutation(matrix_file, genome_path, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
     M = read_counts(matrix_file)
     index_matrix = M.index.values.tolist()
@@ -293,19 +325,21 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     S = S.to_numpy().astype(float)
     M = M.to_numpy().astype(float)
     O = read_opportunity(M, opportunity_file)
-    lambd = 4
+    lambd = get_lambda(data_type)
+
 
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
         boostrap_M = _bootstrap(M,n_bootstraps)
+        print("Lambda",lambd)
 
         expo_run = _refit(boostrap_M, S, O, lambd=lambd, n_iterations=n_iterations)
         expo_run = pd.DataFrame(data=expo_run, columns=index_signature)
         plot = single_plot(expo_run)
         expo_run_median = expo_run.median()
-        expo_run_median.to_csv(f"{output_folder}/StarSign_exposure_median_milan{run_name}.txt", index=True, sep='\t')
-        expo_run.to_csv(f"{output_folder}/StarSign_exposure_Exposure_milan_{run_name}.txt", index=True, header=True, sep='\t')
+        expo_run_median.to_csv(f"{output_folder}/StarSign_exposure_median_{run_name}.txt", index=True, sep='\t')
+        expo_run.to_csv(f"{output_folder}/StarSign_exposure_Exposure_{run_name}.txt", index=True, header=True, sep='\t')
         if plot is not None:
-            plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_milan_{run_name}.png", dpi=600)
+            plot.savefig(f"{output_folder}/StarSign_exposure_Exposure_{run_name}.png", dpi=300)
             plot.close()
         else:
             print("No plot was generated due to filtering criteria.")
@@ -324,14 +358,18 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         sort_E = sort_E.iloc[:5, 0:]
         index_sort_E = sort_E.index.values.tolist()
         sort_E = pd.DataFrame(data=sort_E, index=index_sort_E)
-        sort_E = sort_E.T
-        plot_top_five = cohort_violin(sort_E)
-        plot_top_five.savefig(f"{output_folder}/starsign_top5_signatures_{run_name}.png", dpi=600)
+        plot_top_five = cohort_plot(sort_E)
+        plot_top_five.savefig(f"{output_folder}/starsign_top5_signatures_{run_name}.png", dpi=300)
         plot_variance = cohort_violin(E)
-        plot_variance.savefig(f"{output_folder}/starsign_cohort_{run_name}.png", dpi=600)
+        plot_variance.savefig(f"{output_folder}/starsign_cohort_{run_name}.png", dpi=300)
     print("--- %s seconds ---" % (time.time() - start_time))
 
-
+def get_lambda(data_type):
+    if data_type == DataType.genome:
+        lambd = 100
+    else:
+        lambd = 0.7
+    return lambd
 
 def read_opportunity(M, opportunity_file):
     n_samples = len(M)
@@ -432,6 +470,8 @@ def get_num_cpus():
 def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
            n_signatures: Annotated[int, typer.Argument(help='Tab separated signature file')],
            lambd: Annotated[float, typer.Option(help='Regularization parameter')] = 0.7,
+           ref_genome: Annotated[Optional[str], typer.Option(help='Reference genome to use. Options: GRCh37, GRCh38, mm10, mm9, rn6, mm6')] = None,
+           genome_path: Annotated[Optional[str], typer.Option(help='Local path to the reference genome file')] = None,
        #    opportunity_file: str = None,
            opportunity_file: Annotated[str, typer.Option(help="The distribution of triplets in a reference 'human-genome' or 'human-exome' or normal tissue")] = None,
          #  opportunity_file: Annotated[str,typer.Argument(help='The distribution of triplets in a reference genome/exome or normal tissue')] = None,
@@ -441,7 +481,7 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
            max_em_iterations: int = 100,
            max_gd_iterations: int = 50,
            file_extension=None,
-           ref_genome=None, output_folder: str = 'output/'):
+           output_folder: str = 'output/'):
 
     """Performs denovo  Mutational Signatures analysis.
 
@@ -456,9 +496,14 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
     run_name = f'{matrix_name}'
     logger.info(f'Run name: {run_name}')
     start_time = time.time()
+
+
     if file_extension == '.vcf':
-        assert ref_genome is not None, 'Please provide a reference genome along with the vcf file'
-        count_mutation(matrix_file, ref_genome, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
+        if not ref_genome and not genome_path:
+            raise ValueError("Either ref_genome or genome_path must be provided.")
+        genome_path = download_reference_genome(ref_genome=ref_genome, genome_path=genome_path)
+        print(f"Reference genome path: {genome_path}")
+        count_mutation(matrix_file, genome_path, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
         matrix_file = f'{output_folder}/matrix.csv'
     M  = read_counts(matrix_file)
     index_matrix = M.index.values.tolist()
