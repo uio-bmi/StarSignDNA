@@ -16,12 +16,7 @@ import multiprocessing
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 np.random.seed(10000)
-import os
-import requests
-import gzip
-import shutil
-import typer
-from typing import Optional, Annotated
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -185,6 +180,12 @@ def plot_profile(data):
 
 
 def download_reference_genome(ref_genome=None, genome_path=None, dest_dir='genomes'):
+    import os
+    import requests
+    import gzip
+    import shutil
+    import typer
+    from typing import Optional, Annotated
     """
     Download and unzip a reference genome if not already available locally,
     or use a provided reference genome path.
