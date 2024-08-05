@@ -256,7 +256,7 @@ def cos_sim_matrix(matrix1, matrix2):
   #  return  cosine_index_detect
 
 # function to run the optimisation algorithm
-def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
+def running_simulation_refit_old(E, M, S, O, topt, tedge, lambd, n_steps):
     old_loss = np.inf
     pmf_s = []
     mse_e = 0
@@ -363,6 +363,109 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
         mse_s.append(np.mean(mse_e))
         expo_step.append(np.mean(E, axis=0))
     return E
+
+def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
+    old_loss = np.inf
+    pmf_s = []
+    mse_e = 0
+    min_exo_f = []
+    min_expo_in = 0
+    loss = 0
+    expose_mat = []
+    mse_s = []
+    expo_step = []
+    expose_mat1 = []
+    conv_iter_1 = 0
+    conv_check = 0
+    mse_old = np.inf
+    loss_hat = np.inf
+    minimun_topt_tedge = 0
+
+    for step in range(n_steps):
+        print("Gradient Step is:", step)
+        mse_hat = mse_e
+        E_hat = E
+
+        if np.any(E < 0):
+            E = np.maximum(E, 0)
+
+        local_gradients = compute_local_gradients(E, M, S, O)
+        hessians = compute_hessians(E, M, S)
+        global_gradients = compute_global_gradient(E, local_gradients, lambd)
+        tedge = compute_t_edge(E, global_gradients)
+        topt = compute_topt(E, local_gradients, global_gradients, hessians)
+        minimun_topt_tedge = min_topt_tedge(topt, tedge)
+        E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
+
+        if topt >= tedge:
+            local_gradients = compute_local_gradients(E, M, S, O)
+            hessians = compute_hessians(E, M, S)
+            global_gradients = compute_global_gradient(E, local_gradients, lambd)
+            minimun_topt_tedge = min_topt_tedge(topt, tedge)
+            E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
+            mse_e = Frobinous(M, S, E, O)
+            loss = -poisson.logpmf(M, (E @ S) * O)
+
+            if np.any(E < 0):
+                E = np.maximum(E, 0)
+        else:
+            for step in range(50):
+                print("Newton Raphson Step is:", step)
+                if np.any(E < 0):
+                    E = np.maximum(E, 0)
+                hessians = compute_hessians(E, M, S)
+                newton_raphason = newton_raphson1(E, global_gradients, hessians)
+                if newton_raphason is None:
+                    if np.any(E < 0):
+                        E = np.maximum(E, 0)
+                    E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
+                    mse_e = Frobinous(M, S, E, O)
+                    loss = -poisson.logpmf(M, (E @ S) * O)
+                    if np.any(E < 0):
+                        E = np.maximum(E, 0)
+                else:
+                    if np.any(E < 0):
+                        E = np.maximum(E, 0)
+                    hessians = compute_hessians(E, M, S)
+                    topt = compute_topt(E, local_gradients, global_gradients, hessians)
+                    tedge = compute_t_edge(E, global_gradients)
+                    E = update_exposure_NR(E, global_gradients, topt, tedge, newton_raphason)
+                    mse_e = Frobinous(M, S, E, O)
+                    loss = -poisson.logpmf(M, (E @ S) * O)
+
+        if np.any(E < 0):
+            E = np.maximum(E, 0)
+
+        conv = convergence(np.mean(loss_hat), np.mean(loss))
+        loss_hat = np.mean(loss)
+
+        if conv:
+            print(f"StarSign converge: {conv}")
+            if conv_iter_1 == -1:
+                conv_iter_1 = step
+                conv_check = 0
+            else:
+                conv_check = conv_check + 1
+        else:
+            print(f" StarSign converged: {conv}")
+            conv_iter_1 = -1
+            conv_check = 0
+
+        if conv_check == 5:
+            print("Thanks: StarSign Algorithm converged")
+            break
+
+        mse_old = mse_e
+        loss_hat = np.mean(loss)
+        loss = -poisson.logpmf(M, (E @ S) * O)
+        mse_e = Frobinous(M, S, E, O)
+        loss[loss == np.float64("Inf")] = 0
+        pmf_s.append(np.mean(loss))
+        mse_s.append(np.mean(mse_e))
+        expo_step.append(np.mean(E, axis=0))
+
+    return E
+
 
 def running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps):
     old_loss = np.inf

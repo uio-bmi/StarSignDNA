@@ -20,7 +20,8 @@ Mutation signature analysis package
 
 Paper
 --------
-Link to be provided
+
+Preprint link https://www.biorxiv.org/content/10.1101/2024.06.29.601345v1
 
 Features
 --------
