@@ -38,12 +38,12 @@ setup(
     description="Mutation signature analysis package",
     entry_points={
         'console_scripts': [
-            'StarSignDNA=starsigndna.cli:main',
+            'starsigndna=starsigndna.cli:main',
         ],
     },
     install_requires=requirements,
     license="MIT license",
-    long_description="StarSignDNA",
+    long_description="starsigndna",
     include_package_data=True,
     keywords='starsigndna',
     name='starsigndna',
