@@ -9,7 +9,6 @@ def bootstrap_sample_old(M, rng):
     ps = M / total_count
     sampled = rng.multinomial(total_count, ps)
     boost = np.broadcast_to(sampled, M.shape)
-    # return np.broadcast_to(sampled, M.shape)
     return boost
 
 
@@ -33,20 +32,13 @@ def bootstrap_sample(M):
 
 def bootstrap(M,n_bootstraps):
     M = M.flatten()
-   # print("MMM", M)
     exposure_boot = np.zeros((n_bootstraps, len(M)))
     bootstrap_M = np.zeros((n_bootstraps, len(M)))
     for b in range(n_bootstraps):
         mboot = bootstrap_sample(M)
-      ##  print("AAAA")
         exposure_boot[b,] = mboot  # Store bootstrap samples for exposure (if needed)
         bootstrap_M[b] = mboot
-#    print(bootstrap_M.shape)
-#    bootstrap_M = float(bootstrap_M)
     bootstrap_M = np.array(bootstrap_M)
- #   exposures = refit(bootstrap_M, S, O, lambd=lambd)[0]
-    #   percentile_25 = np.percentile(expo_run, 2.5, axis=0)
-    #   percentile_97_5 = np.percentile(expo_run, 97.5, axis=0)
     return bootstrap_M
 
 

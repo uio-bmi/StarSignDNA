@@ -14,7 +14,6 @@ def compute_local_gradients(E, M, S, O):
             denumerator_sum = np.array([E[i] @ S[:, k] for k in range(n_mutations)])
             denumerator_sum_c = denumerator_sum +  0.000001
             local_gradients[i, r] = np.sum((numerator/denumerator_sum_c) - O[i]*S[r])
-
     return local_gradients
 
 
@@ -37,8 +36,6 @@ def compute_hessians(E, M, S):
     # print(res)
     #print("hessian", denominatior)
     hessians = -res.sum(axis=-1)
-
-    # return -res.sum(axis=-1)
     return hessians
 
 
@@ -47,7 +44,6 @@ def compute_global_gradient(E, local_gradients, lambd):
     cond_a = local_gradients-lambd*np.sign(E) #change 7feb
     cond_b = local_gradients-lambd*np.sign(local_gradients) #change 7feb
     cond_c = 0
-#    # print(np.where(E!=0, cond_a, np.where(np.abs(local_gradients)>lambd, cond_b, cond_c)))
     return np.where(E != 0, cond_a, np.where(np.abs(local_gradients) > lambd, cond_b, cond_c))
 
 
@@ -64,10 +60,7 @@ def compute_global_gradient_denovo(E, local_gradients, matrice_lambda):
 def compute_topt(E, local_gradients, global_gradients, hessians):
     if (np.any(E < 0)):
         E = np.maximum(E, 0)
-    # print("local",hessians)
     numerator = np.linalg.norm(global_gradients, ord= 'fro', axis=None, keepdims=False)
-    ##numerator = np.sum(global_gradients * local_gradients)
-    # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
     denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])
     topt = - (numerator / denominatior)  + 10e-5
@@ -75,7 +68,6 @@ def compute_topt(E, local_gradients, global_gradients, hessians):
 
 
 # function to compute the maximimum step-size value i.e the maximum step-size
-
 
 
 def compute_t_edge(E, global_gradients):
@@ -88,10 +80,7 @@ def compute_t_edge(E, global_gradients):
     return np.min(-(E/global_gradients)[mask])  + 10e-2
 
 def compute_topt_denovo(E, local_gradients, global_gradients, hessians):
-    # print("local",hessians)
-    #numerator = np.linalg.norm(global_gradients, ord='fro', axis=None, keepdims=False)
     numerator = np.sum(global_gradients * local_gradients)
-    # print("numerator", numerator)
     gg_vectors = (gg[:, None] for gg in global_gradients)
     denominatior = sum([gg.T @ hessians @ gg for gg, hessians in zip(gg_vectors, hessians)])
     topt = - (numerator / denominatior)
@@ -116,7 +105,6 @@ def compute_t_edge_denovo(E, global_gradients):
 # function to select the minimum step size
 def min_topt_tedge(topt, tedge):
     topt_tedge = np.minimum(float(topt), float(tedge))
-    ##topt_tedge = np.min(topt, tedge)
     return topt_tedge
 
 
@@ -135,15 +123,13 @@ def newton_raphson1(E, global_gradients, hessians):
     H = hessians
     active_mask = (E != 0)
     # print(E)
-    assert np.all(E >= 0), "Error: E matrix element is not  greater than zero." #comment 25jan
+    assert np.all(E >= 0), "Error: E matrix element is not  greater than zero."
     active_hessians = []
     for E_row, gradient_row, hessian in zip(E, global_gradients, H):
         non_active = ((E_row == 0) | (gradient_row == 0))
         active_mask = ~non_active
         active_gradients = gradient_row[active_mask]
         active_hessian = hessian[active_mask][:, active_mask]
-        #print("active hessian", active_hessian)
-        #print("active hessian_shape", active_hessian.shape)
         new_row = E_row.copy()
         det = np.linalg.det(active_hessian)
         active_hessians.append(det ** -1)
@@ -157,14 +143,14 @@ def newton_raphson1(E, global_gradients, hessians):
 # function to update newton optimization
 def update_exposure_NR(E, global_gradients, topt, tedge, new_E):
    if (np.any(E < 0)):
-       E = np.maximum(E, 0) ##25jan change
+       E = np.maximum(E, 0)
        assert topt <= tedge
    return np.where(np.sign(new_E) == np.sign(E),
                     new_E,
                     E + topt * global_gradients)
 
 
-def convergence(E, E_hat, tol=1e-8):
+def convergence(E, E_hat, tol=1e-6):
     conv = []
     conv = np.abs((E_hat - E) / E)
     if conv < tol:
@@ -205,15 +191,12 @@ def Frobinous_reconstuct(M, S, E, O):
 #calculation of sparsity
 def sparsity(E):
     sparsity = 1.0 - (np.count_nonzero(E) / float(E.size))
-    # print("The sparsity is :", sparsity)
     if sparsity >= 0.8:
         return True
     else:
         return False
 
 def mse(E, E_hat):
-    mse_error = []
-    # from sklearn.metrics import mean_squared_error
     mse_error = np.square(np.subtract(E, E_hat)).mean()
     return mse_error
 
@@ -249,10 +232,9 @@ def cos_sim_matrix(matrix1, matrix2):
     cosine_index[" "] = index_names
     cosine_index_detect = cosine_index.set_index([" "])
     return cosine_index_detect, match_coresp_1[:-2], df
-  #  return  cosine_index_detect
 
 # function to run the optimisation algorithm
-def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
+def running_simulation_refit_old(E, M, S, O,lambd, n_steps):
     old_loss = np.inf
     pmf_s = []
     mse_e = 0
@@ -270,70 +252,51 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
     loss_hat = np.inf
     minimun_topt_tedge = 0
     for step in range(n_steps):
-        print("Gradient Step is:", step)
-     ###   loss = -poisson.logpmf(M, (E @ S) * O)
+        print("Iteration Step is:", step)
         mse_hat = mse_e
         # loss_hat = loss
         E_hat = E
-        if np.any(E < 0):  #comment 25jan
-            E = np.maximum(E, 0) #comment 25jan
-        ###local_gradients, matrice_lambda = compute_local_gradients(E, M, S, O, lambd)
+        if np.any(E < 0):
+            E = np.maximum(E, 0)
         local_gradients = compute_local_gradients(E, M, S, O)
-        #print(matrice_lambda)
-        #print(local_gradients)
-        #print(E)
         hessians = compute_hessians(E, M, S)
-        ###global_gradients = compute_global_gradient(E, local_gradients, matrice_lambda) #threshold lambda
         global_gradients = compute_global_gradient(E, local_gradients,lambd)
         tedge = compute_t_edge(E, global_gradients)
         topt = compute_topt(E, local_gradients, global_gradients, hessians)
-        #print("topt", topt)
-        #print("tedge",tedge)
         minimun_topt_tedge = min_topt_tedge(topt, tedge)
-        #print("Minim", minimun_topt_tedge)
-        #    print("minimun_topt_tedge",minimun_topt_tedge)
         E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
         if topt >= tedge:
-
-            ##add24april
             local_gradients = compute_local_gradients(E, M, S, O)
             hessians = compute_hessians(E, M, S)
             global_gradients = compute_global_gradient(E, local_gradients,lambd)
-            ####add24april
-            #topt = tedge
-            #print("HERRRRE")
             minimun_topt_tedge = min_topt_tedge(topt, tedge)
-        #    print("minimun_topt_tedge",minimun_topt_tedge)
             E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
             mse_e = Frobinous(M, S, E, O)
             loss = -poisson.logpmf(M, (E @ S) * O)
-            # min_expo_in = np.min(E)
-            if np.any(E < 0): #comment 25jan
-                E = np.maximum(E, 0) #comment 25jan
+            if np.any(E < 0):
+                E = np.maximum(E, 0)
         else:
-            if np.any(E < 0): #comment 25jan
-                E = np.maximum(E, 0) #comment 25jan
+            if np.any(E < 0):
+                E = np.maximum(E, 0)
             newton_raphason = newton_raphson1(E, global_gradients, hessians)
             if newton_raphason is None:
-                #print("NEWTON1")
-                if np.any(E < 0): #comment 25jan
-                    E = np.maximum(E, 0) #comment 25jan
+                if np.any(E < 0):
+                    E = np.maximum(E, 0)
                 E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
                 mse_e = Frobinous(M, S, E, O)
                 loss = -poisson.logpmf(M, (E @ S) * O)
-                if np.any(E < 0): #comment 25jan
-                    E = np.maximum(E, 0) #comment 25jan
+                if np.any(E < 0):
+                    E = np.maximum(E, 0)
             else:
-                #print("NEWTON2")
-                if np.any(E < 0): #comment 25jan
-                    E = np.maximum(E, 0) #comment 25jan
+                if np.any(E < 0):
+                    E = np.maximum(E, 0)
                 topt = compute_topt(E, local_gradients, global_gradients, hessians)
                 tedge = compute_t_edge(E, global_gradients)
                 E = update_exposure_NR(E, global_gradients, topt, tedge, newton_raphason)
                 mse_e = Frobinous(M, S, E, O)
                 loss = -poisson.logpmf(M, (E @ S) * O)
-        if np.any(E < 0): #comment 25jan
-            E = np.maximum(E, 0) #comment 25jan
+        if np.any(E < 0):
+            E = np.maximum(E, 0)
         conv = convergence(np.mean(loss_hat), np.mean(loss))
         loss_hat = np.mean(loss)
         if conv == True:
@@ -358,11 +321,104 @@ def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
         pmf_s.append(np.mean(loss))
         mse_s.append(np.mean(mse_e))
         expo_step.append(np.mean(E, axis=0))
+    if not conv:
+        print(f"The total number of step is completed. \n Total steps run is: {n_steps}")
     return E
 
 
+def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
+    old_loss = np.inf
+    pmf_s = []
+    mse_e = 0
+    min_exo_f = []
+    min_expo_in = 0
+    loss = 0
+    # mse_hat = 0
+    expose_mat = []
+    mse_s = []
+    expo_step = []
+    expose_mat1 = []
+    conv_iter_1 = 0
+    conv_check = 0
+    mse_old = np.inf
+    loss_hat = np.inf
+    minimun_topt_tedge = 0
+    for step in range(n_steps):
+        print("Iteration step is:", step)
+        mse_hat = mse_e
+        # loss_hat = loss
+        E_hat = E
+        if np.any(E < 0):
+            E = np.maximum(E, 0)
+        local_gradients = compute_local_gradients(E, M, S, O)
+        hessians = compute_hessians(E, M, S)
+        global_gradients = compute_global_gradient(E, local_gradients,lambd)
+        tedge = compute_t_edge(E, global_gradients)
+        topt = compute_topt(E, local_gradients, global_gradients, hessians)
+        minimun_topt_tedge = min_topt_tedge(topt, tedge)
+        E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
+        if topt >= tedge:
+            local_gradients = compute_local_gradients(E, M, S, O)
+            hessians = compute_hessians(E, M, S)
+            global_gradients = compute_global_gradient(E, local_gradients,lambd)
+            minimun_topt_tedge = min_topt_tedge(topt, tedge)
+            E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
+            mse_e = Frobinous(M, S, E, O)
+            loss = -poisson.logpmf(M, (E @ S) * O)
+            if np.any(E < 0):
+                E = np.maximum(E, 0)
+        else:
+            if np.any(E < 0):
+                E = np.maximum(E, 0)
+            newton_raphason = newton_raphson1(E, global_gradients, hessians)
+            if newton_raphason is None:
+                if np.any(E < 0):
+                    E = np.maximum(E, 0)
+                E = update_exposure_gradient(E, global_gradients, minimun_topt_tedge)
+                mse_e = Frobinous(M, S, E, O)
+                loss = -poisson.logpmf(M, (E @ S) * O)
+                if np.any(E < 0):
+                    E = np.maximum(E, 0)
+            else:
+                if np.any(E < 0):
+                    E = np.maximum(E, 0)
+                topt = compute_topt(E, local_gradients, global_gradients, hessians)
+                tedge = compute_t_edge(E, global_gradients)
+                E = update_exposure_NR(E, global_gradients, topt, tedge, newton_raphason)
+                mse_e = Frobinous(M, S, E, O)
+                loss = -poisson.logpmf(M, (E @ S) * O)
+        if np.any(E < 0):
+            E = np.maximum(E, 0)
+        conv = convergence(np.mean(loss_hat), np.mean(loss))
+        loss_hat = np.mean(loss)
+        if conv == True:
+            print(f"StarSign converge: {conv}")
+            if conv_iter_1 == -1:
+                conv_iter_1 = step
+                conv_check = 0
+            else:
+                conv_check = conv_check + 1
+        else:
+            print(f" StarSign converged: {conv}")
+            conv_iter_1 = -1
+            conv_check = 0
+        if conv_check == 5:
+            print("Thanks: StarSign Algorithm converged")
+            break
+        mse_old = mse_e
+        loss_hat = np.mean(loss)
+        loss = -poisson.logpmf(M, (E @ S) * O)
+        mse_e = Frobinous(M, S, E, O)
+        loss[loss == np.float64("Inf")] = 0
+        pmf_s.append(np.mean(loss))
+        mse_s.append(np.mean(mse_e))
+        expo_step.append(np.mean(E, axis=0))
+    if not conv:
+        print(f"The total number of step is completed. \n Total steps run is: {n_steps}")
+    return E
 
-def running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps):
+
+def running_simulation_denovo(E, M, S, O,topt, tedge, lambd, n_steps):
     old_loss = np.inf
     pmf_s = []
     mse_e = 0
@@ -373,15 +429,11 @@ def running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps):
     for step in range(n_steps):
         mse_hat = mse_e
         loss_hat = loss
-        # print("Gradient step is:", step)
-        # E_hat = E
         if np.any(E < 0):
             E = np.maximum(E, 0)
         local_gradients = compute_local_gradients(E, M, S, O)
-      #  local_gradients, matrice_lambda = compute_local_gradients(E, M, S, O, lambd)
         hessians = compute_hessians(E, M, S)
         global_gradients = compute_global_gradient(E, local_gradients, lambd)
-     ##   global_gradients = compute_global_gradient(E, local_gradients, matrice_lambda)
         topt = compute_topt_denovo(E, local_gradients, global_gradients, hessians)
         tedge = compute_t_edge_denovo(E, global_gradients)
         minimun_topt_tedge = min_topt_tedge(topt, tedge)

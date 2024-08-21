@@ -31,7 +31,6 @@ def count_mutation(vcf_filename: str, fasta_filename: str, out_filename: str = N
     variants = genome.get_locations(variants, has_numeric_chromosomes=numeric_chromosomes)
     counts = count_mutation_types_genomic(variants, genome.read_sequence(), genotyped=genotyped)
     if out_filename is not None:
-        # output = matrix_to_csv(counts.counts, header=counts.alphabet)
         output = matrix_to_csv(counts.counts.astype(int), header=counts.alphabet, sep='\t')
         open(out_filename, "wb").write(bytes(output.raw()))
     else:

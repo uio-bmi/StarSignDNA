@@ -327,8 +327,6 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     M = M.to_numpy().astype(float)
     O = read_opportunity(M, opportunity_file)
     lambd = get_lambda(data_type)
-
-
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
         boostrap_M = _bootstrap(M,n_bootstraps)
         print("Lambda",lambd)
@@ -369,7 +367,7 @@ def get_lambda(data_type):
     if data_type == DataType.genome:
         lambd = 1000
     else:
-        lambd = 0.8
+        lambd = 0.7
     return lambd
 
 def read_opportunity(M, opportunity_file):
@@ -473,9 +471,7 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
            lambd: Annotated[float, typer.Option(help='Regularization parameter')] = 0.7,
            ref_genome: Annotated[Optional[str], typer.Option(help='Reference genome to use. Options: GRCh37, GRCh38, mm10, mm9, rn6, mm6')] = None,
            genome_path: Annotated[Optional[str], typer.Option(help='Local path to the reference genome file')] = None,
-       #    opportunity_file: str = None,
            opportunity_file: Annotated[str, typer.Option(help="The distribution of triplets in a reference 'human-genome' or 'human-exome' or normal tissue")] = None,
-         #  opportunity_file: Annotated[str,typer.Argument(help='The distribution of triplets in a reference genome/exome or normal tissue')] = None,
            cosmic_file: Annotated[str, typer.Option(help='Tab separated cosmic file')] = None,
            numeric_chromosomes: Annotated[bool, typer.Option(help="True if chromosome names in vcf are '1', '2', '3'. False if 'chr1', 'chr2', 'chr3'")] = False,
            genotyped: Annotated[bool, typer.Option(help="True if the VCF file has genotype information for many samples")] = True,

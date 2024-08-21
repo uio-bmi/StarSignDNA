@@ -53,7 +53,6 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,
         if( np.any(E< 0)):
             E = np.maximum(E,0)
         print("EM step is :",i)
-        #E = running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps=gd_steps)  # lambd)
         E = running_simulation_denovo(E, M, S, O, topt, tedge, lambd, n_steps=gd_steps)
         mse_e = Frobinous(M, S, E, O)
         loss = -poisson.logpmf(M, (E @ S) * O)
@@ -97,8 +96,6 @@ def denovo(M: np.ndarray, n_signatures: int, lambd: float, O: np.ndarray = None,
         S = np.maximum(S, 0)
     S /= S.sum(axis=-1, keepdims=True)
     S[np.isnan(S)] = 0
-    # loss = -poisson.logpmf(M, (E @ S) * O)
     mse_e = Frobinous(M, S, E, O)
     print("MSE Finale", mse_e)
-    # print("PMF Finale", np.mean(loss))
     return np.array(E), np.array(S)
