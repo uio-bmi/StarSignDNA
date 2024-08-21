@@ -256,7 +256,7 @@ def cos_sim_matrix(matrix1, matrix2):
   #  return  cosine_index_detect
 
 # function to run the optimisation algorithm
-def running_simulation_refit_old(E, M, S, O, topt, tedge, lambd, n_steps):
+def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
     old_loss = np.inf
     pmf_s = []
     mse_e = 0
@@ -364,7 +364,7 @@ def running_simulation_refit_old(E, M, S, O, topt, tedge, lambd, n_steps):
         expo_step.append(np.mean(E, axis=0))
     return E
 
-def running_simulation_refit(E, M, S, O, topt, tedge, lambd, n_steps):
+def running_simulation_refit_newton_loop(E, M, S, O, topt, tedge, lambd, n_steps):
     old_loss = np.inf
     pmf_s = []
     mse_e = 0

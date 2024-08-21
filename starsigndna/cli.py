@@ -367,7 +367,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
 
 def get_lambda(data_type):
     if data_type == DataType.genome:
-        lambd = 100
+        lambd = 1000
     else:
         lambd = 0.7
     return lambd
