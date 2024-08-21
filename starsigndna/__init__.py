@@ -2,7 +2,7 @@
 
 __author__ = """Christian Bope"""
 __email__ = 'chrisbop@uio.no'
-__version__ = '0.0.19'
+__version__ = '0.0.20'
 
 
 from .refit import refit
