@@ -369,7 +369,7 @@ def get_lambda(data_type):
     if data_type == DataType.genome:
         lambd = 1000
     else:
-        lambd = 0.7
+        lambd = 0.8
     return lambd
 
 def read_opportunity(M, opportunity_file):
