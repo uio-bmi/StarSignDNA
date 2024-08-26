@@ -251,8 +251,6 @@ def download_reference_genome(ref_genome=None, genome_path=None, dest_dir='genom
     return genome_file
 
 
-
-
 def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
           signature_file: Annotated[str, typer.Argument(help='Tab separated matrix file')],
           ref_genome: Annotated[Optional[str], typer.Option(help='Reference genome to use. Options: GRCh37, GRCh38, mm10, mm9, rn6, mm6')] = None,
@@ -320,7 +318,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
 # Check for missing columns
     missing_cols = set(desired_order) - set(S.columns)  # Set difference for missing columns
     if len(missing_cols) > 0:
-        raise ValueError("Error: Following columns are not present in the DataFrame:", missing_cols)
+        raise ValueError("Error: Following columns are not present in the DataFrame or make sure the file provided is Tab separated:", missing_cols)
 # Reorder columns
     S = S[desired_order]
     S = S.to_numpy().astype(float)
@@ -440,7 +438,7 @@ def read_opportunity(M, opportunity_file):
 
 
 def read_signature(signature_file):
-    S = pd.read_csv(signature_file, delimiter='\t')
+    S = pd.read_csv(signature_file, delimiter=',')
     return S
 
 
@@ -450,7 +448,7 @@ def read_counts(matrix_file):
 
 
 def filter_signatures(S, signature_names):
-    if len(signature_names) < 3:
+    if len(signature_names) < 5:
         raise ValueError("You must select at least 3 signature names.")
     S = S.loc[signature_names]
     return S
