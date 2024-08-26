@@ -51,6 +51,10 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/uio-bmi/starsigndna',
+<<<<<<< HEAD
     version='0.0.25',
+=======
+    version='1.0.0',
+>>>>>>> e8a777c (update the version release)
     zip_safe=False,
 )
