@@ -15,7 +15,7 @@ import string
 import multiprocessing
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-np.random.seed(10000)
+np.random.seed(1000)
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -261,7 +261,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
           genotyped: Annotated[bool, typer.Option(help="True if the VCF file has genotype information for many samples")] = True,
           output_folder: str = 'output/',
           signature_names: Annotated[Optional[str], typer.Option(help='Comma separated list of signature names')] = None,
-          n_iterations: int=1000,
+          n_iterations: int= 1000,
           data_type: DataType = DataType.exome):
 
 
@@ -298,6 +298,8 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     index_matrix = M.index.values.tolist()
     S = read_signature(signature_file)
     # print(S)
+
+    #comment
     index_matrix = M.index.values.tolist()
     normalized_df = M.div(M.sum(axis=1), axis=0)
     col_means = normalized_df.mean(axis=0)
@@ -306,12 +308,12 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     if count_less_than_01 <= threshold:
         zero_contexts = np.array(M.columns)[(M.values < 0.01).any(axis=0)]
         # print("zero_contexts",zero_contexts)
-        corr_sigs_mask = (S.loc[:, zero_contexts] >= 0.1).any(axis=1)
+        corr_sigs_mask = (S.loc[:, zero_contexts] >= 0.06).any(axis=1)
         signatures = S.loc[~S.index.isin(corr_sigs_mask[corr_sigs_mask].index)]
         S = signatures
     if signature_names is not None:
         S = filter_signatures(S, signature_names.split(','))
-
+#comment
     index_signature = S.index.values.tolist()
     desired_order = M.columns
 
@@ -341,13 +343,31 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         else:
             print("No plot was generated due to filtering criteria.")
     else:
-
+        print("original",S.shape)
         E = _refit(M, S, O, lambd=lambd, n_iterations=n_iterations)
         # print(O)
-        sum_expo = E.sum(axis=0, keepdims=True) / len(E)
-        sum_expo_t = np.transpose(sum_expo)
+
         E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
-        E.to_csv(f'{output_folder}/{run_name}.txt', index=index_matrix, header=True, sep='\t')
+        print(E)
+        # 1. Compute the mean of each column in E
+        mean_columns_E = E.mean(axis=0)
+
+        for row in M:
+            row_sum = row.sum()
+            if row_sum > 600:
+                threshold = 0.02
+            else:
+                threshold = 0.03
+       # threshold = 0.02
+        selected_headers = mean_columns_E[mean_columns_E >= threshold].index.tolist()
+        S = read_signature(signature_file)
+        S = S.loc[selected_headers]
+
+        index_signature = S.index.values.tolist()
+        E = _refit(M, S, O, lambd=lambd, n_iterations=n_iterations)
+        sum_expo = E.sum(axis=0, keepdims=True) / len(E)
+        E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
+        E.to_csv(f'{output_folder}/{run_name}_threshold.txt', index=index_matrix, header=True, sep='\t')
         sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
         sum_expo.to_csv(f'{output_folder}/average_{run_name}.txt',columns=index_signature, index= False, sep='\t')
         sum_expo = np.transpose(sum_expo)
@@ -361,11 +381,12 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         plot_variance.savefig(f"{output_folder}/starsign_cohort_{run_name}.png", dpi=300)
     print("--- %s seconds ---" % (time.time() - start_time))
 
+
 def get_lambda(data_type):
     if data_type == DataType.genome:
         lambd = 1000
     else:
-        lambd = 0.7
+        lambd = 0.8
     return lambd
 
 def read_opportunity(M, opportunity_file):
@@ -424,10 +445,20 @@ def read_opportunity(M, opportunity_file):
                           1391660, 1674368, 1559846, 2850934])
         else:
             O = pd.read_csv(opportunity_file, sep='\t', header=None).to_numpy().astype(float)
-            normalized_vector1 = O / np.linalg.norm(O)
-            min_value_vector2 = np.min(M)
-            max_value_vector2 = np.max(M)
-            O = normalized_vector1 * (max_value_vector2 - min_value_vector2) + min_value_vector2
+
+            def zscore_normalize(df):
+                return (df - df.mean()) / df.std()
+
+            def context_frequency_normalization(mutation_matrix, context_frequencies):
+  # Convert context_frequencies to an array to divide by each column in mutation_matrix
+                context_freq_array = np.array([context_frequencies[key] for key in context_frequencies.keys()])
+
+# Normalize each column in the mutation_matrix by the corresponding context frequency
+                normalized_matrix = mutation_matrix / context_freq_array
+            return O
+            context_frequencies = {'ACA>C': 59474352,'CGA>T': 6541004,'TGT>A': 59845313,'GCT>C': 40767054
+}
+            O = context_frequency_normalization(O, context_frequencies)
         O = np.broadcast_to(O, M.shape)
     else:
         O = np.ones((n_samples, n_mutations), dtype=float)
@@ -438,7 +469,7 @@ def read_opportunity(M, opportunity_file):
 
 
 def read_signature(signature_file):
-    S = pd.read_csv(signature_file, delimiter=',')
+    S = pd.read_csv(signature_file, delimiter='\t')
     return S
 
 
