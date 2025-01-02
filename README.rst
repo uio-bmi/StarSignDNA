@@ -166,6 +166,11 @@ Run denovo using optimal k=4 and λ=0.1::
 
     starsigndna denovo snakemake/results/data/M_catalogue.txt 4 0.1 --cosmic-file example_data/COSMICv34.txt --output-folder /test_result
 
+
+Data
+----
+Simulated data publicly available is available on FigShare: https://doi.org/10.6084/m9.figshare.28105610
+
 Contact
 -------
 

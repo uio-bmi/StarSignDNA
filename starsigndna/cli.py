@@ -15,7 +15,7 @@ import string
 import multiprocessing
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-np.random.seed(10000)
+np.random.seed(1000)
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -89,6 +89,127 @@ def single_plot(data):
     plt.legend()
     return plt
 # Plot the violin plot
+
+
+
+# Version with more customization options
+def single_plot_custom(data, figsize=(12, 8),
+                      violin_color='#80B1D3',
+                      violin_alpha=0.3,
+                      median_color='#80B1D3',
+                      error_bar_color='black',
+                      error_bar_width=2):
+    df = pd.DataFrame(data)
+    medians = df.median()
+
+    # Filter based on threshold
+    threshold = 0.1
+    selected_columns = medians[medians > threshold].index
+    filtered_df = df[selected_columns]
+
+    # Calculate statistics
+    percentiles = filtered_df.quantile([0.025, 0.975])
+    medians = filtered_df.median()
+
+    # Create plot
+    fig, ax = plt.subplots(figsize=figsize)
+
+    # Plot violins and error bars
+    for i, column in enumerate(filtered_df.columns):
+        # Violin plot
+        parts = ax.violinplot(filtered_df[column],
+                            positions=[i],
+                            showmeans=False,
+                            showextrema=False)
+
+        # Customize violin
+        for pc in parts['bodies']:
+            pc.set_facecolor(violin_color)
+            pc.set_alpha(violin_alpha)
+
+        # Error bars
+        ax.vlines(x=i,
+                 ymin=percentiles.at[0.025, column],
+                 ymax=percentiles.at[0.975, column],
+                 color=error_bar_color,
+                 linewidth=error_bar_width,
+                 zorder=3)
+
+        # Median points
+        ax.plot(i, medians[column], 'o',
+               color=median_color,
+               markersize=8,
+               zorder=4)
+
+    # Customize plot
+    ax.set_xticks(range(len(filtered_df.columns)))
+    ax.set_xticklabels(filtered_df.columns, rotation=45, ha='right')
+    ax.set_xlabel('Signature Exposures')
+    ax.set_ylabel('Mutation Fractions')
+
+    # Add grid
+    ax.grid(True, linestyle='--', alpha=0.3)
+
+    # Add legend
+    ax.vlines([], [], [], color=error_bar_color, linewidth=error_bar_width, label='95% CI')
+    ax.plot([], [], 'o', color=median_color, label='Median')
+    ax.legend()
+
+    plt.tight_layout()
+
+    return plt
+
+# Optional: Add more customization
+def single_plot_custom(data, figsize=(12, 8), median_color='#80B1D3',
+                      error_bar_color='black', error_bar_width=2):
+    df = pd.DataFrame(data)
+    medians = df.median()
+
+    # Filter based on threshold
+    threshold = 0.1
+    selected_columns = medians[medians > threshold].index
+    filtered_df = df[selected_columns]
+
+    # Calculate statistics
+    percentiles = filtered_df.quantile([0.025, 0.975])
+    medians = filtered_df.median()
+
+    # Create plot
+    fig, ax = plt.subplots(figsize=figsize)
+
+    # Plot error bars and medians
+    for i, column in enumerate(filtered_df.columns):
+        # Error bars
+        ax.vlines(x=i,
+                 ymin=percentiles.at[0.025, column],
+                 ymax=percentiles.at[0.975, column],
+                 color=error_bar_color,
+                 linewidth=error_bar_width)
+
+        # Median points
+        ax.plot(i, medians[column], 'o',
+               color=median_color,
+               markersize=8,
+               zorder=5)
+
+    # Customize plot
+    ax.set_xticks(range(len(filtered_df.columns)))
+    ax.set_xticklabels(filtered_df.columns, rotation=45, ha='right')
+    ax.set_xlabel('Signature Exposures')
+    ax.set_ylabel('Mutation Fractions')
+
+    # Add grid
+    ax.grid(True, linestyle='--', alpha=0.3)
+
+    # Add confidence interval explanation
+    ax.text(0.02, 0.98, '95% Confidence Interval',
+            transform=ax.transAxes,
+            verticalalignment='top',
+            fontsize=10)
+
+    plt.tight_layout()
+
+    return plt
 
 def cohort_plot(file):
     # Get the colorblind-friendly palette from seaborn
@@ -261,7 +382,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
           genotyped: Annotated[bool, typer.Option(help="True if the VCF file has genotype information for many samples")] = True,
           output_folder: str = 'output/',
           signature_names: Annotated[Optional[str], typer.Option(help='Comma separated list of signature names')] = None,
-          n_iterations: int=1000,
+          n_iterations: int= 1000,
           data_type: DataType = DataType.exome):
 
 
@@ -298,6 +419,8 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     index_matrix = M.index.values.tolist()
     S = read_signature(signature_file)
     # print(S)
+
+    #comment
     index_matrix = M.index.values.tolist()
     normalized_df = M.div(M.sum(axis=1), axis=0)
     col_means = normalized_df.mean(axis=0)
@@ -306,12 +429,12 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     if count_less_than_01 <= threshold:
         zero_contexts = np.array(M.columns)[(M.values < 0.01).any(axis=0)]
         # print("zero_contexts",zero_contexts)
-        corr_sigs_mask = (S.loc[:, zero_contexts] >= 0.1).any(axis=1)
+        corr_sigs_mask = (S.loc[:, zero_contexts] >= 0.06).any(axis=1)
         signatures = S.loc[~S.index.isin(corr_sigs_mask[corr_sigs_mask].index)]
         S = signatures
     if signature_names is not None:
         S = filter_signatures(S, signature_names.split(','))
-
+#comment
     index_signature = S.index.values.tolist()
     desired_order = M.columns
 
@@ -331,6 +454,24 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
 
         expo_run = _refit(boostrap_M, S, O, lambd=lambd, n_iterations=n_iterations)
         expo_run = pd.DataFrame(data=expo_run, columns=index_signature)
+        #print(expo_run)
+
+        mean_columns_E = expo_run.mean(axis=0)
+
+        for row in M:
+            row_sum = row.sum()
+            if row_sum > 600:
+                threshold = 0.02
+            else:
+                threshold = 0.03
+       # threshold = 0.02
+        selected_headers = mean_columns_E[mean_columns_E >= threshold].index.tolist()
+        S = read_signature(signature_file)
+        S = S.loc[selected_headers]
+        index_signature = S.index.values.tolist()
+        expo_run = _refit(boostrap_M, S, O, lambd=lambd, n_iterations=n_iterations)
+        expo_run = pd.DataFrame(data=expo_run, columns=index_signature)
+        print(expo_run)
         plot = single_plot(expo_run)
         expo_run_median = expo_run.median()
         expo_run_median.to_csv(f"{output_folder}/StarSign_exposure_median_{run_name}.txt", index=True, sep='\t')
@@ -341,13 +482,31 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         else:
             print("No plot was generated due to filtering criteria.")
     else:
-
+        print("original",S.shape)
         E = _refit(M, S, O, lambd=lambd, n_iterations=n_iterations)
         # print(O)
-        sum_expo = E.sum(axis=0, keepdims=True) / len(E)
-        sum_expo_t = np.transpose(sum_expo)
+
         E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
-        E.to_csv(f'{output_folder}/{run_name}.txt', index=index_matrix, header=True, sep='\t')
+        print(E)
+        # 1. Compute the mean of each column in E
+        mean_columns_E = E.mean(axis=0)
+
+        for row in M:
+            row_sum = row.sum()
+            if row_sum > 600:
+                threshold = 0.02
+            else:
+                threshold = 0.03
+       # threshold = 0.02
+        selected_headers = mean_columns_E[mean_columns_E >= threshold].index.tolist()
+        S = read_signature(signature_file)
+        S = S.loc[selected_headers]
+
+        index_signature = S.index.values.tolist()
+        E = _refit(M, S, O, lambd=lambd, n_iterations=n_iterations)
+        sum_expo = E.sum(axis=0, keepdims=True) / len(E)
+        E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
+        E.to_csv(f'{output_folder}/{run_name}_threshold.txt', index=index_matrix, header=True, sep='\t')
         sum_expo = pd.DataFrame(data=sum_expo, columns=index_signature, index=['Signatures'])
         sum_expo.to_csv(f'{output_folder}/average_{run_name}.txt',columns=index_signature, index= False, sep='\t')
         sum_expo = np.transpose(sum_expo)
@@ -360,6 +519,7 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         plot_variance = cohort_violin(E)
         plot_variance.savefig(f"{output_folder}/starsign_cohort_{run_name}.png", dpi=300)
     print("--- %s seconds ---" % (time.time() - start_time))
+
 
 def get_lambda(data_type):
     if data_type == DataType.genome:
@@ -424,10 +584,20 @@ def read_opportunity(M, opportunity_file):
                           1391660, 1674368, 1559846, 2850934])
         else:
             O = pd.read_csv(opportunity_file, sep='\t', header=None).to_numpy().astype(float)
-            normalized_vector1 = O / np.linalg.norm(O)
-            min_value_vector2 = np.min(M)
-            max_value_vector2 = np.max(M)
-            O = normalized_vector1 * (max_value_vector2 - min_value_vector2) + min_value_vector2
+
+            def zscore_normalize(df):
+                return (df - df.mean()) / df.std()
+
+            def context_frequency_normalization(mutation_matrix, context_frequencies):
+  # Convert context_frequencies to an array to divide by each column in mutation_matrix
+                context_freq_array = np.array([context_frequencies[key] for key in context_frequencies.keys()])
+
+# Normalize each column in the mutation_matrix by the corresponding context frequency
+                normalized_matrix = mutation_matrix / context_freq_array
+            return O
+            context_frequencies = {'ACA>C': 59474352,'CGA>T': 6541004,'TGT>A': 59845313,'GCT>C': 40767054
+}
+            O = context_frequency_normalization(O, context_frequencies)
         O = np.broadcast_to(O, M.shape)
     else:
         O = np.ones((n_samples, n_mutations), dtype=float)
@@ -438,7 +608,7 @@ def read_opportunity(M, opportunity_file):
 
 
 def read_signature(signature_file):
-    S = pd.read_csv(signature_file, delimiter=',')
+    S = pd.read_csv(signature_file, delimiter='\t')
     return S
 
 
