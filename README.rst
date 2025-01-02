@@ -171,6 +171,14 @@ Data
 ----
 Simulated data publicly available is available on FigShare: https://doi.org/10.6084/m9.figshare.28105610
 
+- **--flatness_100mutations folder**: Table 1. dataset with around 100 mutations per sample
+- **--flatness_500mutations folder**: Table 1. dataset with around 500 mutations per sample
+- **--flatnessdownsample_50_mutations folder**: Table 1. dataset with around 50 mutations per samples
+- **--flatnessdownsample_70_mutations folder**: Table 1. dataset with around 70 mutations per samples
+- **--flatnessdownsample_80_mutations folder**: Table 1. dataset with around 80 mutations per samples
+- **--noflatness_100mutations folder**: Table 2. dataset with around 100 mutations per sample
+- **--noflatness_500mutations folder**: Table 2. dataset with around 500 mutations per sample
+
 Contact
 -------
 
