@@ -52,6 +52,7 @@ Key Features
 * **Visualization**: Comprehensive plotting functions for signature analysis
 * **Performance**: Optimized algorithms for both small and large datasets
 * **Reference Genome Support**: Built-in handling of various genome builds
+* **Enhanced CLI**: Improved signature parsing supporting both comma and space-separated formats
 
 Basic Usage
 ----------
@@ -80,13 +81,19 @@ Example with Specific Signatures::
 
     starsigndna refit example_data/M_catalogue.txt example_data/COSMICv34.txt \
         --output-folder /test_result \
-        --signature-names SBS40c,SBS2,SBS94
+        --signature-names "SBS40c,SBS2,SBS94"
+
+Example with Space-Separated Signatures::
+
+    starsigndna refit example_data/M_catalogue.txt example_data/COSMICv34.txt \
+        --output-folder /test_result \
+        --signature-names "SBS40c SBS2 SBS94"
 
 Example with VCF Input::
 
     starsigndna refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt \
         --output-folder /output \
-        --signature-names SBS40c,SBS2,SBS94 \
+        --signature-names "SBS40c,SBS2,SBS94" \
         --ref-genome GRCh37
 
 Key Options:
@@ -95,8 +102,12 @@ Key Options:
 * **--ref_genome**: Reference genome for VCF processing
 * **--n_bootstraps**: Number of bootstrap iterations (default: 200)
 * **--opportunity_file**: Custom mutation opportunity matrix
-* **--signature_names**: Specific signatures to consider
+* **--signature_names**: Specific signatures to consider (minimum 5 signatures required)
 * **--n_iterations**: Maximum optimization iterations (default: 1000)
+
+**Signature Names Format**: The `--signature-names` parameter accepts both comma-separated and space-separated formats:
+* Comma-separated: `"SBS1,SBS3,SBS5,SBS6,SBS8"`
+* Space-separated: `"SBS1 SBS3 SBS5 SBS6 SBS8"`
 
 Expected Output:
 ~~~~~~~~~~~~~~~
@@ -104,15 +115,15 @@ Expected Output:
 The refit command generates several output files in the specified output folder:
 
 **For single sample analysis:**
-* **StarSign_exposure_median_{run_name}.txt**: Median exposure values across bootstrap iterations
-* **StarSign_exposure_Exposure_{run_name}.txt**: Full exposure matrix from bootstrap analysis
-* **StarSign_exposure_Exposure_{run_name}.png**: Violin plot of exposure distributions
+* **StarSign_refit_exposure_median_{run_name}.txt**: Median exposure values across bootstrap iterations
+* **StarSign_refit_exposure_Exposure_{run_name}.txt**: Full exposure matrix from bootstrap analysis
+* **StarSign_refit_exposure_Exposure_{run_name}.png**: Violin plot of exposure distributions
 
 **For cohort analysis:**
-* **{run_name}_threshold.txt**: Exposure matrix after signature filtering
-* **average_{run_name}.txt**: Average exposure values across samples
-* **starsign_top5_signatures_{run_name}.png**: Bar plot of top 5 signatures by average exposure
-* **starsign_cohort_{run_name}.png**: Violin plot showing exposure distributions across cohort
+* **refit_{run_name}_threshold.txt**: Exposure matrix after signature filtering
+* **average_refit_{run_name}.txt**: Average exposure values across samples
+* **starsign_refit_top5_signatures_{run_name}.png**: Bar plot of top 5 signatures by average exposure
+* **starsign_refit_cohort_{run_name}.png**: Violin plot showing exposure distributions across cohort
 
 **For VCF input:**
 * **matrix.csv**: Generated mutation count matrix from VCF file
@@ -166,10 +177,10 @@ Expected Output:
 
 The denovo command generates several output files in the specified output folder:
 
-* **StarSign_{run_name}_Denovo_signature.txt**: Extracted mutational signatures matrix (signatures × mutation types)
-* **StarSign_{run_name}_Denovo_exposures.txt**: Signature exposures for each sample (samples × signatures)
-* **StarSign_{run_name}_profile.png**: Visualization of extracted signatures
-* **StarSign_{run_name}_cosine_similarity.txt**: Similarity scores with known COSMIC signatures (if --cosmic-file provided)
+* **StarSign_denovo_{run_name}_signature.txt**: Extracted mutational signatures matrix (signatures × mutation types)
+* **StarSign_denovo_{run_name}_exposures.txt**: Signature exposures for each sample (samples × signatures)
+* **StarSign_denovo_{run_name}_profile.png**: Visualization of extracted signatures
+* **StarSign_denovo{run_name}_cosine_similarity.txt**: Similarity scores with known COSMIC signatures (if --cosmic-file provided)
 
 **For VCF input:**
 * **matrix.csv**: Generated mutation count matrix from VCF file
@@ -192,6 +203,20 @@ Advanced Features
   - Exposure matrices
   - Visualization plots
   - Statistical metrics
+
+* **Enhanced Error Handling**:
+  - Robust signature filtering with fallback mechanisms
+  - Graceful handling of empty datasets
+  - Improved plotting error recovery
+
+Recent Improvements
+------------------
+
+* **Enhanced CLI**: Improved signature parsing supporting both comma and space-separated formats
+* **Better Error Handling**: Robust signature filtering with automatic fallback to original signature set
+* **Improved Plotting**: Enhanced visualization functions with better error recovery
+* **Code Quality**: Comprehensive comments and documentation added to all scripts
+* **Snakemake Integration**: Enhanced workflow scripts with better reproducibility and error handling
 
 Contributing
 -----------
