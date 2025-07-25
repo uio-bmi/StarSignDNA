@@ -1,174 +1,214 @@
 ========
-StarSignDNA
+StarSignDNA: Signature tracing for accurate representation of mutational processes
 ========
-StarSignDNA algorithm for mutational signature analysis which offers efficient refitting and de novo
-mutational signature extraction. StarSignDNA is capable of deciphering well-differentiated signatures linked to known
-mutagenic mechanisms and demonstrates strong associations with patient clinical features. The package offers a user-
-friendly interface and data visualization routines.
 
-Mutation signature analysis package
------------------------------------
+A Robust Tool for Mutational Signature Analysis
+---------------------------------------------
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
     :target: https://opensource.org/licenses/MIT
     :alt: MIT License
 
-* Free software: `MIT license <https://opensource.org/licenses/MIT>`_
-* Documentation: Link to be provided
+.. image:: https://img.shields.io/badge/release-v1.0.0-brightgreen.svg
+    :target: https://pypi.org/project/starsigndna/
+    :alt: Release Version
 
+StarSignDNA is a powerful algorithm for mutational signature analysis that provides both efficient refitting of known signatures and de novo signature extraction. The tool excels at:
 
+* Deciphering well-differentiated signatures linked to known mutagenic mechanisms
+* Demonstrating strong associations with patient clinical features
+* Providing robust statistical analysis and visualization
+* Handling both single-sample and cohort analyses
+* Supporting various input formats including VCF files
 
-Paper
---------
+Quick Links
+----------
+* **License**: `MIT license <https://opensource.org/licenses/MIT>`_
+* **Paper**: `Preprint <https://www.biorxiv.org/content/10.1101/2024.06.29.601345v1>`_
+* **Source Code**: https://github.com/uio-bmi/StarSignDNA
 
-Preprint link https://www.biorxiv.org/content/10.1101/2024.06.29.601345v1
+Installation
+-----------
 
-Features
---------
+You can install StarSignDNA in one of two ways:
 
-Stable release
---------------
-
-To install StarSign,
-
-you can install the package directly from PyPi::
+1. Via PyPI (Recommended)::
 
     pip install starsigndna
 
- Alternatively,  you can install it via terminal by running this command::
+2. From Source::
 
-    1. Download StarSign from https://github.com/uio-bmi/StarSignDNA
-    2. Unzip StarSignDNA-master.zip
-    3. cd StarSigndna-master/
-    4. pip install -e .
+    git clone https://github.com/uio-bmi/StarSignDNA
+    cd StarSignDNA
+    pip install -e .
 
+Key Features
+-----------
 
-Getting started
----------------
+* **Signature Refitting**: Accurate refitting of known mutational signatures to new samples
+* **De Novo Discovery**: Novel signature extraction from mutation catalogs
+* **Flexible Input**: Support for both VCF files and mutation count matrices
+* **Statistical Robustness**: Built-in bootstrapping and cross-validation
+* **Visualization**: Comprehensive plotting functions for signature analysis
+* **Performance**: Optimized algorithms for both small and large datasets
+* **Reference Genome Support**: Built-in handling of various genome builds
 
-To obtain help::
+Basic Usage
+----------
+
+Get help on available commands::
 
     starsigndna --help
 
-Usage: starsigndna [OPTIONS] COMMAND [ARGS]...
+Available Commands:
+~~~~~~~~~~~~~~~~~
 
+* **count-mutation**: Count mutation types in VCF files
+* **denovo**: Perform de novo signature discovery
+* **refit**: Refit known signatures to new samples
 
-Options
--------
+Signature Refitting
+------------------
 
-- **--install-completion**: Install completion for the current shell.
-- **--show-completion**: Show completion for the current shell, to copy it or customize the installation.
-- **--help**: Show this message and exit.
+The refitting algorithm matches mutation patterns against known COSMIC signatures.
 
-Commands
---------
+Basic Usage::
 
-- **count-mutation**: Count mutation types in VCF file.
-- **denovo**: Performs denovo Mutational Signatures analysis.
-- **refit**: Mutational Signatures Refit Parameters
+    starsigndna refit <matrix_file> <signature_file> [OPTIONS]
 
-Running mutational signature refit algorithm
----------------------------------------------
+Example with Specific Signatures::
 
-The refitting algorithm takes as input a mutational catalog and a COSMIC mutational signature file. The user can also specify signatures to be considered instead of using the full COSMIC matrix or a subset matrix::
+    starsigndna refit example_data/M_catalogue.txt example_data/COSMICv34.txt \
+        --output-folder /test_result \
+        --signature-names SBS40c,SBS2,SBS94
 
-    starsigndna refit --help
+Example with VCF Input::
 
-StarSignDNA Refit Parameters
-----------------------------
+    starsigndna refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt \
+        --output-folder /output \
+        --signature-names SBS40c,SBS2,SBS94 \
+        --ref-genome GRCh37
 
-**Arguments**
+Key Options:
+~~~~~~~~~~~
 
-- **matrix_file** (TEXT): Tab separated matrix file [default: None] [required]
-- **signature_file** (TEXT): Tab separated matrix file [default: None] [required]
+* **--ref_genome**: Reference genome for VCF processing
+* **--n_bootstraps**: Number of bootstrap iterations (default: 200)
+* **--opportunity_file**: Custom mutation opportunity matrix
+* **--signature_names**: Specific signatures to consider
+* **--n_iterations**: Maximum optimization iterations (default: 1000)
 
-**Options**
+Expected Output:
+~~~~~~~~~~~~~~~
 
-- **--ref_genome** (TEXT): Path to the reference genome [default: None]
-- **--n_bootstraps** (INTEGER): Number of bootstraps [default: 200]
-- **--opportunity_file** (TEXT): Path to the opportunity file [default: None]
-- **--numeric_chromosomes**: If set, chromosome names are numeric [default: no-numeric-chromosomes]
-- **--no_numeric_chromosomes**: If set, chromosome names are not numeric [default: no-numeric-chromosomes]
-- **--genotyped**: If set, VCF file has genotype information for many samples [default: genotyped]
-- **--no_genotyped**: If set, VCF file does not have genotype information for many samples [default: genotyped]
-- **--output_folder** (TEXT): Path to the output folder [default: output/]
-- **--signature_names** (TEXT): Comma separated list of signature names [default: None]
-- **--n_iterations** (INTEGER): Number of iterations [default: 1000]
-- **--help**: Show this message and exit
+The refit command generates several output files in the specified output folder:
 
-Running StarSignDNA refit::
+**For single sample analysis:**
+* **StarSign_exposure_median_{run_name}.txt**: Median exposure values across bootstrap iterations
+* **StarSign_exposure_Exposure_{run_name}.txt**: Full exposure matrix from bootstrap analysis
+* **StarSign_exposure_Exposure_{run_name}.png**: Violin plot of exposure distributions
 
-    starsigndna refit example_data/M_catalogue.txt example_data/COSMICv34.txt --output-folder /test_result --signature-names SBS40c,SBS2,SBS94
-    starsigndna refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt --output-folder /output --signature-names SBS40c,SBS2,SBS94 --ref-genome
+**For cohort analysis:**
+* **{run_name}_threshold.txt**: Exposure matrix after signature filtering
+* **average_{run_name}.txt**: Average exposure values across samples
+* **starsign_top5_signatures_{run_name}.png**: Bar plot of top 5 signatures by average exposure
+* **starsign_cohort_{run_name}.png**: Violin plot showing exposure distributions across cohort
 
-When the --signature-names option is used, the default number of signature is 3, but we recommend minimum of 5 signatures.
-The test data is provided in the example_data folder. To convert *.vcf to a matrix, the user must provide the path to the reference genome using the option --ref-genome.
+**For VCF input:**
+* **matrix.csv**: Generated mutation count matrix from VCF file
 
-The user can also provide the distribution of triplets in a reference genome/exome or normal tissue in the same patient (Opportunity matrix) using the option --opportunity-file human-genome/human-exome.
+De Novo Signature Discovery
+-------------------------
 
+The de novo algorithm extracts novel signatures from mutation patterns.
 
-Running mutational signature de novo algorithm
------------------------------------------------
+Basic Usage::
 
-The de novo algorithm takes as input a mutational catalog and infers the exposure matrix and mutational signature matrix. The COSMIC mutational signature file is provided to compute the cosine similarity::
+    starsigndna denovo <matrix_file> <n_signatures> [OPTIONS]
 
-    starsigndna denovo --help
+Example with Optimal Parameters::
 
-Performs denovo Mutational Signatures analysis
-===============================================
+    starsigndna denovo snakemake/results/data/M_catalogue.txt 4 0.1 \
+        --cosmic-file example_data/COSMICv34.txt \
+        --output-folder /test_result
 
-**Arguments**
+Parameter Optimization
+~~~~~~~~~~~~~~~~~~~~
 
-- **matrix_file** (TEXT): Tab separated matrix file [default: None] [required]
-- **n_signatures** (INTEGER): Number of signatures to identify [default: None] [required]
-
-**Options**
-
-- **--lambd** (FLOAT): Regularization parameter [default: 0.7]
-- **--opportunity-file** (TEXT): The distribution of triplets in a reference 'human-genome' or 'human-exome' or normal tissue [default: None]
-- **--cosmic-file** (TEXT): Tab separated cosmic file [default: None]
-- **--numeric-chromosomes**: If set, chromosome names are numeric [default: no-numeric-chromosomes]
-- **--no-numeric-chromosomes**: If set, chromosome names are not numeric [default: no-numeric-chromosomes]
-- **--genotyped**: If set, VCF file has genotype information for many samples [default: genotyped]
-- **--no-genotyped**: If set, VCF file does not have genotype information for many samples [default: genotyped]
-- **--max-em-iterations** (INTEGER): Maximum EM iterations [default: 100]
-- **--max-gd-iterations** (INTEGER): Maximum GD iterations [default: 50]
-- **--file-extension** (TEXT): File extension [default: None]
-- **--ref-genome** (TEXT): Path to the reference genome [default: None]
-- **--output-folder** (TEXT): Path to the output folder [default: output/]
-- **--help**: Show this message and exit
-
-Step 1: Grid Search: The grid uses cross-validation to find the optimal pairwise (k and λ) by going to the snakemake folder and opening the running file (Snakefile) to check all the paths and input files::
+1. Configure Grid Search Parameters::
 
     cd snakemake
     vi Snakefile
 
-Step 2: In the Snakefile, provide the range of the number of signatures k and λ for the grid search to determine the optimal k and λ::
+    # Example configuration:
+    ks = list(range(2, 10))  # Number of signatures
+    lambdas = [0, 0.01, 0.05, 0.1, 0.2]  # Regularization values
 
-    localrules: all
-    ks = list(range(2, 10)): default range of the number of signatures
-    lambdas = [0, 0.01, 0.05, 0.1, 0.2]: default range of λ
+2. Run Grid Search::
 
-Input mutational catalogue needs to be provided in the dataset folder::
+    snakemake -j <num_cpu>
 
-    rule test_train_split:
-        input: "results/{dataset}/M_catalogue.txt"
-
-Running the grid search::
-
-    snakemake -j num_cpu
-
-To check manually the optimal k and λ from the output::
+3. Find Optimal Parameters::
 
     sort -k3n,3 results/data/all.csv
 
-Run denovo using optimal k=4 and λ=0.1::
+Key Options:
+~~~~~~~~~~~
 
-    starsigndna denovo snakemake/results/data/M_catalogue.txt 4 0.1 --cosmic-file example_data/COSMICv34.txt --output-folder /test_result
+* **--lambd**: Regularization parameter (default: 0.7)
+* **--opportunity-file**: Custom mutation opportunity matrix
+* **--cosmic-file**: Reference signatures for comparison
+* **--max-em-iterations**: Maximum EM iterations (default: 100)
+* **--max-gd-iterations**: Maximum gradient descent steps (default: 50)
+
+Expected Output:
+~~~~~~~~~~~~~~~
+
+The denovo command generates several output files in the specified output folder:
+
+* **StarSign_{run_name}_Denovo_signature.txt**: Extracted mutational signatures matrix (signatures × mutation types)
+* **StarSign_{run_name}_Denovo_exposures.txt**: Signature exposures for each sample (samples × signatures)
+* **StarSign_{run_name}_profile.png**: Visualization of extracted signatures
+* **StarSign_{run_name}_cosine_similarity.txt**: Similarity scores with known COSMIC signatures (if --cosmic-file provided)
+
+**For VCF input:**
+* **matrix.csv**: Generated mutation count matrix from VCF file
+
+Advanced Features
+---------------
+
+* **Opportunity Matrices**: Support for custom mutation opportunity matrices:
+  - Built-in human genome/exome distributions
+  - Custom tissue-specific distributions
+  - Patient-specific normal tissue references
+
+* **Input Flexibility**: 
+  - VCF files (single or multi-sample)
+  - Pre-computed mutation matrices
+  - Various chromosome naming conventions
+
+* **Output Customization**:
+  - Detailed signature profiles
+  - Exposure matrices
+  - Visualization plots
+  - Statistical metrics
+
+Contributing
+-----------
+
+We welcome contributions! Please feel free to submit a Pull Request.
 
 Contact
 -------
 
-Maintainer Name - chrisbop@uio.no or christianbope@gmail.com
+* **Maintainer**: Christian D. Bope
+* **Email**: christianbope@gmail.com
+* **Institution**: University of Oslo
+
+Citation
+--------
+
+If you use StarSignDNA in your research, please cite our paper:
+[Citation details to be added after publication]
 
 
