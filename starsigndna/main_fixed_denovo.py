@@ -287,10 +287,10 @@ def update_exposure_NR(E: np.ndarray, global_gradients: np.ndarray,
         np.ndarray: Updated exposure matrix
     """
     if np.any(E < 0):
-       E = np.maximum(E, 0)
-       assert topt <= tedge
+        E = np.maximum(E, 0)
+        assert topt <= tedge
     
-   return np.where(np.sign(new_E) == np.sign(E),
+    return np.where(np.sign(new_E) == np.sign(E),
                     new_E,
                     E + topt * global_gradients)
 
@@ -481,7 +481,7 @@ def running_simulation_refit(E: np.ndarray, M: np.ndarray, S: np.ndarray, O: np.
         E = np.maximum(E, 0)
         
         # Compute loss and check convergence
-                loss = -poisson.logpmf(M, (E @ S) * O)
+        loss = -poisson.logpmf(M, (E @ S) * O)
         mean_loss = np.mean(loss)
         
         if convergence(mean_loss, loss_hat):
@@ -549,8 +549,8 @@ def running_simulation_denovo(E: np.ndarray, M: np.ndarray, S: np.ndarray, O: np
                 E = update_exposure_gradient(E, global_gradients, t_min)
             else:
                 E = update_exposure_NR(E, global_gradients, topt, tedge, newton_raphason)
-                
+        
         # Ensure non-negativity
-            E = np.maximum(E, 0)
+        E = np.maximum(E, 0)
         
     return E
