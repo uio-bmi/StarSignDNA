@@ -194,6 +194,12 @@ For systematic parameter optimization and cross-validation, StarSignDNA includes
     # The output shows: fold, k, lambda, log-likelihood
     # Lower log-likelihood values indicate better model fit
 
+    **Run de novo analysis with the optimal parameters:**
+    
+    starsigndna denovo example_data/M_catalogue.txt 4 --lambd 0.01  \
+        --cosmic-file example_data/COSMICv34.txt \
+        --output-folder /test_result 
+
 **Understanding Snakemake Output:**
 
 * **Cross-validation Results**: Each parameter combination is tested across multiple folds
@@ -226,29 +232,6 @@ The denovo command generates several output files in the specified output folder
 **For VCF input:**
 * **matrix.csv**: Generated mutation count matrix from VCF file
 
-Advanced Features
----------------
-
-* **Opportunity Matrices**: Support for custom mutation opportunity matrices:
-  - Built-in human genome/exome distributions
-  - Custom tissue-specific distributions
-  - Patient-specific normal tissue references
-
-* **Input Flexibility**: 
-  - VCF files (single or multi-sample)
-  - Pre-computed mutation matrices
-  - Various chromosome naming conventions
-
-* **Output Customization**:
-  - Detailed signature profiles
-  - Exposure matrices
-  - Visualization plots
-  - Statistical metrics
-
-* **Enhanced Error Handling**:
-  - Robust signature filtering with fallback mechanisms
-  - Graceful handling of empty datasets
-  - Improved plotting error recovery
 
 
 Contact
