@@ -240,7 +240,7 @@ def update_exposure_gradient(E: np.ndarray, global_gradients: np.ndarray,
     return E + topt_tedge * global_gradients
 
 
-def newton_raphson1(E: np.ndarray, global_gradients: np.ndarray, 
+def newton_raphson1old(E: np.ndarray, global_gradients: np.ndarray, 
                    hessians: np.ndarray) -> Optional[np.ndarray]:
     """Perform Newton-Raphson optimization step.
     
@@ -263,6 +263,7 @@ def newton_raphson1(E: np.ndarray, global_gradients: np.ndarray,
         new_row = E_row.copy()
         
         det = np.linalg.det(active_hessian)
+        active_hessian.append(det ** -1)
         if det < 1e-10:
             return None
             
@@ -270,6 +271,30 @@ def newton_raphson1(E: np.ndarray, global_gradients: np.ndarray,
         nr.append(new_row)
         
     return np.array(nr)
+
+def newton_raphson1(E, global_gradients, hessians):
+   nr = []
+   v1 = []
+   H = hessians
+   active_mask = (E != 0)
+   if np.any(E < 0):
+        E = np.maximum(E, 0)
+   assert np.all(E >= 0), "Error: E matrix element is not  greater than zero."
+   active_hessians = []
+   for E_row, gradient_row, hessian in zip(E, global_gradients, H):
+       non_active = ((E_row == 0) | (gradient_row == 0))
+       active_mask = ~non_active
+       active_gradients = gradient_row[active_mask]
+       active_hessian = hessian[active_mask][:, active_mask]
+       new_row = E_row.copy()
+       det = np.linalg.det(active_hessian)
+       active_hessians.append(det ** -1)
+       if det < 10e-10:
+           return None
+       new_row[active_mask] = E_row[active_mask] - np.linalg.inv(active_hessian) @ active_gradients
+       nr.append(new_row)
+   v1 = np.array(nr)
+   return v1
 
 
 def update_exposure_NR(E: np.ndarray, global_gradients: np.ndarray,

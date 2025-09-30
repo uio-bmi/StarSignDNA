@@ -81,20 +81,14 @@ Example with Specific Signatures::
 
     starsigndna refit example_data/M_catalogue.txt example_data/COSMICv34.txt \
         --output-folder /test_result \
-        --signature-names "SBS40c,SBS2,SBS94"
-
-Example with Space-Separated Signatures::
-
-    starsigndna refit example_data/M_catalogue.txt example_data/COSMICv34.txt \
-        --output-folder /test_result \
-        --signature-names "SBS40c SBS2 SBS94"
+        --signature-names "SBS1,SBS3,SBS5,SBS6,SBS8"
 
 Example with VCF Input::
 
-    starsigndna refit example_data/tcga_coad_single.vcf example_data/sig_cosmic_v3_2019.txt \
-        --output-folder /output \
-        --signature-names "SBS40c,SBS2,SBS94" \
-        --ref-genome GRCh37
+    starsigndna refit example_data/tcga_coad_single.vcf example_data/COSMICv34.txt \
+        --output-folder /test_result  \
+        --signature-names "SBS1,SBS3,SBS5,SBS6,SBS8" \
+        --ref-genome GRCh38
 
 Key Options:
 ~~~~~~~~~~~
@@ -107,7 +101,6 @@ Key Options:
 
 **Signature Names Format**: The `--signature-names` parameter accepts both comma-separated and space-separated formats:
 * Comma-separated: `"SBS1,SBS3,SBS5,SBS6,SBS8"`
-* Space-separated: `"SBS1 SBS3 SBS5 SBS6 SBS8"`
 
 Expected Output:
 ~~~~~~~~~~~~~~~
@@ -139,29 +132,77 @@ Basic Usage::
 
 Example with Optimal Parameters::
 
-    starsigndna denovo snakemake/results/data/M_catalogue.txt 4 0.1 \
+    starsigndna denovo snakemake/results/data/M_catalogue.txt 4  \
         --cosmic-file example_data/COSMICv34.txt \
         --output-folder /test_result
+In this example, we are using the default parameters for the de novo algorithm.
 
-Parameter Optimization
-~~~~~~~~~~~~~~~~~~~~
+Parameter Optimization with Snakemake
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Configure Grid Search Parameters::
+For systematic parameter optimization and cross-validation, StarSignDNA includes a Snakemake workflow that performs grid search over multiple parameters.
+
+**Prerequisites:**
+* Install Snakemake: ``pip install snakemake``
+* Ensure you have sufficient computational resources
+
+**Workflow Steps:**
+
+1. **Navigate to Snakemake Directory**::
 
     cd snakemake
+
+2. **Configure Grid Search Parameters**::
+
+    # Edit the Snakefile to set your desired parameter ranges
     vi Snakefile
+    
+    # Key parameters to modify:
+    ks = list(range(2, 10))              # Number of signatures to test
+    lambdas = [0, 0.01, 0.05, 0.1, 0.2]  # Regularization parameters
+    
+    # For quick testing, use smaller ranges:
+    ks = list(range(2, 3))               # Test fewer signatures  
+    lambdas = [0, 0.01]                  # Test fewer lambda values
 
-    # Example configuration:
-    ks = list(range(2, 10))  # Number of signatures
-    lambdas = [0, 0.01, 0.05, 0.1, 0.2]  # Regularization values
+3. **Prepare Input Data**::
 
-2. Run Grid Search::
+    # Ensure your mutation matrix is in the correct location
+    # Default expected location: results/data/train_m.csv and results/data/test_m.csv
+    # Or modify the Snakefile to point to your data files
 
-    snakemake -j <num_cpu>
+4. **Run Grid Search**::
 
-3. Find Optimal Parameters::
+    # Run with multiple CPU cores for faster processing
+    snakemake -j 4                       # Use 4 CPU cores
+    snakemake -j <num_cpu>               # Use specified number of cores
+    
+    # For dry run (check what will be executed):
+    snakemake -n
 
-    sort -k3n,3 results/data/all.csv
+5. **Monitor Progress**::
+
+    # The workflow will show progress and create multiple output files
+    # Results are stored in: results/data/<fold>/<k>/<lambda>/
+    # Each combination generates: e.csv, s.csv, e_new.csv, logpmf.txt
+
+6. **Find Optimal Parameters**::
+
+    # Sort results by log-likelihood to find best parameters
+    sort -k3n,3 results/data/all.csv | head -10
+    
+    # The output shows: fold, k, lambda, log-likelihood
+    # Lower log-likelihood values indicate better model fit
+
+**Understanding Snakemake Output:**
+
+* **Cross-validation Results**: Each parameter combination is tested across multiple folds
+* **Signature Files (s.csv)**: Extracted signatures for each parameter set
+* **Exposure Files (e.csv, e_new.csv)**: Training and test exposures
+* **Log-likelihood (logpmf.txt)**: Model fitness scores
+* **Summary (all.csv)**: Consolidated results across all parameter combinations
+
+
 
 Key Options:
 ~~~~~~~~~~~
@@ -209,26 +250,13 @@ Advanced Features
   - Graceful handling of empty datasets
   - Improved plotting error recovery
 
-Recent Improvements
-------------------
-
-* **Enhanced CLI**: Improved signature parsing supporting both comma and space-separated formats
-* **Better Error Handling**: Robust signature filtering with automatic fallback to original signature set
-* **Improved Plotting**: Enhanced visualization functions with better error recovery
-* **Code Quality**: Comprehensive comments and documentation added to all scripts
-* **Snakemake Integration**: Enhanced workflow scripts with better reproducibility and error handling
-
-Contributing
------------
-
-We welcome contributions! Please feel free to submit a Pull Request.
 
 Contact
 -------
 
 * **Maintainer**: Christian D. Bope
 * **Email**: christianbope@gmail.com
-* **Institution**: University of Oslo
+* **Institution**:University of Oslo/University of Kinshasa
 
 Citation
 --------

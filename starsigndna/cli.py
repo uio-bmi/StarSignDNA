@@ -137,8 +137,13 @@ def cohort_plot(file):
     Args:
         file: DataFrame containing cohort data
     Returns:
-        matplotlib.pyplot figure
+        matplotlib.pyplot figure or None if data is empty
     """
+    # Check if DataFrame is empty
+    if file.empty or len(file.index) == 0:
+        logger.warning("Cannot create cohort plot: DataFrame is empty")
+        return None
+    
     num_colors = len(file.index)
     color_palette = sns.color_palette("colorblind", num_colors)
     plt.style.use('default')
@@ -157,8 +162,13 @@ def cohort_violin(file):
     Args:
         file: DataFrame containing cohort data
     Returns:
-        matplotlib.pyplot figure
+        matplotlib.pyplot figure or None if data is empty
     """
+    # Check if DataFrame is empty
+    if file.empty or len(file.columns) == 0:
+        logger.warning("Cannot create cohort violin plot: DataFrame is empty")
+        return None
+    
     fig, ax = plt.subplots(figsize=(20, 8))
     sns.violinplot(data=file, ax=ax, scale="count", cut=0)
     plt.xticks(rotation=45, fontsize=8)
@@ -386,21 +396,26 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     
     # Handle single sample case
     if (M.ndim == 2 and M.shape[0] == 1) or M.ndim == 1:
+        print("The Hyperparameter is", lambd)
         boostrap_M = _bootstrap(M, n_bootstraps)
+        #print(boostrap_M)
         logger.info(f"Lambda: {lambd}")
         
         expo_run = _refit(boostrap_M, S, O, lambd=lambd, n_iterations=n_iterations)
+        #print(expo_run)
         expo_run = pd.DataFrame(data=expo_run, columns=index_signature)
         mean_columns_E = expo_run.mean(axis=0)
         
         # Adjust threshold based on mutation count
-        threshold = 0.02 if any(row.sum() > 600 for row in M) else 0.03
+        threshold = 0.06 if any(row.sum() > 600 for row in M) else 0.03
         selected_headers = mean_columns_E[mean_columns_E >= threshold].index.tolist()
         
         # Refit with selected signatures
         S = read_signature(signature_file).loc[selected_headers]
+        print(S.shape)
         index_signature = S.index.values.tolist()
         expo_run = _refit(boostrap_M, S, O, lambd=lambd, n_iterations=n_iterations)
+        #print(expo_run)
         expo_run = pd.DataFrame(data=expo_run, columns=index_signature)
         
         # Save results
@@ -417,14 +432,21 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     
     # Handle multiple sample case
     else:
+        print("The Hyperparameter is", lambd)
         logger.info(f"Original signature shape: {S.shape}")
         E = _refit(M, S, O, lambd=lambd, n_iterations=n_iterations)
         E = pd.DataFrame(data=E, columns=index_signature, index=index_matrix)
         
         # Filter signatures based on mean exposure
         mean_columns_E = E.mean(axis=0)
-        threshold = 0.02 if any(row.sum() > 600 for row in M) else 0.03
+        threshold = 0.05 if any(row.sum() > 600 for row in M) else 0.03
         selected_headers = mean_columns_E[mean_columns_E >= threshold].index.tolist()
+        
+        # Check if any signatures meet the threshold
+        if not selected_headers:
+            logger.warning(f"No signatures meet the threshold of {threshold}. Using top 5 signatures instead.")
+            # Fall back to top 5 signatures by mean exposure
+            selected_headers = mean_columns_E.nlargest(5).index.tolist()
         
         # Refit with selected signatures
         S = read_signature(signature_file).loc[selected_headers]
@@ -445,11 +467,24 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         index_sort_E = sort_E.index.values.tolist()
         sort_E = pd.DataFrame(data=sort_E, index=index_sort_E)
         
-        # Generate plots
-        plot_top_five = cohort_plot(sort_E)
-        plot_top_five.savefig(f"{output_folder}/starsign_top5_signatures_{run_name}.png", dpi=300)
-        plot_variance = cohort_violin(E)
-        plot_variance.savefig(f"{output_folder}/starsign_cohort_{run_name}.png", dpi=300)
+        # Generate plots only if we have data
+        if len(sort_E) > 0:
+            plot_top_five = cohort_plot(sort_E)
+            if plot_top_five is not None:
+                plot_top_five.savefig(f"{output_folder}/starsign_top5_signatures_{run_name}.png", dpi=300)
+            else:
+                logger.warning("Unable to generate top 5 signatures plot.")
+        else:
+            logger.warning("No signatures available for top 5 plot generation.")
+            
+        if len(E.columns) > 0:
+            plot_variance = cohort_violin(E)
+            if plot_variance is not None:
+                plot_variance.savefig(f"{output_folder}/starsign_cohort_{run_name}.png", dpi=300)
+            else:
+                logger.warning("Unable to generate cohort violin plot.")
+        else:
+            logger.warning("No signatures available for cohort violin plot generation.")
     
     logger.info(f"Analysis completed in {time.time() - start_time:.2f} seconds")
 
@@ -462,6 +497,7 @@ def get_lambda(data_type: DataType) -> float:
         float: Lambda value for regularization
     """
     return 100 if data_type == DataType.genome else 0.7
+
 
 def read_opportunity(M: np.ndarray, opportunity_file: Optional[str] = None) -> np.ndarray:
     """Read or generate opportunity matrix for mutation analysis.
@@ -523,7 +559,7 @@ def filter_signatures(S: pd.DataFrame, signature_names: list) -> pd.DataFrame:
         ValueError: If fewer than 5 signatures are provided
     """
     if len(signature_names) < 5:
-        raise ValueError("You must select at least 3 signature names.")
+        raise ValueError("You must select at least 5 signature names.")
     return S.loc[signature_names]
 
 def get_tri_context_fraction(mut_counts: pd.DataFrame) -> pd.DataFrame:
