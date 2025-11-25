@@ -348,17 +348,33 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
     start_time = time.time()
     file_name, file_extension = os.path.splitext(matrix_file)
     
-    # Handle VCF input
-    if file_extension == '.vcf':
+    # Handle VCF input (both .vcf and .vcf.gz)
+    if file_extension == '.vcf' or (file_extension == '.gz' and os.path.splitext(file_name)[1] == '.vcf'):
         if not ref_genome and not genome_path:
             raise ValueError("Either ref_genome or genome_path must be provided.")
         genome_path = download_reference_genome(ref_genome=ref_genome, genome_path=genome_path)
         logger.info(f"Reference genome path: {genome_path}")
-        count_mutation(matrix_file, genome_path, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
-        matrix_file = f'{output_folder}/matrix.csv'
+        # Derive output csv path from input sample name
+        sample_name = Path(matrix_file).name
+        if sample_name.endswith('.vcf.gz'):
+            sample_name = sample_name[:-7]
+        elif sample_name.endswith('.vcf'):
+            sample_name = sample_name[:-4]
+        out_csv = f"{output_folder}/{sample_name}.csv"
+        os.makedirs(output_folder, exist_ok=True)
+        count_mutation(matrix_file, genome_path, out_csv, numeric_chromosomes, genotyped)
+        matrix_file = out_csv
     
     # Read input data
     M = read_counts(matrix_file)
+
+    # Remove rows with all zeros (can occur with genotyped VCFs)
+    row_sums = M.sum(axis=1)
+    if (row_sums == 0).any():
+        n_zero_rows = (row_sums == 0).sum()
+        logger.warning(f"Removing {n_zero_rows} empty row(s) with zero mutation counts from the matrix")
+        M = M[row_sums > 0]
+
     index_matrix = M.index.values.tolist()
     S = read_signature(signature_file)
     
@@ -376,7 +392,23 @@ def refit(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix 
         S = signatures
         
     if signature_names is not None:
-        S = filter_signatures(S, signature_names.split(','))
+        requested_sigs = signature_names.split(',')
+        # Only keep signatures that are both requested and available after filtering
+        available_requested = [sig for sig in requested_sigs if sig in S.index]
+
+        if len(available_requested) < 5:
+            missing_sigs = [sig for sig in requested_sigs if sig not in S.index]
+            logger.warning(f"Only {len(available_requested)} of the requested signatures are available after correlation filtering.")
+            logger.warning(f"Missing signatures: {', '.join(missing_sigs)}")
+            logger.warning(f"Available signatures: {', '.join(S.index.tolist())}")
+            raise ValueError(f"Only {len(available_requested)} requested signatures are available after filtering. At least 5 are required. Missing: {missing_sigs}")
+
+        if len(available_requested) < len(requested_sigs):
+            missing_sigs = [sig for sig in requested_sigs if sig not in S.index]
+            logger.warning(f"Some requested signatures were filtered out due to low correlation with the sample: {', '.join(missing_sigs)}")
+            logger.info(f"Using {len(available_requested)} available signatures: {', '.join(available_requested)}")
+
+        S = filter_signatures(S, available_requested)
         
     # Prepare data for analysis
     index_signature = S.index.values.tolist()
@@ -496,7 +528,7 @@ def get_lambda(data_type: DataType) -> float:
     Returns:
         float: Lambda value for regularization
     """
-    return 100 if data_type == DataType.genome else 0.7
+    return 1000 if data_type == DataType.genome else 0.7
 
 
 def read_opportunity(M: np.ndarray, opportunity_file: Optional[str] = None) -> np.ndarray:
@@ -614,17 +646,33 @@ def denovo(matrix_file: Annotated[str, typer.Argument(help='Tab separated matrix
     logger.info(f'Starting de novo analysis for {run_name}')
     start_time = time.time()
 
-    # Handle VCF input
-    if matrix_file.endswith('.vcf'):
+    # Handle VCF input (both .vcf and .vcf.gz)
+    if matrix_file.endswith('.vcf') or matrix_file.endswith('.vcf.gz'):
         if not ref_genome and not genome_path:
             raise ValueError("Either ref_genome or genome_path must be provided.")
         genome_path = download_reference_genome(ref_genome=ref_genome, genome_path=genome_path)
         logger.info(f"Reference genome path: {genome_path}")
-        count_mutation(matrix_file, genome_path, f'{output_folder}/matrix.csv', numeric_chromosomes, genotyped)
-        matrix_file = f'{output_folder}/matrix.csv'
+        # Derive output csv path from input sample name
+        sample_name = Path(matrix_file).name
+        if sample_name.endswith('.vcf.gz'):
+            sample_name = sample_name[:-7]
+        elif sample_name.endswith('.vcf'):
+            sample_name = sample_name[:-4]
+        out_csv = f"{output_folder}/{sample_name}.csv"
+        os.makedirs(output_folder, exist_ok=True)
+        count_mutation(matrix_file, genome_path, out_csv, numeric_chromosomes, genotyped)
+        matrix_file = out_csv
 
     # Read and prepare data
     M = read_counts(matrix_file)
+
+    # Remove rows with all zeros (can occur with genotyped VCFs)
+    row_sums = M.sum(axis=1)
+    if (row_sums == 0).any():
+        n_zero_rows = (row_sums == 0).sum()
+        logger.warning(f"Removing {n_zero_rows} empty row(s) with zero mutation counts from the matrix")
+        M = M[row_sums > 0]
+
     index_matrix = M.index.values.tolist()
     desired_order = M.columns
     O = read_opportunity(M, opportunity_file)

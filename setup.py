@@ -17,7 +17,9 @@ requirements = ['typer',
                 'scikit-learn',
                 'bionumpy',
                 'matplotlib',
-                'seaborn']
+                'seaborn',
+                'typing_extensions',
+                'requests']
 
 test_requirements = ['pytest>=3', "hypothesis"]
 

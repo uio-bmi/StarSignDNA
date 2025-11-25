@@ -11,12 +11,13 @@ hypothesis
 coverage
 pytest-cov
 build
-
 numpy
 scipy
 pandas
 bionumpy
 setuptools
-
 seaborn
 matplotlib
+typing_extensions
+requests
+scikit-learn
