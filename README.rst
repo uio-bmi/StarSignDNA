@@ -9,7 +9,7 @@ A Robust Tool for Mutational Signature Analysis
     :target: https://opensource.org/licenses/MIT
     :alt: MIT License
 
-.. image:: https://img.shields.io/badge/release-v1.0.0-brightgreen.svg
+.. image:: https://img.shields.io/badge/release-v1.0.5-brightgreen.svg
     :target: https://pypi.org/project/starsigndna/
     :alt: Release Version
 
